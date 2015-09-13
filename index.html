@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en" ng-app="main">
+	<head>
+		<META NAME="ROBOTS" CONTENT="INDEX, NOFOLLOW">
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta http-equiv="Pragma" content="no-cache">
+		<meta http-equiv="Expires" content="-1">
+		<meta name="viewport" content="width=device-width,initial-scale=1">
+		<title>xAPI Visualize</title>
+		<script type="text/javascript" src="/assets/libs/three.min.js"></script>
+		<script type="text/javascript" src="/data-visualizations.js"></script>
+    </head>
+	<body>
+		<div id="data-container", style="width:800px;height:600px;"></div>
+		<script type="text/javascript">
+			var tdv = new tdv();
+			tdv.bar("data-container");
+		</script>
+	</body>
+</html>
