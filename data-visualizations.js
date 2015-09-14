@@ -38,16 +38,8 @@
         	createScene: function() {
         		var containerWidth = parseInt(this._container.style.width,10), 
         			containerHeight = parseInt(this._container.style.height,10);
-
+        			
 				this._scene = new THREE.Scene();
-
-				this._camera = new THREE.PerspectiveCamera(this._fov, containerWidth/containerHeight, this._near, this._far);
-
-				if (this._cameraX) this._camera.position.x = this._cameraX;
-				if (this._cameraY) this._camera.position.y = this._cameraY;
-				if (this._cameraZ) this._camera.position.z = this._cameraZ;
-
-				this._camera.lookAt(new THREE.Vector3(0,0,0));
 
 				this._renderer = new THREE.WebGLRenderer({ antialias: true });
 				this._renderer.setSize(containerWidth, containerHeight);
@@ -58,6 +50,19 @@
 				directionalLight.position.set(this._directionalLight.position.x, this._directionalLight.position.y, this._directionalLight.position.z);
  
 				this._scene.add(directionalLight);
+        	},
+
+        	addCamera: function() {
+        		var containerWidth = parseInt(this._container.style.width,10), 
+        			containerHeight = parseInt(this._container.style.height,10);
+
+				this._camera = new THREE.PerspectiveCamera(this._fov, this._aspectRatio, this._near, this._far);
+
+				if (this._cameraX) this._camera.position.x = this._cameraX;
+				if (this._cameraY) this._camera.position.y = this._cameraY;
+				if (this._cameraZ) this._camera.position.z = this._cameraZ;
+
+				this._camera.lookAt(new THREE.Vector3(0,0,0));
         	},
 
 			startRenderScene: function() {
@@ -182,7 +187,6 @@
 
         		this.createScene();
         		this.createSkybox();
-        		this.startRenderScene();
 
         		// Setting up the base plane for the bar chart (assuming that there is data)
     			if (data) {
@@ -216,6 +220,10 @@
     					}
 					}
 				}
+
+				this.addCamera();
+
+        		if (this._camera) this.startRenderScene();
         	}
         }
     };
