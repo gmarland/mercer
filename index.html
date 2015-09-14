@@ -14,8 +14,23 @@
 	<body>
 		<div id="data-container", style="width:800px;height:600px;"></div>
 		<script type="text/javascript">
+			var barData = [
+				{
+					color: "#ff0000",
+					data: [ 10,20,40,40,30,20 ]
+				},
+				{
+					color: "#00ff00",
+					data: [ 40,20,20,40,60 ]
+				},
+				{
+					color: "#0000ff",
+					data: [ 70,20,50,40,40,30,20,20,50 ]
+				}
+			];
+
 			var tdv = new tdv();
-			tdv.bar("data-container");
+			tdv.bar("data-container", barData);
 		</script>
 	</body>
 </html>
