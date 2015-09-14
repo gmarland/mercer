@@ -81,7 +81,6 @@
 			},
 
         	createSkybox: function(skySize) {
-        		console.log(skySize)
 				var skyMesh = new THREE.Mesh(new THREE.BoxGeometry(skySize, skySize, skySize), new THREE.MeshBasicMaterial({
 					color: this._skyboxColor,
 					side:THREE.DoubleSide 
@@ -93,7 +92,7 @@
         	createBase: function(baseWidth, baseLength, color) {
 	    		// Create the base (a simple plane should do)
 				var base = new THREE.Mesh(new THREE.PlaneGeometry(baseWidth, baseLength), new THREE.MeshBasicMaterial({ 
-					color: 0x323738, 
+					color: color, 
 					side: THREE.DoubleSide
 				}));
 
@@ -108,7 +107,7 @@
 
         		// Set up the basic configuration for the bar
         		var columnWidth = 10,
-        			baseColor = 0x323738,
+        			baseColor = 0xaaaaaa,
         			baseEdge = 10,
         			columnSpace = 5,
         			rowSpace = 30,
@@ -189,7 +188,9 @@
 
 					var barMesh = new THREE.Mesh(barGeometry, new THREE.MeshLambertMaterial({
 						color: color, 
-						side: THREE.DoubleSide 
+						side: THREE.DoubleSide,
+						transparent: true,
+						opacity: 0.75
 					}));
 
 					return barMesh;
@@ -197,9 +198,9 @@
 				
 				// This attempts to find a camera position based on data
 				var calculateCamera = function(baseX, baseZ, maxBarHeight) {
-        			self._cameraX = (baseX-50);
-        			self._cameraY = (maxBarHeight+80);
-        			self._cameraZ = (baseZ+30);
+        			self._cameraX = baseX;
+        			self._cameraY = (maxBarHeight+50);
+        			self._cameraZ = (baseZ+50);
 	        	};
 
         		this._container = document.getElementById(container);
@@ -244,7 +245,7 @@
 				}
 
         		// If we don't have camera options then we'll try and determine the camera position 
-    			if ((!options) || (!options.camera)) calculateCamera(((baseWidth/2)*-1), (baseLength/2), maxHeight);
+    			if ((!options) || (!options.camera)) calculateCamera((baseWidth/2), (baseLength/2), maxHeight);
 
 				this.addCamera();
 
