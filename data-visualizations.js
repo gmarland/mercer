@@ -7,7 +7,7 @@
         	// Camera settings
         	_fov: 75,
         	_near: 0.1,
-        	_far: 2000,
+        	_far: null,
 
         	// Camera position
 
@@ -82,7 +82,7 @@
 					side:THREE.DoubleSide 
 				}));
 
-				this._scene.add(skyMesh); 
+				this._scene.add(skyMesh);
         	},
 
         	createBase: function(baseWidth, baseLength, color) {
@@ -101,11 +101,14 @@
         	bar: function(container, data, options) {
 				var self = this;
 
+				// This is the maximum value allowed to be reached before it starts to factor
+				var maxValueBeforeFactor = 100;
+
         		// Set up the basic configuration for the bar
         		var barWidth = 10,
         			barOpacity = 0.85,
         			columnSpace = 5,
-        			rowSpace = 30,
+        			rowSpace = 25,
         			baseColor = 0xaaaaaa,
         			baseEdge = 10,
         			baseWidth = 200,
@@ -113,6 +116,10 @@
 
         		// Allow the override using the options if they exist
         		if (options) {
+        			if (options.maxValueBeforeFactor) maxValueBeforeFactor = options.maxValueBeforeFactor;
+
+        			if (options.barWidth) barWidth = options.barWidth;
+
         			if (options.barWidth) barWidth = options.barWidth;
 
         			if (options.barOpacity) barOpacity = options.barOpacity;
@@ -198,8 +205,11 @@
 				// This attempts to find a camera position based on data
 				var calculateCamera = function(baseX, baseZ, maxBarHeight) {
         			self._cameraX = baseX;
-        			self._cameraY = (maxBarHeight+50);
+        			self._cameraY = (maxBarHeight+(50));
         			self._cameraZ = (baseZ+50);
+
+
+        			self._far = (Math.max(baseX, baseZ, maxBarHeight)+500)*2;
 	        	};
 
         		this._container = document.getElementById(container);
@@ -231,10 +241,33 @@
 				// add it to the scene
 				graphObject.add(this.createBase(baseWidth, baseLength, baseColor));
 
-				var maxHeight = 0;
+				var maxDataVal = 0,
+					factor = 1;
 
 				// check that we've have some data passed in
 				if (data) {
+					// First get the max value so we can factor values
+    				for (var i=0; i<data.length; i++) {
+    					for (var j=0; j<data[i].data.length; j++) {
+							if (data[i].data[j] > maxDataVal) maxDataVal = data[i].data[j];
+    					}
+					}
+
+					// We're greater than the max graph value allowed so we're going to factor all the results down so they look pretty when rendered
+					if (maxDataVal > maxValueBeforeFactor) {
+						var originalMaxValue = maxDataVal;
+
+						maxDataVal = maxValueBeforeFactor;
+
+	    				for (var i=0; i<data.length; i++) {
+	    					for (var j=0; j<data[i].data.length; j++) {
+	    						var percentageOfMax = data[i].data[j]/originalMaxValue;
+
+								data[i].data[j] = maxDataVal*percentageOfMax;			
+	    					}
+						}
+					}
+
     				for (var i=0; i<data.length; i++) {
     					// Figure out the color for the bar. Pick a random one is one isn't defined
     					var barColor = null;
@@ -243,9 +276,7 @@
     					else barColor = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
 
     					for (var j=0; j<data[i].data.length; j++) {
-							graphObject.add(createBar(i, j, data[i].data[j], barColor));
-
-							if (data[i].data[j] > maxHeight) maxHeight = data[i].data[j];
+							graphObject.add(createBar(i, j, (data[i].data[j]/factor), barColor));
     					}
 					}
 				}
@@ -254,11 +285,11 @@
 				this._scene.add(graphObject)
 
         		// If we don't have camera options then we'll try and determine the camera position 
-    			if ((!options) || (!options.camera)) calculateCamera((baseWidth/2), (baseLength/2), maxHeight);
+    			if ((!options) || (!options.camera)) calculateCamera((baseWidth/2), (baseLength/2), (maxDataVal/factor));
 
 				this.addCamera();
 
-        		this.createSkybox(Math.max(baseWidth, baseLength, maxHeight)+200);
+        		this.createSkybox(Math.max((baseWidth, baseLength, (maxDataVal/factor))+500)*2);
 
         		if (this._camera) this.startRenderScene();
         	}
