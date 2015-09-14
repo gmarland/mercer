@@ -44,7 +44,7 @@
 				this._renderer.setSize(containerWidth, containerHeight);
 
 				this._container.appendChild(this._renderer.domElement);
-
+		      
 				var directionalLight = new THREE.DirectionalLight(this._directionalLight.color, this._directionalLight.intensity); 
 				directionalLight.position.set(this._directionalLight.position.x, this._directionalLight.position.y, this._directionalLight.position.z);
  
@@ -60,8 +60,6 @@
 				if (this._cameraX) this._camera.position.x = this._cameraX;
 				if (this._cameraY) this._camera.position.y = this._cameraY;
 				if (this._cameraZ) this._camera.position.z = this._cameraZ;
-
-				this._camera.lookAt(new THREE.Vector3(0,0,0));
         	},
 
 			startRenderScene: function() {
@@ -102,13 +100,13 @@
 				var self = this;
 
 				// This is the maximum value allowed to be reached before it starts to factor
-				var maxValueBeforeFactor = 100;
+				var maxValueBeforeFactor = 150;
 
         		// Set up the basic configuration for the bar
-        		var barWidth = 10,
-        			barOpacity = 0.85,
-        			columnSpace = 5,
-        			rowSpace = 25,
+        		var barWidth = 15,
+        			barOpacity = 0.75,
+        			columnSpace = 10,
+        			rowSpace = 30,
         			baseColor = 0xaaaaaa,
         			baseEdge = 10,
         			baseWidth = 200,
@@ -204,13 +202,16 @@
 				
 				// This attempts to find a camera position based on data
 				var calculateCamera = function(baseX, baseZ, maxBarHeight) {
-        			self._cameraX = baseX;
-        			self._cameraY = (maxBarHeight+(50));
-        			self._cameraZ = (baseZ+50);
+        			self._cameraX = (baseX);
+        			self._cameraY = (maxBarHeight+40);
+        			self._cameraZ = (baseZ+100);
 
-
-        			self._far = (Math.max(baseX, baseZ, maxBarHeight)+500)*2;
+        			self._far = (Math.max(baseX, baseZ, maxBarHeight)+1000)*2;
 	        	};
+
+	        	var calculateLookAt = function(centerx, centerY, centerZ) {
+	        		if (self._camera) self._camera.lookAt(new THREE.Vector3(centerx,centerY,centerZ));
+	        	}
 
         		this._container = document.getElementById(container);
 
@@ -253,19 +254,17 @@
     					}
 					}
 
-					// We're greater than the max graph value allowed so we're going to factor all the results down so they look pretty when rendered
-					if (maxDataVal > maxValueBeforeFactor) {
-						var originalMaxValue = maxDataVal;
+					// Normalize the data so that the max value is at 100 units tall
+					var originalMaxValue = maxDataVal;
 
-						maxDataVal = maxValueBeforeFactor;
+					maxDataVal = maxValueBeforeFactor;
 
-	    				for (var i=0; i<data.length; i++) {
-	    					for (var j=0; j<data[i].data.length; j++) {
-	    						var percentageOfMax = data[i].data[j]/originalMaxValue;
+    				for (var i=0; i<data.length; i++) {
+    					for (var j=0; j<data[i].data.length; j++) {
+    						var percentageOfMax = data[i].data[j]/originalMaxValue;
 
-								data[i].data[j] = maxDataVal*percentageOfMax;			
-	    					}
-						}
+							data[i].data[j] = maxDataVal*percentageOfMax;			
+    					}
 					}
 
     				for (var i=0; i<data.length; i++) {
@@ -285,9 +284,11 @@
 				this._scene.add(graphObject)
 
         		// If we don't have camera options then we'll try and determine the camera position 
-    			if ((!options) || (!options.camera)) calculateCamera((baseWidth/2), (baseLength/2), (maxDataVal/factor));
+    			if ((!options) || (!options.camera)) calculateCamera((baseWidth/2), (baseLength/2), maxValueBeforeFactor);
 
 				this.addCamera();
+
+				calculateLookAt(0, maxValueBeforeFactor/2, 0);
 
         		this.createSkybox(Math.max((baseWidth, baseLength, (maxDataVal/factor))+500)*2);
 
