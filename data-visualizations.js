@@ -11,9 +11,13 @@
 
         	// Camera position
 
-        	_cameraX: -200,
+        	/*_cameraX: -200,
         	_cameraY: 200,
-        	_cameraZ: 130,
+        	_cameraZ: 130,*/
+
+        	_cameraX: 0,
+        	_cameraY: 0,
+        	_cameraZ: 0,
 
         	// THREE layout
         	_scene: null,
@@ -33,12 +37,11 @@
 
         	//Skybox
         	_skyboxColor: 0xffffff,
-        	_skySize: 1500,
 
         	createScene: function() {
         		var containerWidth = parseInt(this._container.style.width,10), 
         			containerHeight = parseInt(this._container.style.height,10);
-        			
+
 				this._scene = new THREE.Scene();
 
 				this._renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -77,8 +80,9 @@
 				render();
 			},
 
-        	createSkybox: function() {
-				var skyMesh = new THREE.Mesh(new THREE.BoxGeometry(this._skySize, this._skySize, this._skySize), new THREE.MeshBasicMaterial({
+        	createSkybox: function(skySize) {
+        		console.log(skySize)
+				var skyMesh = new THREE.Mesh(new THREE.BoxGeometry(skySize, skySize, skySize), new THREE.MeshBasicMaterial({
 					color: this._skyboxColor,
 					side:THREE.DoubleSide 
 				}));
@@ -100,12 +104,14 @@
         	},
 
         	bar: function(container, data, options) {
+				var self = this;
+
         		// Set up the basic configuration for the bar
-        		var columnWidth = 20,
+        		var columnWidth = 10,
         			baseColor = 0x323738,
         			baseEdge = 10,
         			columnSpace = 5,
-        			rowSpace = 40,
+        			rowSpace = 30,
         			baseWidth = 200,
         			baseLength = 200;
 
@@ -126,6 +132,12 @@
         			if (options.baseLength) baseLength = options.baseLength;
 
         			if (options.background) this._skyboxColor = new THREE.Color(options.background);
+
+        			if (options.camera) {
+        				if (options.camera.x) this._cameraX = 0;
+        				if (options.camera.y) this._cameraY = 0;
+        				if (options.camera.z) this._cameraZ = 0;
+        			}
         		}
 
         		// The method to create the bar. Actually easier to plot the verticies than use available shapes
@@ -182,11 +194,17 @@
 
 					return barMesh;
 				}
+				
+				// This attempts to find a camera position based on data
+				var calculateCamera = function(baseX, baseZ, maxBarHeight) {
+        			self._cameraX = (baseX-50);
+        			self._cameraY = (maxBarHeight+80);
+        			self._cameraZ = (baseZ+30);
+	        	};
 
         		this._container = document.getElementById(container);
 
         		this.createScene();
-        		this.createSkybox();
 
         		// Setting up the base plane for the bar chart (assuming that there is data)
     			if (data) {
@@ -206,6 +224,8 @@
 				// add it to the scene
 				this._scene.add(this.createBase(baseWidth, baseLength, baseColor));
 
+				var maxHeight = 0;
+
 				// check that we've have some data passed in
 				if (data) {
     				for (var i=0; i<data.length; i++) {
@@ -217,11 +237,18 @@
 
     					for (var j=0; j<data[i].data.length; j++) {
 							this._scene.add(createBar(i, j, data[i].data[j], barColor));
+
+							if (data[i].data[j] > maxHeight) maxHeight = data[i].data[j];
     					}
 					}
 				}
 
+        		// If we don't have camera options then we'll try and determine the camera position 
+    			if ((!options) || (!options.camera)) calculateCamera(((baseWidth/2)*-1), (baseLength/2), maxHeight);
+
 				this.addCamera();
+
+        		this.createSkybox(Math.max(baseWidth, baseLength, maxHeight)+200);
 
         		if (this._camera) this.startRenderScene();
         	}
