@@ -11,10 +11,6 @@
 
         	// Camera position
 
-        	/*_cameraX: -200,
-        	_cameraY: 200,
-        	_cameraZ: 130,*/
-
         	_cameraX: 0,
         	_cameraY: 0,
         	_cameraZ: 0,
@@ -106,25 +102,28 @@
 				var self = this;
 
         		// Set up the basic configuration for the bar
-        		var columnWidth = 10,
-        			baseColor = 0xaaaaaa,
-        			baseEdge = 10,
+        		var barWidth = 10,
+        			barOpacity = 0.85,
         			columnSpace = 5,
         			rowSpace = 30,
+        			baseColor = 0xaaaaaa,
+        			baseEdge = 10,
         			baseWidth = 200,
         			baseLength = 200;
 
         		// Allow the override using the options if they exist
         		if (options) {
-        			if (options.columnWidth) columnWidth = options.columnWidth;
+        			if (options.barWidth) barWidth = options.barWidth;
 
-        			if (options.baseColor) baseColor = new THREE.Color(options.baseColor);
-
-        			if (options.baseEdge) baseEdge = options.baseEdge;
+        			if (options.barOpacity) barOpacity = options.barOpacity;
 
         			if (options.columnSpace) columnSpace = options.columnSpace;
         			
         			if (options.rowSpace) rowSpace = options.rowSpace;
+
+        			if (options.baseColor) baseColor = new THREE.Color(options.baseColor);
+
+        			if (options.baseEdge) baseEdge = options.baseEdge;
 
         			if (options.baseWidth) baseWidth = options.baseWidth;
 
@@ -146,24 +145,24 @@
 					var xPos = ((baseWidth/2)*-1), // this is our zero
 						zPos = ((baseLength/2)*-1);
 
-					xPos += ((col*columnSpace) + (col*columnWidth)) + baseEdge + (columnWidth/2);
-					zPos += ((row*rowSpace) + (row*columnWidth)) + baseEdge + (columnWidth/2);
+					xPos += ((col*columnSpace) + (col*barWidth)) + baseEdge + (barWidth/2);
+					zPos += ((row*rowSpace) + (row*barWidth)) + baseEdge + (barWidth/2);
 
 
 					var barGeometry = new THREE.Geometry();
 
 					// Plot the verticies
-					barGeometry.vertices.push(new THREE.Vector3(xPos-(columnWidth/2), 0, zPos-(columnWidth/2)));
-					barGeometry.vertices.push(new THREE.Vector3(xPos-(columnWidth/2), 0, zPos+(columnWidth/2)));
+					barGeometry.vertices.push(new THREE.Vector3(xPos-(barWidth/2), 0, zPos-(barWidth/2)));
+					barGeometry.vertices.push(new THREE.Vector3(xPos-(barWidth/2), 0, zPos+(barWidth/2)));
 
-					barGeometry.vertices.push(new THREE.Vector3(xPos+(columnWidth/2), 0, zPos-(columnWidth/2)));
-					barGeometry.vertices.push(new THREE.Vector3(xPos+(columnWidth/2), 0, zPos+(columnWidth/2)));
+					barGeometry.vertices.push(new THREE.Vector3(xPos+(barWidth/2), 0, zPos-(barWidth/2)));
+					barGeometry.vertices.push(new THREE.Vector3(xPos+(barWidth/2), 0, zPos+(barWidth/2)));
 
-					barGeometry.vertices.push(new THREE.Vector3(xPos-(columnWidth/2), val, zPos-(columnWidth/2)));
-					barGeometry.vertices.push(new THREE.Vector3(xPos-(columnWidth/2), val, zPos+(columnWidth/2)));
+					barGeometry.vertices.push(new THREE.Vector3(xPos-(barWidth/2), val, zPos-(barWidth/2)));
+					barGeometry.vertices.push(new THREE.Vector3(xPos-(barWidth/2), val, zPos+(barWidth/2)));
 
-					barGeometry.vertices.push(new THREE.Vector3(xPos+(columnWidth/2), val, zPos-(columnWidth/2)));
-					barGeometry.vertices.push(new THREE.Vector3(xPos+(columnWidth/2), val, zPos+(columnWidth/2)));
+					barGeometry.vertices.push(new THREE.Vector3(xPos+(barWidth/2), val, zPos-(barWidth/2)));
+					barGeometry.vertices.push(new THREE.Vector3(xPos+(barWidth/2), val, zPos+(barWidth/2)));
 
 					// Add the faces
 					barGeometry.faces.push( new THREE.Face3( 0, 1, 4 ) );
@@ -190,7 +189,7 @@
 						color: color, 
 						side: THREE.DoubleSide,
 						transparent: true,
-						opacity: 0.75
+						opacity: barOpacity
 					}));
 
 					return barMesh;
@@ -207,10 +206,17 @@
 
         		this.createScene();
 
+        		// The actual graph object
+        		var graphObject = new THREE.Object3D();
+
+        		// Give it a name just for simplicity
+        		if ((options) && (options.name)) graphObject.name = options.name;
+        		else graphObject.name = "barGraph";
+
         		// Setting up the base plane for the bar chart (assuming that there is data)
     			if (data) {
     				// Get the length (the z axis)
-    				baseLength = (columnWidth*data.length) + (rowSpace*data.length) - rowSpace + (baseEdge*2);
+    				baseLength = (barWidth*data.length) + (rowSpace*data.length) - rowSpace + (baseEdge*2);
 
     				// Figure out what the base length should be (the x axis)
     				var maxData = 0;
@@ -219,11 +225,11 @@
 						if ((data[i].data) && (data[i].data.length > maxData)) maxData = data[i].data.length;
 					}
 
-    				if (maxData) baseWidth = (columnWidth*maxData) + (columnSpace*maxData) - columnSpace + (baseEdge*2);
+    				if (maxData) baseWidth = (barWidth*maxData) + (columnSpace*maxData) - columnSpace + (baseEdge*2);
         		}
 
 				// add it to the scene
-				this._scene.add(this.createBase(baseWidth, baseLength, baseColor));
+				graphObject.add(this.createBase(baseWidth, baseLength, baseColor));
 
 				var maxHeight = 0;
 
@@ -237,12 +243,15 @@
     					else barColor = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
 
     					for (var j=0; j<data[i].data.length; j++) {
-							this._scene.add(createBar(i, j, data[i].data[j], barColor));
+							graphObject.add(createBar(i, j, data[i].data[j], barColor));
 
 							if (data[i].data[j] > maxHeight) maxHeight = data[i].data[j];
     					}
 					}
 				}
+
+				// Add the graph to the scene
+				this._scene.add(graphObject)
 
         		// If we don't have camera options then we'll try and determine the camera position 
     			if ((!options) || (!options.camera)) calculateCamera((baseWidth/2), (baseLength/2), maxHeight);
