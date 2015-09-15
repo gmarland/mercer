@@ -259,7 +259,8 @@
 					right.vertices.push(new THREE.Vector3(xPos-(barWidth/2), 0, zPos-(barWidth/2)));
 
 					var rightLine = new THREE.Line(right, new THREE.LineBasicMaterial({
-						color: color
+						color: color,
+						side: THREE.DoubleSide
 					}));
 
 					barObject.add(rightLine);
@@ -267,7 +268,31 @@
 					// Return the created bar
 
 					return barObject;
-				}
+				};
+
+				var createColumnLabel = function(row, text) {
+					var textGeometry = new THREE.TextGeometry(text, {
+    	 				size: 8,
+						height: .1,
+						color: 0x000000
+					});
+					
+					var textMesh = new THREE.Mesh( textGeometry, new THREE.MeshLambertMaterial({
+						color: 0x000000
+					}) );
+
+					textMesh.rotation.x = (Math.PI/2)*-1;
+					textMesh.rotation.z += (Math.PI/2);
+
+					var textBoxArea = new THREE.Box3().setFromObject(textMesh);
+
+					textMesh.position.z += (baseLength/2) + textBoxArea.size().z + 5;
+
+					textMesh.position.x = (baseWidth/2)*-1;
+					textMesh.position.x += (baseEdge + (barWidth/2) + (textBoxArea.size().x/2)) + (row*columnSpace) + (row*barWidth);
+
+					return textMesh;
+				};
 				
 				// This attempts to find a camera position based on 
 				var calculateCamera = function() {
@@ -373,7 +398,11 @@
         		// Setting up the base plane for the bar chart (assuming that there is data)
     			if (graphData) {
     				// Get the length (the z axis)
-    				baseLength = (barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (baseEdge*2);
+    				if (graphData.rowLabels) {
+    					if (graphData.data.length > graphData.rowLabels.length) baseLength = (barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (baseEdge*2);
+						else baseLength = (barWidth*graphData.rowLabels.length) + (rowSpace*graphData.rowLabels.length) - rowSpace + (baseEdge*2);
+    				}
+    				else if (graphData.data) baseLength = (barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (baseEdge*2);
 
     				// Figure out what the base length should be (the x axis)
     				var maxData = 0;
@@ -382,14 +411,20 @@
 						if ((graphData.data[i].values) && (graphData.data[i].values.length > maxData)) maxData = graphData.data[i].values.length;
 					}
 
-    				if (maxData) baseWidth = (barWidth*maxData) + (columnSpace*maxData) - columnSpace + (baseEdge*2);
+					if (graphData.columnLabels) {
+						if (maxData) {
+							if (maxData > graphData.columnLabels.length) baseWidth = (barWidth*maxData) + (columnSpace*maxData) - columnSpace + (baseEdge*2);
+							else baseWidth = (barWidth*graphData.columnLabels.length) + (columnSpace*graphData.columnLabels.length) - columnSpace + (baseEdge*2);
+						}
+						else baseWidth = (barWidth*graphData.columnLabels.length) + (columnSpace*graphData.columnLabels.length) - columnSpace + (baseEdge*2);
+					}
+					else if (maxData) baseWidth = (barWidth*maxData) + (columnSpace*maxData) - columnSpace + (baseEdge*2);
         		}
 
 				// add it to the scene
 				graphObject.add(this.createBase(baseWidth, baseLength, baseColor));
 
-				var maxDataVal = 0,
-					factor = 1;
+				var maxDataVal = 0;
 
 				// check that we've have some data passed in
 				if (graphData) {
@@ -421,8 +456,12 @@
     					else barColor = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
 
     					for (var j=0; j<graphData.data[i].values.length; j++) {
-							graphObject.add(createBar(i, j, (graphData.data[i].values[j]/factor), barColor));
+							graphObject.add(createBar(i, j, graphData.data[i].values[j], barColor));
     					}
+					}
+
+    				for (var i=0; i<graphData.columnLabels.length; i++) {
+    					graphObject.add(createColumnLabel(i, graphData.columnLabels[i]));
 					}
 				}
 
