@@ -272,7 +272,7 @@
 
 				var createColumnLabel = function(row, text) {
 					var textGeometry = new THREE.TextGeometry(text, {
-    	 				size: 8,
+    	 				size: 6,
 						height: .1,
 						color: 0x000000
 					});
