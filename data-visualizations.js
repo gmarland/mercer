@@ -125,7 +125,13 @@
         			barOpacity = 0.65, // how opaque the bars are
         			columnSpace = 10, // the space between each column in a row
         			rowSpace = 30, // the space between each row
-        			baseColor = 0xaaaaaa, // the color for the base of he
+        			rowLabelFont = "helvetiker", // the font for the row label
+        			rowLabelSize = 6, // the font size for the row label
+        			rowLabelColor = 0x000000, // the default color for the row label
+        			colLabelFont = "helvetiker", // the font for the col label
+        			colLabelSize = 6, // the font size for the col label
+        			colLabelColor = 0x000000, // the default color for the col label
+        			baseColor = 0xaaaaaa, // the color for the base
         			baseEdge = 10, // the distance around the graphing area for the base
         			baseWidth = 200, // the base width which will be show if no data is added
         			baseLength = 200, // the base length which will be show if no data is added
@@ -156,6 +162,25 @@
         			if (options.locked) locked = options.locked;
 
         			this.setGlobalOptions(options);
+        		}
+
+        		// Update label fonts. Do it here just so all things are configured in the same place
+        		if (graphData) {
+        			if (graphData.rowLabels) {
+	        			if (graphData.rowLabels.family) rowLabelFont = graphData.rowLabels.family;
+
+	        			if (graphData.rowLabels.size) rowLabelSize = graphData.rowLabels.size;
+
+	        			if (graphData.rowLabels.color) rowLabelColor = new THREE.Color(graphData.rowLabels.color);
+        			}
+
+        			if (graphData.columnLabels) {
+	        			if (graphData.columnLabels.family) colLabelFont = graphData.columnLabels.family;
+
+	        			if (graphData.columnLabels.size) colLabelSize = graphData.columnLabels.size;
+
+	        			if (graphData.columnLabels.color) colLabelColor = new THREE.Color(graphData.columnLabels.color);
+        			}
         		}
 
         		// The method to create the bar. Actually easier to plot the verticies than use available shapes
@@ -270,15 +295,15 @@
 					return barObject;
 				};
 
-				var createColumnLabel = function(row, text) {
+				var createColumnLabel = function(col, text) {
 					var textGeometry = new THREE.TextGeometry(text, {
-    	 				size: 6,
-						height: .1,
-						color: 0x000000
+						font: colLabelFont,
+    	 				size: colLabelSize,
+						height: .2
 					});
 					
-					var textMesh = new THREE.Mesh( textGeometry, new THREE.MeshLambertMaterial({
-						color: 0x000000
+					var textMesh = new THREE.Mesh(textGeometry, new THREE.MeshBasicMaterial({
+						color: colLabelColor
 					}) );
 
 					textMesh.rotation.x = (Math.PI/2)*-1;
@@ -286,10 +311,33 @@
 
 					var textBoxArea = new THREE.Box3().setFromObject(textMesh);
 
-					textMesh.position.z += (baseLength/2) + textBoxArea.size().z + 5;
+					textMesh.position.z += (baseLength/2) + textBoxArea.size().z + 3;
 
 					textMesh.position.x = (baseWidth/2)*-1;
-					textMesh.position.x += (baseEdge + (barWidth/2) + (textBoxArea.size().x/2)) + (row*columnSpace) + (row*barWidth);
+					textMesh.position.x += (baseEdge + (barWidth/2) + (textBoxArea.size().x/2)) + (col*columnSpace) + (col*barWidth);
+
+					return textMesh;
+				};
+
+				var createRowLabel = function(row, text) {
+					var textGeometry = new THREE.TextGeometry(text, {
+						font: rowLabelFont,
+    	 				size: rowLabelSize,
+						height: .2
+					});
+					
+					var textMesh = new THREE.Mesh( textGeometry, new THREE.MeshBasicMaterial({
+						color: rowLabelColor
+					}) );
+
+					textMesh.rotation.x = (Math.PI/2)*-1;
+
+					var textBoxArea = new THREE.Box3().setFromObject(textMesh);
+
+					textMesh.position.x += (baseWidth/2) + 3;
+
+					textMesh.position.z -= (baseLength/2);
+					textMesh.position.z += baseEdge + (barWidth/2) + (row*rowSpace) + (row*barWidth) + (textBoxArea.size().z/2);
 
 					return textMesh;
 				};
@@ -398,9 +446,9 @@
         		// Setting up the base plane for the bar chart (assuming that there is data)
     			if (graphData) {
     				// Get the length (the z axis)
-    				if (graphData.rowLabels) {
-    					if (graphData.data.length > graphData.rowLabels.length) baseLength = (barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (baseEdge*2);
-						else baseLength = (barWidth*graphData.rowLabels.length) + (rowSpace*graphData.rowLabels.length) - rowSpace + (baseEdge*2);
+    				if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
+    					if (graphData.data.length > graphData.rowLabels.values.length) baseLength = (barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (baseEdge*2);
+						else baseLength = (barWidth*graphData.rowLabels.values.length) + (rowSpace*graphData.rowLabels.values.length) - rowSpace + (baseEdge*2);
     				}
     				else if (graphData.data) baseLength = (barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (baseEdge*2);
 
@@ -411,12 +459,12 @@
 						if ((graphData.data[i].values) && (graphData.data[i].values.length > maxData)) maxData = graphData.data[i].values.length;
 					}
 
-					if (graphData.columnLabels) {
+					if ((graphData.columnLabels) && (graphData.columnLabels.values)) {
 						if (maxData) {
-							if (maxData > graphData.columnLabels.length) baseWidth = (barWidth*maxData) + (columnSpace*maxData) - columnSpace + (baseEdge*2);
-							else baseWidth = (barWidth*graphData.columnLabels.length) + (columnSpace*graphData.columnLabels.length) - columnSpace + (baseEdge*2);
+							if (maxData > graphData.columnLabels.values.length) baseWidth = (barWidth*maxData) + (columnSpace*maxData) - columnSpace + (baseEdge*2);
+							else baseWidth = (barWidth*graphData.columnLabels.values.length) + (columnSpace*graphData.columnLabels.values.length) - columnSpace + (baseEdge*2);
 						}
-						else baseWidth = (barWidth*graphData.columnLabels.length) + (columnSpace*graphData.columnLabels.length) - columnSpace + (baseEdge*2);
+						else baseWidth = (barWidth*graphData.columnLabels.values.length) + (columnSpace*graphData.columnLabels.values.length) - columnSpace + (baseEdge*2);
 					}
 					else if (maxData) baseWidth = (barWidth*maxData) + (columnSpace*maxData) - columnSpace + (baseEdge*2);
         		}
@@ -460,8 +508,16 @@
     					}
 					}
 
-    				for (var i=0; i<graphData.columnLabels.length; i++) {
-    					graphObject.add(createColumnLabel(i, graphData.columnLabels[i]));
+					if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
+						for (var i=0; i<graphData.rowLabels.values.length; i++) {
+							graphObject.add(createRowLabel(i, graphData.rowLabels.values[i]));
+						}
+					}
+
+					if ((graphData.columnLabels) && (graphData.columnLabels.values)) {
+	    				for (var i=0; i<graphData.columnLabels.values.length; i++) {
+	    					graphObject.add(createColumnLabel(i, graphData.columnLabels.values[i]));
+						}
 					}
 				}
 

@@ -16,8 +16,18 @@
 		<div id="data-container", style="width:800px;height:600px;"></div>
 		<script type="text/javascript">
 			var barData = {
-				rowLabels: [ "one", "two", "three" ],
-				columnLabels: [ "first", "second", "third", "forth", "fifth" ],
+				rowLabels: {
+					family: "helvetiker",
+					size: 4,
+					color: "#ff0000",
+					values: ["one", "two", "three" ]
+				},
+				columnLabels: {
+					family: "helvetiker",
+					size: 6,
+					color: "#0000ff",
+					values: [ "first", "second", "third", "forth", "fifth", "sixth" ]
+				},
 				data: [{
 					color: "#0000ff",
 					values: [ 1,2,4,4,3,2 ]
