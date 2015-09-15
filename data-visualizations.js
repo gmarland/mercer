@@ -104,7 +104,7 @@
 
         		// Set up the basic configuration for the bar
         		var barWidth = 15,
-        			barOpacity = 0.75,
+        			barOpacity = 0.65,
         			columnSpace = 10,
         			rowSpace = 30,
         			baseColor = 0xaaaaaa,
@@ -144,7 +144,9 @@
         		}
 
         		// The method to create the bar. Actually easier to plot the verticies than use available shapes
-				var createBar = function(row, col, val, color) {
+				var createBar = function(row, col, val, color) {						
+	        		var barObject = new THREE.Object3D();
+
 					// First, calculate the bar geometry
 
 					var xPos = ((baseWidth/2)*-1), // this is our zero
@@ -152,7 +154,6 @@
 
 					xPos += ((col*columnSpace) + (col*barWidth)) + baseEdge + (barWidth/2);
 					zPos += ((row*rowSpace) + (row*barWidth)) + baseEdge + (barWidth/2);
-
 
 					var barGeometry = new THREE.Geometry();
 
@@ -197,7 +198,58 @@
 						opacity: barOpacity
 					}));
 
-					return barMesh;
+					barObject.add(barMesh);
+
+					// Generate the outlines
+					var front = new THREE.Geometry();
+					front.vertices.push(new THREE.Vector3(xPos-(barWidth/2), 0, zPos+(barWidth/2)));
+					front.vertices.push(new THREE.Vector3(xPos-(barWidth/2), val, zPos+(barWidth/2)));
+					front.vertices.push(new THREE.Vector3(xPos+(barWidth/2), val, zPos+(barWidth/2)));
+					front.vertices.push(new THREE.Vector3(xPos+(barWidth/2), 0, zPos+(barWidth/2)));
+
+					var frontLine = new THREE.Line(front, new THREE.LineBasicMaterial({
+						color: color
+					}));
+
+					barObject.add(frontLine);
+
+					var back = new THREE.Geometry();
+					back.vertices.push(new THREE.Vector3(xPos-(barWidth/2), 0, zPos-(barWidth/2)));
+					back.vertices.push(new THREE.Vector3(xPos-(barWidth/2), val, zPos-(barWidth/2)));
+					back.vertices.push(new THREE.Vector3(xPos+(barWidth/2), val, zPos-(barWidth/2)));
+					back.vertices.push(new THREE.Vector3(xPos+(barWidth/2), 0, zPos-(barWidth/2)));
+
+					var backLine = new THREE.Line(back, new THREE.LineBasicMaterial({
+						color: color
+					}));
+
+					barObject.add(backLine);
+
+					var left = new THREE.Geometry();
+					left.vertices.push(new THREE.Vector3(xPos+(barWidth/2), 0, zPos+(barWidth/2)));
+					left.vertices.push(new THREE.Vector3(xPos+(barWidth/2), val, zPos+(barWidth/2)));
+					left.vertices.push(new THREE.Vector3(xPos+(barWidth/2), val, zPos-(barWidth/2)));
+					left.vertices.push(new THREE.Vector3(xPos+(barWidth/2), 0, zPos-(barWidth/2)));
+
+					var leftLine = new THREE.Line(left, new THREE.LineBasicMaterial({
+						color: color
+					}));
+
+					barObject.add(leftLine);
+
+					var right = new THREE.Geometry();
+					right.vertices.push(new THREE.Vector3(xPos-(barWidth/2), 0, zPos+(barWidth/2)));
+					right.vertices.push(new THREE.Vector3(xPos-(barWidth/2), val, zPos+(barWidth/2)));
+					right.vertices.push(new THREE.Vector3(xPos-(barWidth/2), val, zPos-(barWidth/2)));
+					right.vertices.push(new THREE.Vector3(xPos-(barWidth/2), 0, zPos-(barWidth/2)));
+
+					var rightLine = new THREE.Line(right, new THREE.LineBasicMaterial({
+						color: color
+					}));
+
+					barObject.add(rightLine);
+
+					return barObject;
 				}
 				
 				// This attempts to find a camera position based on data
