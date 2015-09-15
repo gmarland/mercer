@@ -143,13 +143,11 @@
 
         			if (options.barWidth) barWidth = options.barWidth;
 
-        			if (options.barWidth) barWidth = options.barWidth;
-
         			if (options.barOpacity) barOpacity = options.barOpacity;
-
-        			if (options.columnSpace) columnSpace = options.columnSpace;
         			
         			if (options.rowSpace) rowSpace = options.rowSpace;
+
+        			if (options.columnSpace) columnSpace = options.columnSpace;
 
         			if (options.baseColor) baseColor = new THREE.Color(options.baseColor);
 
