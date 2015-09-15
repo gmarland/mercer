@@ -88,18 +88,6 @@
 				this._camera.lookAt(new THREE.Vector3(this._cameraLookatX, this._cameraLookatY, this._cameraLookatZ));
         	},
 
-			startRenderScene: function() {
-				var that = this;
-
-				var render = function () {
-					requestAnimationFrame( render );
-
-					that._renderer.render(that._scene, that._camera);
-				};
-
-				render();
-			},
-
         	createSkybox: function(skySize) {
 				var skyMesh = new THREE.Mesh(new THREE.BoxGeometry(skySize, skySize, skySize), new THREE.MeshBasicMaterial({
 					color: this._skyboxColor,
@@ -122,8 +110,12 @@
 				return base;
         	},
 
+        	// Calling will create a standard bar chart
         	bar: function(container, graphData, options) {
 				var self = this;
+
+        		// The actual graph object
+        		var graphObject = new THREE.Object3D();
 
 				// This is the maximum value allowed to be reached before it starts to factor
 				var maxValueBeforeFactor = 150;
@@ -136,7 +128,8 @@
         			baseColor = 0xaaaaaa, // the color for the base of he
         			baseEdge = 10, // the distance around the graphing area for the base
         			baseWidth = 200, // the base width which will be show if no data is added
-        			baseLength = 200; // the base length which will be show if no data is added
+        			baseLength = 200, // the base length which will be show if no data is added
+        			locked = false; // whether or not to allow the rotation of the graph
 
         		// Allow the override using the options if they exist
         		if (options) {
@@ -159,6 +152,8 @@
         			if (options.baseWidth) baseWidth = options.baseWidth;
 
         			if (options.baseLength) baseLength = options.baseLength;
+
+        			if (options.locked) locked = options.locked;
 
         			this.setGlobalOptions(options);
         		}
@@ -290,12 +285,86 @@
 		        	self._cameraLookatZ = 0;
 	        	};
 
+	        	// These variables are required for rotating the graph
+        		var startPositionX = null,
+        			targetRotationX = null;
+
+	        	var bindEvents = function() {
+	        		// mouse events
+	        		self._renderer.domElement.addEventListener("mousedown", function(e) {
+        			 	startPositionX = e.clientX-(window.innerWidth/2);
+	        			targetRotationX = 0;
+	        		}, false );
+
+        			self._renderer.domElement.addEventListener( "mousemove", function(e) {
+        				if (startPositionX) {
+	      	  				var mouseX = e.clientX-(window.innerWidth/2);
+
+	      	  				targetRotationX = (mouseX - startPositionX) * 0.02;
+	      	  			}
+			        }, false );
+
+			        self._renderer.domElement.addEventListener( "mouseup", function(e) {
+			        	startPositionX = null;
+	        			targetRotationX = null;
+			        }, false );
+        			
+        			self._renderer.domElement.removeEventListener( "mouseout", function(e) {
+			        	startPositionX = null;
+	        			targetRotationX = null;
+			        }, false );
+
+			        // touch events
+	        		self._renderer.domElement.addEventListener("touchstart", function(e) {
+				        if (e.touches.length == 1) {
+			                e.preventDefault();
+
+	        			 	startPositionX = e.touches[0].pageX-(window.innerWidth/2);
+		        			targetRotationX = 0;
+		        		}
+	        		}, false );
+
+        			self._renderer.domElement.addEventListener( "touchmove", function(e) {
+        				if (startPositionX) {
+					        if (e.touches.length == 1) {
+				                e.preventDefault();
+
+		      	  				var mouseX = e.touches[0].pageX-(window.innerWidth/2);
+		      	  				targetRotationX = (mouseX - startPositionX) * 0.05;
+		      	  			}
+	      	  			}
+			        }, false );
+
+			        self._renderer.domElement.addEventListener( "touchend", function(e) {
+			        	startPositionX = null;
+	        			targetRotationX = null;
+			        }, false );
+
+			        self._renderer.domElement.addEventListener( "touchcancel", function(e) {
+			        	startPositionX = null;
+	        			targetRotationX = null;
+			        }, false );
+	        	};
+
+	        	var update = function() {
+	        		if ((targetRotationX) && (graphObject)) graphObject.rotation.y += ( targetRotationX - graphObject.rotation.y ) * 0.1;
+	        	};
+
+				var startRenderScene = function() {
+					var render = function () {
+						requestAnimationFrame( render );
+
+						update();
+
+						self._renderer.render(self._scene, self._camera);
+					};
+
+					render();
+				};
+
         		this._container = document.getElementById(container);
 
         		this.createScene();
-
-        		// The actual graph object
-        		var graphObject = new THREE.Object3D();
 
         		// Give it a name just for simplicity
         		if ((options) && (options.name)) graphObject.name = options.name;
@@ -369,9 +438,12 @@
     			// If we don't have camera options then we'll try and determine the cameras lookat 
     			if ((!options) || (!options.lookAt)) calculateLookAt();
 
+    			// bind all mouse/touch events
+				if (!locked) bindEvents()
+
 				this.addCamera();
 
-        		if (this._camera) this.startRenderScene();
+        		if (this._camera) startRenderScene();
         	}
         }
     };
