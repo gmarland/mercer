@@ -15,6 +15,12 @@
         	_cameraY: 0,
         	_cameraZ: 0,
 
+        	// Camera lookatPositions
+
+        	_cameraLookatX: 0,
+        	_cameraLookatY: 0,
+        	_cameraLookatZ: 0,
+
         	// THREE layout
         	_scene: null,
         	_camera: null,
@@ -25,7 +31,7 @@
         		color: 0xffffff,
         		intensity: 1.0,
         		position: {
-        			x: 80,
+        			x: 200,
         			y: 300,
         			z: 590
         		}
@@ -33,6 +39,24 @@
 
         	//Skybox
         	_skyboxColor: 0xffffff,
+
+        	setGlobalOptions: function(options) {
+        		if (options) {
+        			if (options.background) this._skyboxColor = new THREE.Color(options.background);
+
+        			if (options.camera) {
+        				if (options.camera.x) this._cameraX = options.camera.x;
+        				if (options.camera.y) this._cameraY = options.camera.y;
+        				if (options.camera.z) this._cameraZ = options.camera.z;
+        			}
+
+        			if (options.lookAt) {
+        				if (options.lookAt.x) this._cameraLookatX = options.lookAt.x;
+        				if (options.lookAt.y) this._cameraLookatY = options.lookAt.y;
+        				if (options.lookAt.z) this._cameraLookatZ = options.lookAt.z;
+        			}
+        		}
+        	},
 
         	createScene: function() {
         		var containerWidth = parseInt(this._container.style.width,10), 
@@ -57,9 +81,11 @@
 
 				this._camera = new THREE.PerspectiveCamera(this._fov, this._aspectRatio, this._near, this._far);
 
-				if (this._cameraX) this._camera.position.x = this._cameraX;
-				if (this._cameraY) this._camera.position.y = this._cameraY;
-				if (this._cameraZ) this._camera.position.z = this._cameraZ;
+				this._camera.position.x = this._cameraX;
+				this._camera.position.y = this._cameraY;
+				this._camera.position.z = this._cameraZ;
+
+				this._camera.lookAt(new THREE.Vector3(this._cameraLookatX, this._cameraLookatY, this._cameraLookatZ));
         	},
 
 			startRenderScene: function() {
@@ -96,21 +122,21 @@
 				return base;
         	},
 
-        	bar: function(container, data, options) {
+        	bar: function(container, graphData, options) {
 				var self = this;
 
 				// This is the maximum value allowed to be reached before it starts to factor
 				var maxValueBeforeFactor = 150;
 
         		// Set up the basic configuration for the bar
-        		var barWidth = 15,
-        			barOpacity = 0.65,
-        			columnSpace = 10,
-        			rowSpace = 30,
-        			baseColor = 0xaaaaaa,
-        			baseEdge = 10,
-        			baseWidth = 200,
-        			baseLength = 200;
+        		var barWidth = 15, // the width of the bar
+        			barOpacity = 0.65, // how opaque the bars are
+        			columnSpace = 10, // the space between each column in a row
+        			rowSpace = 30, // the space between each row
+        			baseColor = 0xaaaaaa, // the color for the base of he
+        			baseEdge = 10, // the distance around the graphing area for the base
+        			baseWidth = 200, // the base width which will be show if no data is added
+        			baseLength = 200; // the base length which will be show if no data is added
 
         		// Allow the override using the options if they exist
         		if (options) {
@@ -134,13 +160,7 @@
 
         			if (options.baseLength) baseLength = options.baseLength;
 
-        			if (options.background) this._skyboxColor = new THREE.Color(options.background);
-
-        			if (options.camera) {
-        				if (options.camera.x) this._cameraX = 0;
-        				if (options.camera.y) this._cameraY = 0;
-        				if (options.camera.z) this._cameraZ = 0;
-        			}
+        			this.setGlobalOptions(options);
         		}
 
         		// The method to create the bar. Actually easier to plot the verticies than use available shapes
@@ -249,21 +269,26 @@
 
 					barObject.add(rightLine);
 
+					// Return the created bar
+
 					return barObject;
 				}
 				
-				// This attempts to find a camera position based on data
-				var calculateCamera = function(baseX, baseZ, maxBarHeight) {
-        			self._cameraX = (baseX);
-        			self._cameraY = (maxBarHeight+40);
-        			self._cameraZ = (baseZ+100);
+				// This attempts to find a camera position based on 
+				var calculateCamera = function() {
+        			self._cameraX = (baseWidth/2);
+        			self._cameraY = (maxValueBeforeFactor+40);
+        			self._cameraZ = ((baseLength/2)+100);
 
-        			self._far = (Math.max(baseX, baseZ, maxBarHeight)+1000)*2;
+        			self._far = (Math.max(self._cameraX, self._cameraY, self._cameraZ)+1000)*2;
 	        	};
 
-	        	var calculateLookAt = function(centerx, centerY, centerZ) {
-	        		if (self._camera) self._camera.lookAt(new THREE.Vector3(centerx,centerY,centerZ));
-	        	}
+	        	// Attempts to determine where the camera should be looking based on the graph settings
+	        	var calculateLookAt = function() {
+		        	self._cameraLookatX = 0;
+		        	self._cameraLookatY = maxValueBeforeFactor/2;
+		        	self._cameraLookatZ = 0;
+	        	};
 
         		this._container = document.getElementById(container);
 
@@ -277,15 +302,15 @@
         		else graphObject.name = "barGraph";
 
         		// Setting up the base plane for the bar chart (assuming that there is data)
-    			if (data) {
+    			if (graphData) {
     				// Get the length (the z axis)
-    				baseLength = (barWidth*data.length) + (rowSpace*data.length) - rowSpace + (baseEdge*2);
+    				baseLength = (barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (baseEdge*2);
 
     				// Figure out what the base length should be (the x axis)
     				var maxData = 0;
 
-    				for (var i=0; i<data.length; i++) {
-						if ((data[i].data) && (data[i].data.length > maxData)) maxData = data[i].data.length;
+    				for (var i=0; i<graphData.data.length; i++) {
+						if ((graphData.data[i].values) && (graphData.data[i].values.length > maxData)) maxData = graphData.data[i].values.length;
 					}
 
     				if (maxData) baseWidth = (barWidth*maxData) + (columnSpace*maxData) - columnSpace + (baseEdge*2);
@@ -298,11 +323,11 @@
 					factor = 1;
 
 				// check that we've have some data passed in
-				if (data) {
+				if (graphData) {
 					// First get the max value so we can factor values
-    				for (var i=0; i<data.length; i++) {
-    					for (var j=0; j<data[i].data.length; j++) {
-							if (data[i].data[j] > maxDataVal) maxDataVal = data[i].data[j];
+    				for (var i=0; i<graphData.data.length; i++) {
+    					for (var j=0; j<graphData.data[i].values.length; j++) {
+							if (graphData.data[i].values[j] > maxDataVal) maxDataVal = graphData.data[i].values[j];
     					}
 					}
 
@@ -311,23 +336,23 @@
 
 					maxDataVal = maxValueBeforeFactor;
 
-    				for (var i=0; i<data.length; i++) {
-    					for (var j=0; j<data[i].data.length; j++) {
-    						var percentageOfMax = data[i].data[j]/originalMaxValue;
+    				for (var i=0; i<graphData.data.length; i++) {
+    					for (var j=0; j<graphData.data[i].values.length; j++) {
+    						var percentageOfMax = graphData.data[i].values[j]/originalMaxValue;
 
-							data[i].data[j] = maxDataVal*percentageOfMax;			
+							graphData.data[i].values[j] = maxDataVal*percentageOfMax;			
     					}
 					}
 
-    				for (var i=0; i<data.length; i++) {
+    				for (var i=0; i<graphData.data.length; i++) {
     					// Figure out the color for the bar. Pick a random one is one isn't defined
     					var barColor = null;
 
-    					if (data[i].color) barColor = new THREE.Color(data[i].color);
+    					if (graphData.data[i].color) barColor = new THREE.Color(graphData.data[i].color);
     					else barColor = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
 
-    					for (var j=0; j<data[i].data.length; j++) {
-							graphObject.add(createBar(i, j, (data[i].data[j]/factor), barColor));
+    					for (var j=0; j<graphData.data[i].values.length; j++) {
+							graphObject.add(createBar(i, j, (graphData.data[i].values[j]/factor), barColor));
     					}
 					}
 				}
@@ -335,14 +360,16 @@
 				// Add the graph to the scene
 				this._scene.add(graphObject)
 
+				// We need to make the skybox big enough that it contains the graph but not so big that it goes beyond the _far setting
+        		this.createSkybox((Math.max(baseWidth, baseLength, maxValueBeforeFactor)+500)*2);
+
         		// If we don't have camera options then we'll try and determine the camera position 
-    			if ((!options) || (!options.camera)) calculateCamera((baseWidth/2), (baseLength/2), maxValueBeforeFactor);
+    			if ((!options) || (!options.camera)) calculateCamera();
+
+    			// If we don't have camera options then we'll try and determine the cameras lookat 
+    			if ((!options) || (!options.lookAt)) calculateLookAt();
 
 				this.addCamera();
-
-				calculateLookAt(0, maxValueBeforeFactor/2, 0);
-
-        		this.createSkybox(Math.max((baseWidth, baseLength, (maxDataVal/factor))+500)*2);
 
         		if (this._camera) this.startRenderScene();
         	}

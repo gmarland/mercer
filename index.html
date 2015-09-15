@@ -14,20 +14,22 @@
 	<body>
 		<div id="data-container", style="width:800px;height:600px;"></div>
 		<script type="text/javascript">
-			var barData = [
-				{
+			var barData = {
+				rowLabels: [ "one", "two", "three"],
+				columnLabels: [ "first", "second", "third", "forth", "fifth" ],
+				data: [{
 					color: "#0000ff",
-					data: [ 1,2,4,4,3,2 ]
+					values: [ 1,2,4,4,3,2 ]
 				},
 				{
 					color: "#ff0000",
-					data: [ 4,2,2,8, 1, 3 ]
+					values: [ 4,2,2,8, 1, 3 ]
 				},
 				{
 					color: "#00ff00",
-					data: [ 7,2,5,4,4,3 ]
-				}
-			];
+					values: [ 7,2,5,4,4,3 ]
+				}]
+			};
 
 			var tdv = new tdv();
 			tdv.bar("data-container", barData);
