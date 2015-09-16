@@ -123,17 +123,23 @@
 				// This is the maximum value allowed to be reached before it starts to factor
 				var maxValueBeforeFactor = 150;
 
+        		var targetRotationX = null; // used for rotations
+
         		// Set up the basic configuration for the bar
         		var barWidth = 15, // the width of the bar
         			barOpacity = 0.65, // how opaque the bars are
-        			columnSpace = 10, // the space between each column in a row
+        			viewBarLabels = false, // global setting, should bar labels be visible
+        			barLabelFont = "helvetiker", // the font for the row label
+        			barLabelSize = 6, // the font size for the row label
+        			barLabelColor = 0x000000, // the default color for the row label
         			rowSpace = 30, // the space between each row
         			rowLabelFont = "helvetiker", // the font for the row label
         			rowLabelSize = 6, // the font size for the row label
         			rowLabelColor = 0x000000, // the default color for the row label
-        			colLabelFont = "helvetiker", // the font for the col label
-        			colLabelSize = 6, // the font size for the col label
-        			colLabelColor = 0x000000, // the default color for the col label
+        			columnSpace = 10, // the space between each column in a row
+        			columnLabelFont = "helvetiker", // the font for the col label
+        			columnLabelSize = 6, // the font size for the col label
+        			columnLabelColor = 0x000000, // the default color for the col label
         			baseColor = 0xaaaaaa, // the color for the base
         			baseEdge = 10, // the distance around the graphing area for the base
         			baseWidth = 200, // the base width which will be show if no data is added
@@ -144,8 +150,7 @@
         			measurementLabelFont = "helvetiker", // the font for the measurement label
         			measurementLabelSize = 6, // the font size for the measurement label
         			measurementLabelColor = 0x000000, // the default color for the measurement label
-        			targetRotationX = null,
-        			startRotation = -0.4;
+        			startRotation = -0.4; // the default setting for rotation
 
         		// Allow the override using the options if they exist
         		if (options) {
@@ -154,10 +159,30 @@
         			if (options.barWidth) barWidth = options.barWidth;
 
         			if (options.barOpacity) barOpacity = options.barOpacity;
+
+        			if (options.viewBarLabels) viewBarLabels = options.viewBarLabels;
+
+        			if (options.barLabelFont) barLabelFont = options.barLabelFont;
+
+        			if (options.barLabelSize) barLabelSize = options.barLabelSize;
+
+        			if (options.barLabelColor) barLabelColor = options.barLabelColor;
         			
         			if (options.rowSpace) rowSpace = options.rowSpace;
 
+        			if (options.rowLabelFont) rowLabelFont = options.rowLabelFont;
+
+        			if (options.rowLabelSize) rowLabelSize = options.rowLabelSize;
+
+        			if (options.rowLabelColor) rowLabelColor = options.rowLabelColor;
+
         			if (options.columnSpace) columnSpace = options.columnSpace;
+
+        			if (options.columnLabelFont) columnLabelFont = options.columnLabelFont;
+
+        			if (options.columnLabelSize) columnLabelSize = options.columnLabelSize;
+
+        			if (options.columnLabelColor) columnLabelColor = options.columnLabelColor;
 
         			if (options.baseColor) baseColor = new THREE.Color(options.baseColor);
 
@@ -195,16 +220,16 @@
         			}
 
         			if (graphData.columnLabels) {
-	        			if (graphData.columnLabels.family) colLabelFont = graphData.columnLabels.family;
+	        			if (graphData.columnLabels.family) columnLabelFont = graphData.columnLabels.family;
 
-	        			if (graphData.columnLabels.size) colLabelSize = graphData.columnLabels.size;
+	        			if (graphData.columnLabels.size) columnLabelSize = graphData.columnLabels.size;
 
-	        			if (graphData.columnLabels.color) colLabelColor = new THREE.Color(graphData.columnLabels.color);
+	        			if (graphData.columnLabels.color) columnLabelColor = new THREE.Color(graphData.columnLabels.color);
         			}
         		}
 
         		// The method to create the bar. Actually easier to plot the verticies than use available shapes
-				var createBar = function(row, col, val, color) {						
+				var createBar = function(row, col, factoredValue, originalValue, color, viewLabels) {						
 	        		var barObject = new THREE.Object3D();
 
 					// First, calculate the bar geometry
@@ -224,11 +249,11 @@
 					barGeometry.vertices.push(new THREE.Vector3(xPos+(barWidth/2), 0, zPos-(barWidth/2)));
 					barGeometry.vertices.push(new THREE.Vector3(xPos+(barWidth/2), 0, zPos+(barWidth/2)));
 
-					barGeometry.vertices.push(new THREE.Vector3(xPos-(barWidth/2), val, zPos-(barWidth/2)));
-					barGeometry.vertices.push(new THREE.Vector3(xPos-(barWidth/2), val, zPos+(barWidth/2)));
+					barGeometry.vertices.push(new THREE.Vector3(xPos-(barWidth/2), factoredValue, zPos-(barWidth/2)));
+					barGeometry.vertices.push(new THREE.Vector3(xPos-(barWidth/2), factoredValue, zPos+(barWidth/2)));
 
-					barGeometry.vertices.push(new THREE.Vector3(xPos+(barWidth/2), val, zPos-(barWidth/2)));
-					barGeometry.vertices.push(new THREE.Vector3(xPos+(barWidth/2), val, zPos+(barWidth/2)));
+					barGeometry.vertices.push(new THREE.Vector3(xPos+(barWidth/2), factoredValue, zPos-(barWidth/2)));
+					barGeometry.vertices.push(new THREE.Vector3(xPos+(barWidth/2), factoredValue, zPos+(barWidth/2)));
 
 					// Add the faces
 					barGeometry.faces.push( new THREE.Face3( 0, 1, 4 ) );
@@ -263,8 +288,8 @@
 					// Generate the outlines
 					var front = new THREE.Geometry();
 					front.vertices.push(new THREE.Vector3(xPos-(barWidth/2), 0, zPos+(barWidth/2)));
-					front.vertices.push(new THREE.Vector3(xPos-(barWidth/2), val, zPos+(barWidth/2)));
-					front.vertices.push(new THREE.Vector3(xPos+(barWidth/2), val, zPos+(barWidth/2)));
+					front.vertices.push(new THREE.Vector3(xPos-(barWidth/2), factoredValue, zPos+(barWidth/2)));
+					front.vertices.push(new THREE.Vector3(xPos+(barWidth/2), factoredValue, zPos+(barWidth/2)));
 					front.vertices.push(new THREE.Vector3(xPos+(barWidth/2), 0, zPos+(barWidth/2)));
 
 					var frontLine = new THREE.Line(front, new THREE.LineBasicMaterial({
@@ -275,8 +300,8 @@
 
 					var back = new THREE.Geometry();
 					back.vertices.push(new THREE.Vector3(xPos-(barWidth/2), 0, zPos-(barWidth/2)));
-					back.vertices.push(new THREE.Vector3(xPos-(barWidth/2), val, zPos-(barWidth/2)));
-					back.vertices.push(new THREE.Vector3(xPos+(barWidth/2), val, zPos-(barWidth/2)));
+					back.vertices.push(new THREE.Vector3(xPos-(barWidth/2), factoredValue, zPos-(barWidth/2)));
+					back.vertices.push(new THREE.Vector3(xPos+(barWidth/2), factoredValue, zPos-(barWidth/2)));
 					back.vertices.push(new THREE.Vector3(xPos+(barWidth/2), 0, zPos-(barWidth/2)));
 
 					var backLine = new THREE.Line(back, new THREE.LineBasicMaterial({
@@ -287,8 +312,8 @@
 
 					var left = new THREE.Geometry();
 					left.vertices.push(new THREE.Vector3(xPos+(barWidth/2), 0, zPos+(barWidth/2)));
-					left.vertices.push(new THREE.Vector3(xPos+(barWidth/2), val, zPos+(barWidth/2)));
-					left.vertices.push(new THREE.Vector3(xPos+(barWidth/2), val, zPos-(barWidth/2)));
+					left.vertices.push(new THREE.Vector3(xPos+(barWidth/2), factoredValue, zPos+(barWidth/2)));
+					left.vertices.push(new THREE.Vector3(xPos+(barWidth/2), factoredValue, zPos-(barWidth/2)));
 					left.vertices.push(new THREE.Vector3(xPos+(barWidth/2), 0, zPos-(barWidth/2)));
 
 					var leftLine = new THREE.Line(left, new THREE.LineBasicMaterial({
@@ -299,8 +324,8 @@
 
 					var right = new THREE.Geometry();
 					right.vertices.push(new THREE.Vector3(xPos-(barWidth/2), 0, zPos+(barWidth/2)));
-					right.vertices.push(new THREE.Vector3(xPos-(barWidth/2), val, zPos+(barWidth/2)));
-					right.vertices.push(new THREE.Vector3(xPos-(barWidth/2), val, zPos-(barWidth/2)));
+					right.vertices.push(new THREE.Vector3(xPos-(barWidth/2), factoredValue, zPos+(barWidth/2)));
+					right.vertices.push(new THREE.Vector3(xPos-(barWidth/2), factoredValue, zPos-(barWidth/2)));
 					right.vertices.push(new THREE.Vector3(xPos-(barWidth/2), 0, zPos-(barWidth/2)));
 
 					var rightLine = new THREE.Line(right, new THREE.LineBasicMaterial({
@@ -309,6 +334,26 @@
 					}));
 
 					barObject.add(rightLine);
+
+					if (viewLabels) {
+						var valueGeometry = new THREE.TextGeometry(originalValue, {
+							font: barLabelFont,
+	    	 				size: barLabelSize,
+							height: .2
+						});
+						
+						var valueMesh = new THREE.Mesh(valueGeometry, new THREE.MeshBasicMaterial({
+							color: barLabelColor
+						}));
+
+						var valueArea = new THREE.Box3().setFromObject(valueMesh);
+
+						valueMesh.position.x = xPos-(valueArea.size().x/2);
+						valueMesh.position.y = factoredValue + 2;
+						valueMesh.position.z = zPos;
+
+						barObject.add(valueMesh);
+					}
 
 					graphObject.add(barObject);
 
@@ -361,13 +406,13 @@
 
 				var createColumnLabel = function(col, text) {
 					var textGeometry = new THREE.TextGeometry(text, {
-						font: colLabelFont,
-    	 				size: colLabelSize,
+						font: columnLabelFont,
+    	 				size: columnLabelSize,
 						height: .2
 					});
 					
 					var textMesh = new THREE.Mesh(textGeometry, new THREE.MeshBasicMaterial({
-						color: colLabelColor
+						color: columnLabelColor
 					}) );
 
 					textMesh.rotation.x = (Math.PI/2)*-1;
@@ -530,7 +575,7 @@
     				}
     				else if (graphData.data) baseLength = (barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (baseEdge*2);
 
-    				// Figure out what the base length should be (the x axis)
+    				// Figure out what the base width should be (the x axis)
     				var maxData = 0;
 
     				for (var i=0; i<graphData.data.length; i++) {
@@ -567,10 +612,12 @@
 					maxDataVal = maxValueBeforeFactor;
 
     				for (var i=0; i<graphData.data.length; i++) {
+    					graphData.data[i].factoredValues = [];
+
     					for (var j=0; j<graphData.data[i].values.length; j++) {
     						var percentageOfMax = graphData.data[i].values[j]/originalMaxValue;
 
-							graphData.data[i].values[j] = maxDataVal*percentageOfMax;			
+							graphData.data[i].factoredValues.push(maxDataVal*percentageOfMax);			
     					}
 					}
 
@@ -581,8 +628,12 @@
     					if (graphData.data[i].color) barColor = new THREE.Color(graphData.data[i].color);
     					else barColor = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
 
+    					// Local bar settings for labels overwrite global ones
+    					var makeBarsLabelsVisible = viewBarLabels;
+    					if (graphData.data[i].barLabelsVisible) makeBarsLabelsVisible = graphData.data[i].barLabelsVisible;
+
     					for (var j=0; j<graphData.data[i].values.length; j++) {
-							bars.push(createBar(i, j, graphData.data[i].values[j], barColor));
+							bars.push(createBar(i, j, graphData.data[i].factoredValues[j], graphData.data[i].values[j], barColor, makeBarsLabelsVisible));
     					}
 					}
 
