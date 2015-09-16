@@ -325,7 +325,7 @@
 						mesurementLineObject.add(measureLine);
 
 						var textGeometry = new THREE.TextGeometry(Math.round((maxDataValue/10)*i), {
-	    	 				size: 4,
+	    	 				size: 6,
 							height: .2
 						});
 						
@@ -394,9 +394,11 @@
 				
 				// This attempts to find a camera position based on 
 				var calculateCamera = function() {
-        			self._cameraX = (baseWidth/2);
+					var graphObjectArea = new THREE.Box3().setFromObject(graphObject);
+
+        			self._cameraX = (graphObjectArea.size().x/2);
         			self._cameraY = (maxValueBeforeFactor+40);
-        			self._cameraZ = ((baseLength/2)+100);
+        			self._cameraZ = (graphObjectArea.size().x/2)+(graphObjectArea.size().z);
 
         			self._far = (Math.max(self._cameraX, self._cameraY, self._cameraZ)+1000)*2;
 	        	};
