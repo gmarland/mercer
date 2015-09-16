@@ -182,7 +182,7 @@
         			if (options.measurementLabelSize) measurementLabelSize = options.measurementLabelSize;
 
         			if (options.measurementLabelColor) measurementLabelColor = new THREE.Color(options.measurementLabelColor);
-        			
+
         			if (options.startRotation) startRotation = options.startRotation;
 
         			this.setGlobalOptions(options);
@@ -429,7 +429,8 @@
 	        	};
 
 	        	// These variables are required for rotating the graph
-        		var startPositionX = null;
+        		var startPositionX = null,
+        			startRotationX = null;
 
 	        	var bindEvents = function() {
 	        		// mouse events
@@ -438,7 +439,7 @@
 	        			e.stopPropagation();
 
         			 	startPositionX = e.clientX-(window.innerWidth/2);
-	        			targetRotationX = 0;
+	        			startRotationX = graphObject.rotation.y;
 	        		}, false );
 
         			self._renderer.domElement.addEventListener( "mousemove", function(e) {
@@ -447,8 +448,7 @@
 
         				if (startPositionX) {
 	      	  				var mouseX = e.clientX-(window.innerWidth/2);
-
-	      	  				targetRotationX = (mouseX - startPositionX) * 0.02;
+	      	  				targetRotationX = startRotationX+(mouseX - startPositionX) * 0.02;
 	      	  			}
 			        }, false );
 
@@ -471,7 +471,7 @@
 			                e.preventDefault();
 
 	        			 	startPositionX = e.touches[0].pageX-(window.innerWidth/2);
-		        			targetRotationX = 0;
+	        				startRotationX = graphObject.rotation.y;
 		        		}
 	        		}, false );
 
@@ -498,7 +498,11 @@
 	        	};
 
 	        	var update = function() {
-	        		if ((targetRotationX) && (graphObject)) graphObject.rotation.y += ( targetRotationX - graphObject.rotation.y ) * 0.1;
+	        		if ((targetRotationX) && (graphObject)) {
+	        			var newRotation = ( targetRotationX - graphObject.rotation.y ) * 0.1;
+
+	        			graphObject.rotation.y += newRotation;
+	        		}
 	        	};
 
 				var startRenderScene = function() {
