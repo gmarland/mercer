@@ -428,11 +428,11 @@
 		        	self._cameraLookatZ = 0;
 	        	};
 
-	        	// These variables are required for rotating the graph
-        		var startPositionX = null,
-        			startRotationX = null;
-
 	        	var bindEvents = function() {
+		        	// These variables are required for rotating the graph
+	        		var startPositionX = null,
+	        			startRotationX = null;
+
 	        		// mouse events
 	        		self._renderer.domElement.addEventListener("mousedown", function(e) {
 	        			e.preventDefault();
