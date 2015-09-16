@@ -166,7 +166,7 @@
 
         			if (options.barLabelSize) barLabelSize = options.barLabelSize;
 
-        			if (options.barLabelColor) barLabelColor = options.barLabelColor;
+        			if (options.barLabelColor) barLabelColor = new THREE.Color(options.barLabelColor);
         			
         			if (options.rowSpace) rowSpace = options.rowSpace;
 
@@ -174,7 +174,7 @@
 
         			if (options.rowLabelSize) rowLabelSize = options.rowLabelSize;
 
-        			if (options.rowLabelColor) rowLabelColor = options.rowLabelColor;
+        			if (options.rowLabelColor) rowLabelColor = new THREE.Color(options.rowLabelColor);
 
         			if (options.columnSpace) columnSpace = options.columnSpace;
 
@@ -182,7 +182,7 @@
 
         			if (options.columnLabelSize) columnLabelSize = options.columnLabelSize;
 
-        			if (options.columnLabelColor) columnLabelColor = options.columnLabelColor;
+        			if (options.columnLabelColor) columnLabelColor = new THREE.Color(options.columnLabelColor);
 
         			if (options.baseColor) baseColor = new THREE.Color(options.baseColor);
 
