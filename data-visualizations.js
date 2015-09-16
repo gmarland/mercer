@@ -117,6 +117,9 @@
         		// The actual graph object
         		var graphObject = new THREE.Object3D();
 
+        		// The bars to the graph
+        		var bars = [];
+
 				// This is the maximum value allowed to be reached before it starts to factor
 				var maxValueBeforeFactor = 150;
 
@@ -135,7 +138,9 @@
         			baseEdge = 10, // the distance around the graphing area for the base
         			baseWidth = 200, // the base width which will be show if no data is added
         			baseLength = 200, // the base length which will be show if no data is added
-        			locked = false; // whether or not to allow the rotation of the graph
+        			locked = false, // whether or not to allow the rotation of the graph
+        			showMeasurementLines = true, // whether or not to show measurement lines
+        			measurementLineColor = 0x222222; // the default color of the measurement liness
 
         		// Allow the override using the options if they exist
         		if (options) {
@@ -158,6 +163,10 @@
         			if (options.baseLength) baseLength = options.baseLength;
 
         			if (options.locked) locked = options.locked;
+
+        			if (options.showMeasurementLines) locked = options.showMeasurementLines;
+
+        			if (options.measurementLineColor) locked = options.measurementLineColor;
 
         			this.setGlobalOptions(options);
         		}
@@ -288,9 +297,29 @@
 
 					barObject.add(rightLine);
 
+					graphObject.add(barObject);
+
 					// Return the created bar
 
 					return barObject;
+				};
+
+				var createMeasurementsLines = function(maxDataValue) {
+					var stepsEachLine = Math.ceil(maxValueBeforeFactor/10);
+
+					for (var i=1; i<=10; i++) {
+						var measureLineGeometry = new THREE.Geometry();
+						measureLineGeometry.vertices.push(new THREE.Vector3((baseWidth/2)*-1, (stepsEachLine*i), (baseLength/2)));
+						measureLineGeometry.vertices.push(new THREE.Vector3((baseWidth/2)*-1, (stepsEachLine*i), (baseLength/2)*-1));
+						measureLineGeometry.vertices.push(new THREE.Vector3((baseWidth/2), (stepsEachLine*i), (baseLength/2)*-1));
+
+						var measureLine = new THREE.Line(measureLineGeometry, new THREE.LineBasicMaterial({
+							color: measurementLineColor,
+							side: THREE.DoubleSide
+						}));
+
+						graphObject.add(measureLine);
+					}
 				};
 
 				var createColumnLabel = function(col, text) {
@@ -314,7 +343,7 @@
 					textMesh.position.x = (baseWidth/2)*-1;
 					textMesh.position.x += (baseEdge + (barWidth/2) + (textBoxArea.size().x/2)) + (col*columnSpace) + (col*barWidth);
 
-					return textMesh;
+					graphObject.add(textMesh);
 				};
 
 				var createRowLabel = function(row, text) {
@@ -337,7 +366,7 @@
 					textMesh.position.z -= (baseLength/2);
 					textMesh.position.z += baseEdge + (barWidth/2) + (row*rowSpace) + (row*barWidth) + (textBoxArea.size().z/2);
 
-					return textMesh;
+					graphObject.add(textMesh);
 				};
 				
 				// This attempts to find a camera position based on 
@@ -502,21 +531,23 @@
     					else barColor = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
 
     					for (var j=0; j<graphData.data[i].values.length; j++) {
-							graphObject.add(createBar(i, j, graphData.data[i].values[j], barColor));
+							bars.push(createBar(i, j, graphData.data[i].values[j], barColor));
     					}
 					}
 
 					if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
 						for (var i=0; i<graphData.rowLabels.values.length; i++) {
-							graphObject.add(createRowLabel(i, graphData.rowLabels.values[i]));
+							createRowLabel(i, graphData.rowLabels.values[i]);
 						}
 					}
 
 					if ((graphData.columnLabels) && (graphData.columnLabels.values)) {
 	    				for (var i=0; i<graphData.columnLabels.values.length; i++) {
-	    					graphObject.add(createColumnLabel(i, graphData.columnLabels.values[i]));
+	    					createColumnLabel(i, graphData.columnLabels.values[i]);
 						}
 					}
+
+					if (showMeasurementLines) createMeasurementsLines(maxValueBeforeFactor);
 				}
 
 				// Add the graph to the scene
