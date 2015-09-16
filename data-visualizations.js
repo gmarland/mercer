@@ -305,9 +305,13 @@
 				};
 
 				var createMeasurementsLines = function(maxDataValue) {
+					if (originalMaxValue < 10) maxDataValue = 10;
+
 					var stepsEachLine = Math.ceil(maxValueBeforeFactor/10);
 
 					for (var i=1; i<=10; i++) {
+						var mesurementLineObject = new THREE.Object3D();
+
 						var measureLineGeometry = new THREE.Geometry();
 						measureLineGeometry.vertices.push(new THREE.Vector3((baseWidth/2)*-1, (stepsEachLine*i), (baseLength/2)));
 						measureLineGeometry.vertices.push(new THREE.Vector3((baseWidth/2)*-1, (stepsEachLine*i), (baseLength/2)*-1));
@@ -318,7 +322,26 @@
 							side: THREE.DoubleSide
 						}));
 
-						graphObject.add(measureLine);
+						mesurementLineObject.add(measureLine);
+
+						var textGeometry = new THREE.TextGeometry(Math.round((maxDataValue/10)*i), {
+	    	 				size: 4,
+							height: .2
+						});
+						
+						var textMesh = new THREE.Mesh(textGeometry, new THREE.MeshBasicMaterial({
+							color: 0x000000
+						}));
+
+						var textBoxArea = new THREE.Box3().setFromObject(textMesh);
+
+						textMesh.position.x += ((baseWidth/2)+5);
+						textMesh.position.y += ((stepsEachLine*i)-(textBoxArea.size().y/2));
+						textMesh.position.z -= (baseLength/2);
+
+						mesurementLineObject.add(textMesh);
+
+						graphObject.add(mesurementLineObject);
 					}
 				};
 
@@ -547,7 +570,7 @@
 						}
 					}
 
-					if (showMeasurementLines) createMeasurementsLines(maxValueBeforeFactor);
+					if (showMeasurementLines) createMeasurementsLines(originalMaxValue);
 				}
 
 				// Add the graph to the scene
