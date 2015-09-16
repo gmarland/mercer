@@ -154,60 +154,62 @@
 
         		// Allow the override using the options if they exist
         		if (options) {
-        			if (options.maxValueBeforeFactor) maxValueBeforeFactor = options.maxValueBeforeFactor;
+        			if (options.maxValueBeforeFactor !== undefined) maxValueBeforeFactor = options.maxValueBeforeFactor;
 
-        			if (options.barWidth) barWidth = options.barWidth;
+        			if (options.barWidth !== undefined) barWidth = options.barWidth;
 
-        			if (options.barOpacity) barOpacity = options.barOpacity;
+        			if (options.barOpacity !== undefined) barOpacity = options.barOpacity;
 
-        			if (options.viewBarLabels) viewBarLabels = options.viewBarLabels;
+        			if (options.viewBarLabels !== undefined) viewBarLabels = options.viewBarLabels;
 
-        			if (options.barLabelFont) barLabelFont = options.barLabelFont;
+        			if (options.barLabelFont !== undefined) barLabelFont = options.barLabelFont;
 
-        			if (options.barLabelSize) barLabelSize = options.barLabelSize;
+        			if (options.barLabelSize !== undefined) barLabelSize = options.barLabelSize;
 
-        			if (options.barLabelColor) barLabelColor = new THREE.Color(options.barLabelColor);
+        			if (options.barLabelColor !== undefined) barLabelColor = new THREE.Color(options.barLabelColor);
         			
-        			if (options.rowSpace) rowSpace = options.rowSpace;
+        			if (options.rowSpace !== undefined) rowSpace = options.rowSpace;
 
-        			if (options.rowLabelFont) rowLabelFont = options.rowLabelFont;
+        			if (options.rowLabelFont !== undefined) rowLabelFont = options.rowLabelFont;
 
-        			if (options.rowLabelSize) rowLabelSize = options.rowLabelSize;
+        			if (options.rowLabelSize !== undefined) rowLabelSize = options.rowLabelSize;
 
-        			if (options.rowLabelColor) rowLabelColor = new THREE.Color(options.rowLabelColor);
+        			if (options.rowLabelColor !== undefined) rowLabelColor = new THREE.Color(options.rowLabelColor);
 
-        			if (options.columnSpace) columnSpace = options.columnSpace;
+        			if (options.columnSpace !== undefined) columnSpace = options.columnSpace;
 
-        			if (options.columnLabelFont) columnLabelFont = options.columnLabelFont;
+        			if (options.columnLabelFont !== undefined) columnLabelFont = options.columnLabelFont;
 
-        			if (options.columnLabelSize) columnLabelSize = options.columnLabelSize;
+        			if (options.columnLabelSize !== undefined) columnLabelSize = options.columnLabelSize;
 
-        			if (options.columnLabelColor) columnLabelColor = new THREE.Color(options.columnLabelColor);
+        			if (options.columnLabelColor !== undefined) columnLabelColor = new THREE.Color(options.columnLabelColor);
 
-        			if (options.baseColor) baseColor = new THREE.Color(options.baseColor);
+        			if (options.baseColor !== undefined) baseColor = new THREE.Color(options.baseColor);
 
-        			if (options.baseEdge) baseEdge = options.baseEdge;
+        			if (options.baseEdge !== undefined) baseEdge = options.baseEdge;
 
-        			if (options.baseWidth) baseWidth = options.baseWidth;
+        			if (options.baseWidth !== undefined) baseWidth = options.baseWidth;
 
-        			if (options.baseLength) baseLength = options.baseLength;
+        			if (options.baseLength !== undefined) baseLength = options.baseLength;
 
-        			if (options.locked) locked = options.locked;
+        			if (options.locked !== undefined) locked = options.locked;
 
-        			if (options.showMeasurementLines) showMeasurementLines = options.showMeasurementLines;
+        			if (options.showMeasurementLines !== undefined) showMeasurementLines = options.showMeasurementLines;
 
-        			if (options.measurementLineColor) measurementLineColor = new THREE.Color(options.measurementLineColor);
+        			if (options.measurementLineColor !== undefined) measurementLineColor = new THREE.Color(options.measurementLineColor);
 
-        			if (options.measurementLabelFont) measurementLabelFont = options.measurementLabelFont;
+        			if (options.measurementLabelFont !== undefined) measurementLabelFont = options.measurementLabelFont;
 
-        			if (options.measurementLabelSize) measurementLabelSize = options.measurementLabelSize;
+        			if (options.measurementLabelSize !== undefined) measurementLabelSize = options.measurementLabelSize;
 
-        			if (options.measurementLabelColor) measurementLabelColor = new THREE.Color(options.measurementLabelColor);
+        			if (options.measurementLabelColor !== undefined) measurementLabelColor = new THREE.Color(options.measurementLabelColor);
 
-        			if (options.startRotation) startRotation = options.startRotation;
+        			if (options.startRotation !== undefined) startRotation = options.startRotation;
 
         			this.setGlobalOptions(options);
         		}
+
+        		console.log((options.barOpacity))
 
         		// Update label fonts. Do it here just so all things are configured in the same place
         		if (graphData) {
@@ -563,7 +565,7 @@
         		this.createScene();
 
         		// Give it a name just for simplicity
-        		if ((options) && (options.name)) graphObject.name = options.name;
+        		if ((graphData) && (graphData.name)) graphObject.name = graphData.name;
         		else graphObject.name = "barGraph";
 
         		// Setting up the base plane for the bar chart (assuming that there is data)
@@ -625,12 +627,12 @@
     					// Figure out the color for the bar. Pick a random one is one isn't defined
     					var barColor = null;
 
-    					if (graphData.data[i].color) barColor = new THREE.Color(graphData.data[i].color);
+    					if (graphData.data[i].color !== undefined) barColor = new THREE.Color(graphData.data[i].color);
     					else barColor = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
 
     					// Local bar settings for labels overwrite global ones
     					var makeBarsLabelsVisible = viewBarLabels;
-    					if (graphData.data[i].barLabelsVisible) makeBarsLabelsVisible = graphData.data[i].barLabelsVisible;
+    					if (graphData.data[i].barLabelsVisible !== undefined) makeBarsLabelsVisible = graphData.data[i].barLabelsVisible;
 
     					for (var j=0; j<graphData.data[i].values.length; j++) {
 							bars.push(createBar(i, j, graphData.data[i].factoredValues[j], graphData.data[i].values[j], barColor, makeBarsLabelsVisible));

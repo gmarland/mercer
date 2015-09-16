@@ -8,9 +8,9 @@
 		<meta http-equiv="Expires" content="-1">
 		<meta name="viewport" content="width=device-width,initial-scale=1">
 		<title>Data Visualize</title>
-		<script type="text/javascript" src="/assets/libs/three.min.js"></script>
+		<script type="text/javascript" src="assets/libs/three.min.js"></script>
 		<script type="text/javascript" src="http://mrdoob.github.com/three.js/examples/fonts/helvetiker_regular.typeface.js"></script>
-		<script type="text/javascript" src="/data-visualizations.js"></script>
+		<script type="text/javascript" src="data-visualizations.js"></script>
     </head>
 	<body>
 		<div id="data-container", style="width:1000px;height:800px;"></div>
@@ -38,13 +38,13 @@
 				},
 				{
 					color: "#00ff00",
-					barLabelsVisible: true,
+					barLabelsVisible: false,
 					values: [ 7, 2, 5, 4, 4, 3, 20, 80, 10, 30, 20, 90 ]
 				}]
 			};
 
 			var tdv = new tdv();
-			tdv.bar("data-container", barData );
+			tdv.bar("data-container", barData, { viewBarLabels: false, showMeasurementLines: false });
 		</script>
 	</body>
 </html>
