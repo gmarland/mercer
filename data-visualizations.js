@@ -140,7 +140,10 @@
         			baseLength = 200, // the base length which will be show if no data is added
         			locked = false, // whether or not to allow the rotation of the graph
         			showMeasurementLines = true, // whether or not to show measurement lines
-        			measurementLineColor = 0x222222; // the default color of the measurement liness
+        			measurementLineColor = 0x222222, // the default color of the measurement lines
+        			measurementLabelFont = "helvetiker", // the font for the measurement label
+        			measurementLabelSize = 6, // the font size for the measurement label
+        			measurementLabelColor = 0x000000; // the default color for the measurement label
 
         		// Allow the override using the options if they exist
         		if (options) {
@@ -164,9 +167,15 @@
 
         			if (options.locked) locked = options.locked;
 
-        			if (options.showMeasurementLines) locked = options.showMeasurementLines;
+        			if (options.showMeasurementLines) showMeasurementLines = options.showMeasurementLines;
 
-        			if (options.measurementLineColor) locked = options.measurementLineColor;
+        			if (options.measurementLineColor) measurementLineColor = new THREE.Color(options.measurementLineColor);
+
+        			if (options.measurementLabelFont) measurementLabelFont = options.measurementLabelFont;
+
+        			if (options.measurementLabelSize) measurementLabelSize = options.measurementLabelSize;
+
+        			if (options.measurementLabelColor) measurementLabelColor = new THREE.Color(options.measurementLabelColor);
 
         			this.setGlobalOptions(options);
         		}
@@ -325,12 +334,13 @@
 						mesurementLineObject.add(measureLine);
 
 						var textGeometry = new THREE.TextGeometry(Math.round((maxDataValue/10)*i), {
-	    	 				size: 6,
+							font: measurementLabelFont,
+	    	 				size: measurementLabelSize,
 							height: .2
 						});
 						
 						var textMesh = new THREE.Mesh(textGeometry, new THREE.MeshBasicMaterial({
-							color: 0x000000
+							color: measurementLabelColor
 						}));
 
 						var textBoxArea = new THREE.Box3().setFromObject(textMesh);
@@ -417,11 +427,17 @@
 	        	var bindEvents = function() {
 	        		// mouse events
 	        		self._renderer.domElement.addEventListener("mousedown", function(e) {
+	        			e.preventDefault();
+	        			e.stopPropagation();
+
         			 	startPositionX = e.clientX-(window.innerWidth/2);
 	        			targetRotationX = 0;
 	        		}, false );
 
         			self._renderer.domElement.addEventListener( "mousemove", function(e) {
+	        			e.preventDefault();
+	        			e.stopPropagation();
+
         				if (startPositionX) {
 	      	  				var mouseX = e.clientX-(window.innerWidth/2);
 
@@ -430,6 +446,9 @@
 			        }, false );
 
 			        self._renderer.domElement.addEventListener( "mouseup", function(e) {
+	        			e.preventDefault();
+	        			e.stopPropagation();
+
 			        	startPositionX = null;
 	        			targetRotationX = null;
 			        }, false );
