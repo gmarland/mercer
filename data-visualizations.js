@@ -110,6 +110,10 @@
 				return base;
         	},
 
+        	degreesToRadians: function(degrees) {
+			  return degrees * Math.PI / 180;
+			},
+
         	// Calling will create a standard bar chart
         	bar: function(container, graphData, options) {
 				var self = this;
@@ -143,7 +147,9 @@
         			measurementLineColor = 0x222222, // the default color of the measurement lines
         			measurementLabelFont = "helvetiker", // the font for the measurement label
         			measurementLabelSize = 6, // the font size for the measurement label
-        			measurementLabelColor = 0x000000; // the default color for the measurement label
+        			measurementLabelColor = 0x000000, // the default color for the measurement label
+        			targetRotationX = null,
+        			startRotation = -0.4;
 
         		// Allow the override using the options if they exist
         		if (options) {
@@ -176,6 +182,8 @@
         			if (options.measurementLabelSize) measurementLabelSize = options.measurementLabelSize;
 
         			if (options.measurementLabelColor) measurementLabelColor = new THREE.Color(options.measurementLabelColor);
+        			
+        			if (options.startRotation) startRotation = options.startRotation;
 
         			this.setGlobalOptions(options);
         		}
@@ -406,8 +414,8 @@
 				var calculateCamera = function() {
 					var graphObjectArea = new THREE.Box3().setFromObject(graphObject);
 
-        			self._cameraX = (graphObjectArea.size().x/2);
-        			self._cameraY = (maxValueBeforeFactor+40);
+        			self._cameraX = 0;
+        			self._cameraY = (maxValueBeforeFactor);
         			self._cameraZ = (graphObjectArea.size().x/2)+(graphObjectArea.size().z);
 
         			self._far = (Math.max(self._cameraX, self._cameraY, self._cameraZ)+1000)*2;
@@ -421,8 +429,7 @@
 	        	};
 
 	        	// These variables are required for rotating the graph
-        		var startPositionX = null,
-        			targetRotationX = null;
+        		var startPositionX = null;
 
 	        	var bindEvents = function() {
 	        		// mouse events
@@ -595,7 +602,7 @@
 				}
 
 				// Add the graph to the scene
-				this._scene.add(graphObject)
+				this._scene.add(graphObject);
 
 				// We need to make the skybox big enough that it contains the graph but not so big that it goes beyond the _far setting
         		this.createSkybox((Math.max(baseWidth, baseLength, maxValueBeforeFactor)+500)*2);
@@ -605,6 +612,9 @@
 
     			// If we don't have camera options then we'll try and determine the cameras lookat 
     			if ((!options) || (!options.lookAt)) calculateLookAt();
+
+				// Set the initial rotation
+				if (startRotation) graphObject.rotation.y = startRotation;
 
     			// bind all mouse/touch events
 				if (!locked) bindEvents()
