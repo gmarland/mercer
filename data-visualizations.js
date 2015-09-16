@@ -110,10 +110,6 @@
 				return base;
         	},
 
-        	degreesToRadians: function(degrees) {
-			  return degrees * Math.PI / 180;
-			},
-
         	// Calling will create a standard bar chart
         	bar: function(container, graphData, options) {
 				var self = this;
