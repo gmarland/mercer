@@ -150,7 +150,7 @@
         			measurementLabelFont = "helvetiker", // the font for the measurement label
         			measurementLabelSize = 6, // the font size for the measurement label
         			measurementLabelColor = 0x000000, // the default color for the measurement label
-        			startRotation = -0.45; // the default setting for rotation
+        			startRotation = -0.65; // the default setting for rotation
 
         		// Allow the override using the options if they exist
         		if (options) {
