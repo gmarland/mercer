@@ -34,17 +34,18 @@
 				},
 				{
 					color: "#ff0000",
-					values: [ 40, 20, 20, 80, 10, 30, 20, 20, 80, 10, 30, 10 ]
+					values: [ 30, 20, 20, 80, 10, 30, 20, 20, 80, 10, 30, 10 ]
 				},
 				{
 					color: "#00ff00",
-					barLabelsVisible: false,
+					barLabelsVisible: true,
 					values: [ 7, 2, 5, 4, 4, 3, 20, 80, 10, 30, 20, 90 ]
 				}]
 			};
 
 			var tdv = new tdv();
-			tdv.bar("data-container", barData, { viewBarLabels: false, showMeasurementLines: false });
+			//tdv.bar("data-container", barData);
+			tdv.area("data-container", barData, { showMeasurementLines: true });
 		</script>
 	</body>
 </html>
