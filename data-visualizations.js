@@ -22,7 +22,7 @@
         	_cameraLookatZ: 0,
 
 			// Default setting for rotation
-        	_startRotation: -0.65,
+        	_startRotation: 0,
 
         	// THREE layout
         	_scene: null,
@@ -178,7 +178,7 @@
 			},
 
         	// Calling will create a standard ares chart
-        	area: function(container, graphData, options) {
+        	AreaChart: function(container, graphData, options) {
 				var self = this;
 
         		// The actual graph object
@@ -190,51 +190,214 @@
 				// This is the maximum value allowed to be reached before it starts to factor
 				var maxDataValBeforeFactor = 150;
 
-        		var areaWidth = 5,
+        		var targetRotationX = null; // used for rotations
+
+        		var areaWidth = 4,
         			baseEdge = 10, // the distance around the graphing area for the base
         			baseWidth = 200, // the base width which will be show if no data is added
         			baseLength = 200, // the base length which will be show if no data is added
         			baseColor = 0xaaaaaa, // the color for the base
         			rowSpace = 30, // the space between each row
-        			pointSpace = 10, // the space between each column in a row
+        			rowLabelFont = "helvetiker", // the font for the row label
+        			rowLabelSize = 4, // the font size for the row label
+        			rowLabelColor = 0x000000, // the default color for the row label
+        			pointSpace = 15, // the space between each column in a row
+        			locked = false, // whether or not to allow the rotation of the graph
         			showMeasurementLines = true, // whether or not to show measurement lines
         			measurementLineColor = 0x222222, // the default color of the measurement lines
         			measurementLabelFont = "helvetiker", // the font for the measurement label
-        			measurementLabelSize = 6, // the font size for the measurement label
+        			measurementLabelSize = 2.5, // the font size for the measurement label
         			measurementLabelColor = 0x000000; // the default color for the measurement label
 
 
         		// The method to create the bar. Actually easier to plot the verticies than use available shapes
-				var createAreaGraph = function(row, factoredValues, originalValues, color) {
+				var createAreaGraph = function(row, factoredValues, originalValues, color) {	
+	        		var areaObject = new THREE.Object3D();
+
 					var xPosStart = (((baseWidth/2)*-1) + baseEdge), // this is our zero
 						zPosStart = (((baseLength/2)*-1) + baseEdge);
+
+					var frontVertices = [],
+						backVertices = [];
 
 					var areaGeometry = new THREE.Geometry();
 
 					// create the front verticies
 
-					areaGeometry.vertices.push(new THREE.Vector3(xPosStart, 0, zPosStart+(row*rowSpace)+(areaWidth/2))); // initial point
-
 					for (var i=0; i<factoredValues.length; i++) {
-						areaGeometry.vertices.push(new THREE.Vector3(xPosStart+(i*pointSpace), factoredValues[i], zPosStart+(row*rowSpace)+(areaWidth/2)));
+						frontVertices.push(new THREE.Vector3(xPosStart+(i*pointSpace), 0, zPosStart+(row*rowSpace)+(row*areaWidth)+(areaWidth/2)));
+						frontVertices.push(new THREE.Vector3(xPosStart+(i*pointSpace), factoredValues[i], zPosStart+(row*rowSpace)+(row*areaWidth)+(areaWidth/2)));
+						backVertices.push(new THREE.Vector3(xPosStart+(i*pointSpace), 0, zPosStart+(row*rowSpace)+(row*areaWidth)-(areaWidth/2)));
+						backVertices.push(new THREE.Vector3(xPosStart+(i*pointSpace), factoredValues[i], zPosStart+(row*rowSpace)+(row*areaWidth)-(areaWidth/2)));
 					}
 
-					areaGeometry.vertices.push(new THREE.Vector3(xPosStart+((factoredValues.length-1)*pointSpace), 0, zPosStart+(row*rowSpace)+(areaWidth/2))); // end point
-
-					// create the back verticies
-
-					areaGeometry.vertices.push(new THREE.Vector3(xPosStart, 0, zPosStart+(row*rowSpace)-(areaWidth/2))); // initial point
-
-					for (var i=0; i<factoredValues.length; i++) {
-						areaGeometry.vertices.push(new THREE.Vector3(xPosStart+(i*pointSpace), factoredValues[i], zPosStart+(row*rowSpace)-(areaWidth/2)));
+					for (var i=0; i<frontVertices.length; i++) {
+						areaGeometry.vertices.push(frontVertices[i]);
 					}
 
-					areaGeometry.vertices.push(new THREE.Vector3(xPosStart+((factoredValues.length-1)*pointSpace), 0, zPosStart+(row*rowSpace)-(areaWidth/2))); // end point
+					for (var i=0; i<backVertices.length; i++) {
+						areaGeometry.vertices.push(backVertices[i]);
+					}
+
+					// Add the front face
+					for (var i=0; i<frontVertices.length-2; i+=2) {
+						areaGeometry.faces.push( new THREE.Face3( i, (i+1), (i+3) ) );
+						areaGeometry.faces.push( new THREE.Face3( i, (i+2), (i+3) ) );
+					}
+
+					// Add the back face
+					for (var i=frontVertices.length; i<(frontVertices.length+backVertices.length)-2; i+=2) {
+						areaGeometry.faces.push( new THREE.Face3( i, (i+1), (i+3) ) );
+						areaGeometry.faces.push( new THREE.Face3( i, (i+2), (i+3) ) );
+					}
+						
+					// add the opening face
+					areaGeometry.faces.push( new THREE.Face3( 0, (frontVertices.length), (frontVertices.length+1) ) );
+					areaGeometry.faces.push( new THREE.Face3( 0, 1, (frontVertices.length+1) ) );
+
+					// Add the joining face
+					for (var i=0; i<frontVertices.length-2; i+=2) {
+						areaGeometry.faces.push( new THREE.Face3( (i+1), (i+3), (i+(frontVertices.length+3)) ) );
+						areaGeometry.faces.push( new THREE.Face3( (i+1), (i+(frontVertices.length+1)), (i+(frontVertices.length+3)) ) );
+					}
+
+					// add the end face
+					areaGeometry.faces.push( new THREE.Face3( (frontVertices.length-2), (frontVertices.length-1), (frontVertices.length+backVertices.length-2) ) );
+					areaGeometry.faces.push( new THREE.Face3( (frontVertices.length-1), (frontVertices.length+backVertices.length-1), (frontVertices.length+backVertices.length-2) ) );
+
+					areaGeometry.computeFaceNormals();
+
+					var areaMesh = new THREE.Mesh(areaGeometry, new THREE.MeshLambertMaterial({
+						color: color, 
+						side: THREE.DoubleSide,
+						transparent: true,
+						opacity: 0.65
+					}));
+
+					areaObject.add(areaMesh);
+
+					// Generate the outline
+					var areaLineGeometry = new THREE.Geometry();
+					for (var i=0; i<factoredValues.length; i++) {
+						areaLineGeometry.vertices.push(new THREE.Vector3(xPosStart+(i*pointSpace), factoredValues[i], zPosStart+(row*rowSpace)+(row*areaWidth)+(areaWidth/2)));
+					}
+
+					var areaLine = new THREE.Line(areaLineGeometry, new THREE.LineBasicMaterial({
+						color: color
+					}));
+
+					areaObject.add(areaLine);
+
+					graphObject.add(areaObject);
+
+					return areaObject;
 				};
+
+				var createRowLabel = function(row, text) {
+					var textGeometry = new THREE.TextGeometry(text, {
+						font: rowLabelFont,
+    	 				size: rowLabelSize,
+						height: .2
+					});
+					
+					var textMesh = new THREE.Mesh( textGeometry, new THREE.MeshBasicMaterial({
+						color: rowLabelColor
+					}) );
+
+					textMesh.rotation.x = (Math.PI/2)*-1;
+
+					var textBoxArea = new THREE.Box3().setFromObject(textMesh);
+
+					textMesh.position.x += (baseWidth/2) + 3;
+
+					textMesh.position.z -= (baseLength/2);
+					textMesh.position.z += baseEdge + (row*rowSpace) + (row*areaWidth) + (textBoxArea.size().z/2);
+
+					graphObject.add(textMesh);
+				};
+
+	        	var bindEvents = function() {
+		        	// These variables are required for rotating the graph
+	        		var startPositionX = null,
+	        			startRotationX = null;
+
+	        		// mouse events
+	        		self._renderer.domElement.addEventListener("mousedown", function(e) {
+	        			e.preventDefault();
+	        			e.stopPropagation();
+
+        			 	startPositionX = e.clientX-(window.innerWidth/2);
+	        			startRotationX = graphObject.rotation.y;
+	        		}, false );
+
+        			self._renderer.domElement.addEventListener( "mousemove", function(e) {
+	        			e.preventDefault();
+	        			e.stopPropagation();
+
+        				if (startPositionX) {
+	      	  				var mouseX = e.clientX-(window.innerWidth/2);
+	      	  				targetRotationX = startRotationX+(mouseX - startPositionX) * 0.02;
+	      	  			}
+			        }, false );
+
+			        self._renderer.domElement.addEventListener( "mouseup", function(e) {
+	        			e.preventDefault();
+	        			e.stopPropagation();
+
+			        	startPositionX = null;
+	        			targetRotationX = null;
+			        }, false );
+        			
+        			self._renderer.domElement.removeEventListener( "mouseout", function(e) {
+			        	startPositionX = null;
+	        			targetRotationX = null;
+			        }, false );
+
+			        // touch events
+	        		self._renderer.domElement.addEventListener("touchstart", function(e) {
+				        if (e.touches.length == 1) {
+			                e.preventDefault();
+
+	        			 	startPositionX = e.touches[0].pageX-(window.innerWidth/2);
+	        				startRotationX = graphObject.rotation.y;
+		        		}
+	        		}, false );
+
+        			self._renderer.domElement.addEventListener( "touchmove", function(e) {
+        				if (startPositionX) {
+					        if (e.touches.length == 1) {
+				                e.preventDefault();
+
+		      	  				var mouseX = e.touches[0].pageX-(window.innerWidth/2);
+		      	  				targetRotationX = (mouseX - startPositionX) * 0.05;
+		      	  			}
+	      	  			}
+			        }, false );
+
+			        self._renderer.domElement.addEventListener( "touchend", function(e) {
+			        	startPositionX = null;
+	        			targetRotationX = null;
+			        }, false );
+
+			        self._renderer.domElement.addEventListener( "touchcancel", function(e) {
+			        	startPositionX = null;
+	        			targetRotationX = null;
+			        }, false );
+	        	};
+
+	        	var update = function() {
+	        		if ((targetRotationX) && (graphObject)) {
+	        			var newRotation = ( targetRotationX - graphObject.rotation.y ) * 0.1;
+
+	        			graphObject.rotation.y += newRotation;
+	        		}
+	        	};
 
 				var startRenderScene = function() {
 					var render = function () {
 						requestAnimationFrame( render );
+
+						update();
 
 						self._renderer.render(self._scene, self._camera);
 					};
@@ -254,11 +417,11 @@
 				if (graphData) {
         			// Setting up the base plane for the area chart
     				// Get the length (the z axis)
-    				if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
-    					if (graphData.data.length > graphData.rowLabels.values.length) baseLength = (rowSpace*graphData.data.length) - rowSpace + (baseEdge*2);
-						else baseLength = (rowSpace*graphData.rowLabels.values.length) - rowSpace + (baseEdge*2);
-    				}
-    				else if (graphData.data) baseLength = (rowSpace*graphData.data.length) - rowSpace + (baseEdge*2);
+					if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
+						if (graphData.data.length > graphData.rowLabels.values.length) baseLength = (areaWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (baseEdge*2);
+						else baseLength = (areaWidth*graphData.rowLabels.values.length) + (rowSpace*graphData.rowLabels.values.length) - rowSpace + (baseEdge*2);
+					}
+					else if (graphData.data) baseLength = (barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (baseEdge*2);
 
     				// Figure out what the base width should be (the x axis)
     				var maxData = 0;
@@ -315,6 +478,12 @@
 
 						areas.push(createAreaGraph(i, graphData.data[i].factoredValues, graphData.data[i].values, areaColor));
 					}
+
+					if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
+						for (var i=0; i<graphData.rowLabels.values.length; i++) {
+							createRowLabel(i, graphData.rowLabels.values[i]);
+						}
+					}
 				}
 
 				// Add the graph to the scene
@@ -332,13 +501,16 @@
 				// Set the initial rotation
 				if (this._startRotation) graphObject.rotation.y = this._startRotation;
 
+    			// bind all mouse/touch events
+				if (!locked) bindEvents();
+
 				this.addCamera();
 
         		if (this._camera) startRenderScene();
         	},
 
         	// Calling will create a standard bar chart
-        	bar: function(container, graphData, options) {
+        	BarChart: function(container, graphData, options) {
 				var self = this;
 
         		// The actual graph object
@@ -346,6 +518,9 @@
 
         		// The bars to the graph
         		var bars = [];
+
+        		// set the default rotation
+        		this._startRotation = -0.65;
 
 				// This is the maximum value allowed to be reached before it starts to factor
 				var maxDataValBeforeFactor = 150;
@@ -361,11 +536,11 @@
         			barLabelColor = 0x000000, // the default color for the row label
         			rowSpace = 30, // the space between each row
         			rowLabelFont = "helvetiker", // the font for the row label
-        			rowLabelSize = 6, // the font size for the row label
+        			rowLabelSize = 4, // the font size for the row label
         			rowLabelColor = 0x000000, // the default color for the row label
         			columnSpace = 10, // the space between each column in a row
         			columnLabelFont = "helvetiker", // the font for the col label
-        			columnLabelSize = 6, // the font size for the col label
+        			columnLabelSize = 4, // the font size for the col label
         			columnLabelColor = 0x000000, // the default color for the col label
         			baseColor = 0xaaaaaa, // the color for the base
         			baseEdge = 10, // the distance around the graphing area for the base
@@ -375,7 +550,7 @@
         			showMeasurementLines = true, // whether or not to show measurement lines
         			measurementLineColor = 0x222222, // the default color of the measurement lines
         			measurementLabelFont = "helvetiker", // the font for the measurement label
-        			measurementLabelSize = 6, // the font size for the measurement label
+        			measurementLabelSize = 2.5, // the font size for the measurement label
         			measurementLabelColor = 0x000000; // the default color for the measurement label
 
         		// Allow the override using the options if they exist
