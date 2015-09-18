@@ -580,7 +580,7 @@
         		// Set up the basic configuration for the bar
         		var barWidth = 15, // the width of the bar
         			barOpacity = 0.65, // how opaque the bars are
-        			viewBarLabels = false, // global setting, should bar labels be visible
+        			showBarLabels = false, // global setting, should bar labels be visible
         			barLabelFont = "helvetiker", // the font for the row label
         			barLabelSize = 6, // the font size for the row label
         			barLabelColor = 0x000000, // the default color for the row label
@@ -611,7 +611,7 @@
 
         			if (graphData.barOpacity !== undefined) barOpacity = graphData.barOpacity;
 
-        			if (graphData.viewBarLabels !== undefined) viewBarLabels = graphData.viewBarLabels;
+        			if (graphData.showBarLabels !== undefined) showBarLabels = graphData.showBarLabels;
 
         			if (graphData.barLabelFont !== undefined) barLabelFont = graphData.barLabelFont;
 
@@ -647,8 +647,6 @@
 
         			if (graphData.baseLength !== undefined) baseLength = graphData.baseLength;
 
-        			if (graphData.locked !== undefined) locked = graphData.locked;
-
         			if (graphData.showMeasurementLines !== undefined) showMeasurementLines = graphData.showMeasurementLines;
 
         			if (graphData.measurementLineColor !== undefined) measurementLineColor = new THREE.Color(graphData.measurementLineColor);
@@ -658,6 +656,8 @@
         			if (graphData.measurementLabelSize !== undefined) measurementLabelSize = graphData.measurementLabelSize;
 
         			if (graphData.measurementLabelColor !== undefined) measurementLabelColor = new THREE.Color(graphData.measurementLabelColor);
+
+        			if (graphData.locked !== undefined) locked = graphData.locked;
 
         			this.setGlobalOptions(graphData);
         		}
@@ -1023,8 +1023,8 @@
     					else barColor = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
 
     					// Local bar settings for labels overwrite global ones
-    					var makeBarsLabelsVisible = viewBarLabels;
-    					if (graphData.data[i].barLabelsVisible !== undefined) makeBarsLabelsVisible = graphData.data[i].barLabelsVisible;
+    					var makeBarsLabelsVisible = showBarLabels;
+    					if (graphData.data[i].showBarLabels !== undefined) makeBarsLabelsVisible = graphData.data[i].showBarLabels;
 
     					for (var j=0; j<graphData.data[i].values.length; j++) {
 							bars.push(createBar(i, j, graphData.data[i].factoredValues[j], graphData.data[i].values[j], barColor, makeBarsLabelsVisible));

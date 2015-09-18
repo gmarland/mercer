@@ -7,15 +7,16 @@
 		<meta http-equiv="Pragma" content="no-cache">
 		<meta http-equiv="Expires" content="-1">
 		<meta name="viewport" content="width=device-width,initial-scale=1">
-		<title>Data Visualize</title>
+		<title>Mercer</title>
 		<script type="text/javascript" src="assets/libs/three.min.js"></script>
 		<script type="text/javascript" src="http://mrdoob.github.com/three.js/examples/fonts/helvetiker_regular.typeface.js"></script>
-		<script type="text/javascript" src="data-visualizations.js"></script>
+		<script type="text/javascript" src="mercer.js"></script>
     </head>
 	<body>
 		<div id="data-container", style="width:1000px;height:800px;"></div>
 		<script type="text/javascript">
 			var barData = {
+				showBarLabels: true,
 				rowLabels: {
 					fontFamily: "helvetiker",
 					color: "#ff0000",
@@ -37,7 +38,7 @@
 				},
 				{
 					color: "#00ff00",
-					barLabelsVisible: true,
+					showBarLabels: true,
 					values: [ 7, 2, 5, 4, 4, 3, 20, 80, 10, 30, 20, 90 ]
 				}]
 			};
