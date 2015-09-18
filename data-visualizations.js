@@ -57,6 +57,18 @@
         			if (graphData.lookAtZ != undefined) this._cameraSettings.lookAt.z = graphData.lookAtZ;
 
         			if (graphData.startRotation !== undefined) startRotation = graphData.startRotation;
+
+        			if (graphData.directionalLight !== undefined) {
+	        			if (graphData.directionalLight.color !== undefined) _directionalLight.color = graphData.directionalLight.color;
+	        			
+	        			if (graphData.directionalLight.intensity !== undefined) _directionalLight.intensity = graphData.directionalLight.intensity;
+
+	        			if (graphData.directionalLight.position !== undefined) {
+		        			if (graphData.directionalLight.position.x !== undefined) _directionalLight.position.x = graphData.directionalLight.position.x;
+		        			if (graphData.directionalLight.position.y !== undefined) _directionalLight.position.y = graphData.directionalLight.position.y;
+		        			if (graphData.directionalLight.position.z !== undefined) _directionalLight.position.z = graphData.directionalLight.position.z;
+		        		}
+	        		}
         		}
         	},
 
@@ -205,6 +217,47 @@
         			measurementLabelFont = "helvetiker", // the font for the measurement label
         			measurementLabelSize = 2.5, // the font size for the measurement label
         			measurementLabelColor = 0x000000; // the default color for the measurement label
+
+        		// Allow the override using the graphData options if they exist
+        		if (graphData !== undefined) {
+        			if (graphData.maxDataValBeforeFactor !== undefined) maxDataValBeforeFactor = graphData.maxDataValBeforeFactor;
+
+        			if (graphData.areaWidth !== undefined) areaWidth = graphData.areaWidth;
+
+        			if (graphData.baseEdge !== undefined) baseEdge = graphData.baseEdge;
+
+        			if (graphData.baseWidth !== undefined) baseWidth = graphData.baseWidth;
+
+        			if (graphData.baseLength !== undefined) baseLength = graphData.baseLength;
+
+        			if (graphData.baseColor !== undefined) baseColor = graphData.baseColor
+        			
+        			if (graphData.rowSpace !== undefined) rowSpace = graphData.rowSpace;
+
+        			if (graphData.rowLabels !== undefined) {
+	        			if (graphData.rowLabels.fontFamily !== undefined) rowLabelFont = graphData.rowLabels.fontFamily;
+
+	        			if (graphData.rowLabels.size !== undefined) rowLabelSize = graphData.rowLabels.size;
+
+	        			if (graphData.rowLabels.color !== undefined) rowLabelColor = new THREE.Color(graphData.rowLabels.color);
+	        		}
+
+        			if (graphData.pointSpace !== undefined) locked = graphData.locked;
+
+        			if (graphData.locked !== undefined) locked = graphData.locked;
+
+        			if (graphData.showMeasurementLines !== undefined) showMeasurementLines = graphData.showMeasurementLines;
+
+        			if (graphData.measurementLineColor !== undefined) measurementLineColor = new THREE.Color(graphData.measurementLineColor);
+
+        			if (graphData.measurementLabelFont !== undefined) measurementLabelFont = graphData.measurementLabelFont;
+
+        			if (graphData.measurementLabelSize !== undefined) measurementLabelSize = graphData.measurementLabelSize;
+
+        			if (graphData.measurementLabelColor !== undefined) measurementLabelColor = new THREE.Color(graphData.measurementLabelColor);
+
+        			this.setGlobalOptions(graphData);
+        		}
 
 
         		// The method to create the bar. Actually easier to plot the verticies than use available shapes
@@ -568,19 +621,23 @@
         			
         			if (graphData.rowSpace !== undefined) rowSpace = graphData.rowSpace;
 
-        			if (graphData.rowLabelFont !== undefined) rowLabelFont = graphData.rowLabelFont;
+        			if (graphData.rowLabels !== undefined) {
+	        			if (graphData.rowLabels.fontFamily !== undefined) rowLabelFont = graphData.rowLabels.fontFamily;
 
-        			if (graphData.rowLabelSize !== undefined) rowLabelSize = graphData.rowLabelSize;
+	        			if (graphData.rowLabels.size !== undefined) rowLabelSize = graphData.rowLabels.size;
 
-        			if (graphData.rowLabelColor !== undefined) rowLabelColor = new THREE.Color(graphData.rowLabelColor);
+	        			if (graphData.rowLabels.color !== undefined) rowLabelColor = new THREE.Color(graphData.rowLabels.color);
+	        		}
 
         			if (graphData.columnSpace !== undefined) columnSpace = graphData.columnSpace;
 
-        			if (graphData.columnLabelFont !== undefined) columnLabelFont = graphData.columnLabelFont;
+        			if (graphData.rowLabels !== undefined) {
+	        			if (graphData.columnLabels.fontFamily !== undefined) columnLabelFont = graphData.columnLabels.fontFamily;
 
-        			if (graphData.columnLabelSize !== undefined) columnLabelSize = graphData.columnLabelSize;
+	        			if (graphData.columnLabels.size !== undefined) columnLabelSize = graphData.columnLabels.size;
 
-        			if (graphData.columnLabelColor !== undefined) columnLabelColor = new THREE.Color(graphData.columnLabelColor);
+	        			if (graphData.columnLabels.color !== undefined) columnLabelColor = new THREE.Color(graphData.columnLabels.color);
+	        		}
 
         			if (graphData.baseColor !== undefined) baseColor = new THREE.Color(graphData.baseColor);
 

@@ -17,13 +17,12 @@
 		<script type="text/javascript">
 			var barData = {
 				rowLabels: {
-					family: "helvetiker",
-					size: 6,
+					fontFamily: "helvetiker",
 					color: "#ff0000",
 					values: ["2013", "2014", "2015" ]
 				},
 				columnLabels: {
-					family: "helvetiker",
+					fontFamily: "helvetiker",
 					size: 6,
 					color: "#0000ff",
 					values: [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "July", "Apr", "Sept", "Oct", "Nov", "Dec" ]
@@ -44,8 +43,8 @@
 			};
 
 			var tdv = new tdv();
-			tdv.BarChart("data-container", barData);
-			//tdv.AreaChart("data-container", barData);
+			//tdv.BarChart("data-container", barData);
+			tdv.AreaChart("data-container", barData);
 		</script>
 	</body>
 </html>
