@@ -44,19 +44,19 @@
         	//Skybox
         	_skyboxColor: 0xffffff,
 
-        	setGlobalOptions: function(options) {
-        		if (options !== undefined) {
-        			if (options.background !== undefined) this._skyboxColor = new THREE.Color(options.background);
+        	setGlobalOptions: function(graphData) {
+        		if (graphData !== undefined) {
+        			if (graphData.background !== undefined) this._skyboxColor = new THREE.Color(graphData.background);
 
-        			if (options.cameraX != undefined) this._cameraSettings.position.x = options.cameraX;
-        			if (options.cameraY != undefined) this._cameraSettings.position.y = options.cameraY;
-        			if (options.cameraZ != undefined) this._cameraSettings.position.z = options.cameraZ;
+        			if (graphData.cameraX != undefined) this._cameraSettings.position.x = graphData.cameraX;
+        			if (graphData.cameraY != undefined) this._cameraSettings.position.y = graphData.cameraY;
+        			if (graphData.cameraZ != undefined) this._cameraSettings.position.z = graphData.cameraZ;
 
-        			if (options.lookAtX != undefined) this._cameraSettings.lookAt.x = options.lookAtX;
-        			if (options.lookAtY != undefined) this._cameraSettings.lookAt.y = options.lookAtY;
-        			if (options.lookAtZ != undefined) this._cameraSettings.lookAt.z = options.lookAtZ;
+        			if (graphData.lookAtX != undefined) this._cameraSettings.lookAt.x = graphData.lookAtX;
+        			if (graphData.lookAtY != undefined) this._cameraSettings.lookAt.y = graphData.lookAtY;
+        			if (graphData.lookAtZ != undefined) this._cameraSettings.lookAt.z = graphData.lookAtZ;
 
-        			if (options.startRotation !== undefined) startRotation = options.startRotation;
+        			if (graphData.startRotation !== undefined) startRotation = graphData.startRotation;
         		}
         	},
 
@@ -175,7 +175,7 @@
 			},
 
         	// Calling will create a standard ares chart
-        	AreaChart: function(container, graphData, options) {
+        	AreaChart: function(container, graphData) {
 				var self = this;
 
         		// The actual graph object
@@ -489,11 +489,11 @@
 				// We need to make the skybox big enough that it contains the graph but not so big that it goes beyond the _far setting
         		this.createSkybox((Math.max(baseWidth, baseLength, maxDataValBeforeFactor)+500)*2);
 
-        		// If we don't have camera options then we'll try and determine the camera position 
-    			if ((!options) || (!options.camera)) this.calculateCamera(graphObject);
+        		// If we don't have camera graphData then we'll try and determine the camera position 
+    			if ((!graphData) || (!graphData.camera)) this.calculateCamera(graphObject);
 
-    			// If we don't have camera options then we'll try and determine the cameras lookat 
-    			if ((!options) || (!options.lookAt)) this.calculateLookAt(graphObject);
+    			// If we don't have camera graphData then we'll try and determine the cameras lookat 
+    			if ((!graphData) || (!graphData.lookAt)) this.calculateLookAt(graphObject);
 
 				// Set the initial rotation
 				if (this._startRotation) graphObject.rotation.y = this._startRotation;
@@ -507,7 +507,7 @@
         	},
 
         	// Calling will create a standard bar chart
-        	BarChart: function(container, graphData, options) {
+        	BarChart: function(container, graphData) {
 				var self = this;
 
         		// The actual graph object
@@ -550,59 +550,59 @@
         			measurementLabelSize = 2.5, // the font size for the measurement label
         			measurementLabelColor = 0x000000; // the default color for the measurement label
 
-        		// Allow the override using the options if they exist
-        		if (options !== undefined) {
-        			if (options.maxDataValBeforeFactor !== undefined) maxDataValBeforeFactor = options.maxDataValBeforeFactor;
+        		// Allow the override using the graphData options if they exist
+        		if (graphData !== undefined) {
+        			if (graphData.maxDataValBeforeFactor !== undefined) maxDataValBeforeFactor = graphData.maxDataValBeforeFactor;
 
-        			if (options.barWidth !== undefined) barWidth = options.barWidth;
+        			if (graphData.barWidth !== undefined) barWidth = graphData.barWidth;
 
-        			if (options.barOpacity !== undefined) barOpacity = options.barOpacity;
+        			if (graphData.barOpacity !== undefined) barOpacity = graphData.barOpacity;
 
-        			if (options.viewBarLabels !== undefined) viewBarLabels = options.viewBarLabels;
+        			if (graphData.viewBarLabels !== undefined) viewBarLabels = graphData.viewBarLabels;
 
-        			if (options.barLabelFont !== undefined) barLabelFont = options.barLabelFont;
+        			if (graphData.barLabelFont !== undefined) barLabelFont = graphData.barLabelFont;
 
-        			if (options.barLabelSize !== undefined) barLabelSize = options.barLabelSize;
+        			if (graphData.barLabelSize !== undefined) barLabelSize = graphData.barLabelSize;
 
-        			if (options.barLabelColor !== undefined) barLabelColor = new THREE.Color(options.barLabelColor);
+        			if (graphData.barLabelColor !== undefined) barLabelColor = new THREE.Color(graphData.barLabelColor);
         			
-        			if (options.rowSpace !== undefined) rowSpace = options.rowSpace;
+        			if (graphData.rowSpace !== undefined) rowSpace = graphData.rowSpace;
 
-        			if (options.rowLabelFont !== undefined) rowLabelFont = options.rowLabelFont;
+        			if (graphData.rowLabelFont !== undefined) rowLabelFont = graphData.rowLabelFont;
 
-        			if (options.rowLabelSize !== undefined) rowLabelSize = options.rowLabelSize;
+        			if (graphData.rowLabelSize !== undefined) rowLabelSize = graphData.rowLabelSize;
 
-        			if (options.rowLabelColor !== undefined) rowLabelColor = new THREE.Color(options.rowLabelColor);
+        			if (graphData.rowLabelColor !== undefined) rowLabelColor = new THREE.Color(graphData.rowLabelColor);
 
-        			if (options.columnSpace !== undefined) columnSpace = options.columnSpace;
+        			if (graphData.columnSpace !== undefined) columnSpace = graphData.columnSpace;
 
-        			if (options.columnLabelFont !== undefined) columnLabelFont = options.columnLabelFont;
+        			if (graphData.columnLabelFont !== undefined) columnLabelFont = graphData.columnLabelFont;
 
-        			if (options.columnLabelSize !== undefined) columnLabelSize = options.columnLabelSize;
+        			if (graphData.columnLabelSize !== undefined) columnLabelSize = graphData.columnLabelSize;
 
-        			if (options.columnLabelColor !== undefined) columnLabelColor = new THREE.Color(options.columnLabelColor);
+        			if (graphData.columnLabelColor !== undefined) columnLabelColor = new THREE.Color(graphData.columnLabelColor);
 
-        			if (options.baseColor !== undefined) baseColor = new THREE.Color(options.baseColor);
+        			if (graphData.baseColor !== undefined) baseColor = new THREE.Color(graphData.baseColor);
 
-        			if (options.baseEdge !== undefined) baseEdge = options.baseEdge;
+        			if (graphData.baseEdge !== undefined) baseEdge = graphData.baseEdge;
 
-        			if (options.baseWidth !== undefined) baseWidth = options.baseWidth;
+        			if (graphData.baseWidth !== undefined) baseWidth = graphData.baseWidth;
 
-        			if (options.baseLength !== undefined) baseLength = options.baseLength;
+        			if (graphData.baseLength !== undefined) baseLength = graphData.baseLength;
 
-        			if (options.locked !== undefined) locked = options.locked;
+        			if (graphData.locked !== undefined) locked = graphData.locked;
 
-        			if (options.showMeasurementLines !== undefined) showMeasurementLines = options.showMeasurementLines;
+        			if (graphData.showMeasurementLines !== undefined) showMeasurementLines = graphData.showMeasurementLines;
 
-        			if (options.measurementLineColor !== undefined) measurementLineColor = new THREE.Color(options.measurementLineColor);
+        			if (graphData.measurementLineColor !== undefined) measurementLineColor = new THREE.Color(graphData.measurementLineColor);
 
-        			if (options.measurementLabelFont !== undefined) measurementLabelFont = options.measurementLabelFont;
+        			if (graphData.measurementLabelFont !== undefined) measurementLabelFont = graphData.measurementLabelFont;
 
-        			if (options.measurementLabelSize !== undefined) measurementLabelSize = options.measurementLabelSize;
+        			if (graphData.measurementLabelSize !== undefined) measurementLabelSize = graphData.measurementLabelSize;
 
-        			if (options.measurementLabelColor !== undefined) measurementLabelColor = new THREE.Color(options.measurementLabelColor);
+        			if (graphData.measurementLabelColor !== undefined) measurementLabelColor = new THREE.Color(graphData.measurementLabelColor);
 
-        			this.setGlobalOptions(options);
+        			this.setGlobalOptions(graphData);
         		}
 
         		// Update label fonts. Do it here just so all things are configured in the same place
@@ -993,11 +993,11 @@
 				// We need to make the skybox big enough that it contains the graph but not so big that it goes beyond the _far setting
         		this.createSkybox((Math.max(baseWidth, baseLength, maxDataValBeforeFactor)+500)*2);
 
-        		// If we don't have camera options then we'll try and determine the camera position 
-    			if ((!options) || (!options.camera)) this.calculateCamera(graphObject);
+        		// If we don't have camera graphData then we'll try and determine the camera position 
+    			if ((!graphData) || (!graphData.camera)) this.calculateCamera(graphObject);
 
-    			// If we don't have camera options then we'll try and determine the cameras lookat 
-    			if ((!options) || (!options.lookAt)) this.calculateLookAt(graphObject);
+    			// If we don't have camera graphData then we'll try and determine the cameras lookat 
+    			if ((!graphData) || (!graphData.lookAt)) this.calculateLookAt(graphObject);
 
 				// Set the initial rotation
 				if (this._startRotation) graphObject.rotation.y = this._startRotation;
