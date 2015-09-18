@@ -9,17 +9,18 @@
         	_near: 0.1,
         	_far: null,
 
-        	// Camera position
-
-        	_cameraX: 0,
-        	_cameraY: 0,
-        	_cameraZ: 0,
-
-        	// Camera lookatPositions
-
-        	_cameraLookatX: 0,
-        	_cameraLookatY: 0,
-        	_cameraLookatZ: 0,
+        	_cameraSettings: {
+        		position: {
+        			x: 0,
+        			y: 0,
+        			z: 0
+        		},
+        		lookAt: {
+        			x: 0,
+        			y: 0,
+        			z: 0
+        		}
+        	},
 
 			// Default setting for rotation
         	_startRotation: 0,
@@ -47,17 +48,13 @@
         		if (options !== undefined) {
         			if (options.background !== undefined) this._skyboxColor = new THREE.Color(options.background);
 
-        			if (options.camera !== undefined) {
-        				if (options.camera.x !== undefined) this._cameraX = options.camera.x;
-        				if (options.camera.y !== undefined) this._cameraY = options.camera.y;
-        				if (options.camera.z !== undefined) this._cameraZ = options.camera.z;
-        			}
+        			if (options.cameraX != undefined) this._cameraSettings.position.x = options.cameraX;
+        			if (options.cameraY != undefined) this._cameraSettings.position.y = options.cameraY;
+        			if (options.cameraZ != undefined) this._cameraSettings.position.z = options.cameraZ;
 
-        			if (options.lookAt !== undefined) {
-        				if (options.lookAt.x !== undefined) this._cameraLookatX = options.lookAt.x;
-        				if (options.lookAt.y !== undefined) this._cameraLookatY = options.lookAt.y;
-        				if (options.lookAt.z !== undefined) this._cameraLookatZ = options.lookAt.z;
-        			}
+        			if (options.lookAtX != undefined) this._cameraSettings.lookAt.x = options.lookAtX;
+        			if (options.lookAtY != undefined) this._cameraSettings.lookAt.y = options.lookAtY;
+        			if (options.lookAtZ != undefined) this._cameraSettings.lookAt.z = options.lookAtZ;
 
         			if (options.startRotation !== undefined) startRotation = options.startRotation;
         		}
@@ -86,31 +83,31 @@
 
 				this._camera = new THREE.PerspectiveCamera(this._fov, this._aspectRatio, this._near, this._far);
 
-				this._camera.position.x = this._cameraX;
-				this._camera.position.y = this._cameraY;
-				this._camera.position.z = this._cameraZ;
+				this._camera.position.x = this._cameraSettings.position.x;
+				this._camera.position.y = this._cameraSettings.position.y;
+				this._camera.position.z = this._cameraSettings.position.z;
 
-				this._camera.lookAt(new THREE.Vector3(this._cameraLookatX, this._cameraLookatY, this._cameraLookatZ));
+				this._camera.lookAt(new THREE.Vector3(this._cameraSettings.lookAt.x, this._cameraSettings.lookAt.y, this._cameraSettings.lookAt.z));
         	},
 				
 			// This attempts to find a camera position based on 
 			calculateCamera: function(graphObject) {
 				var graphObjectArea = new THREE.Box3().setFromObject(graphObject);
 
-    			this._cameraX = 0;
-    			this._cameraY = graphObjectArea.size().y;
-    			this._cameraZ = (graphObjectArea.size().x/2)+(graphObjectArea.size().z);
+    			this._cameraSettings.position.x = 0;
+    			this._cameraSettings.position.y = graphObjectArea.size().y;
+    			this._cameraSettings.position.z = (graphObjectArea.size().x/2)+(graphObjectArea.size().z);
 
-    			this._far = (Math.max(this._cameraX, this._cameraY, this._cameraZ)+1000)*2;
+    			this._far = (Math.max(this._cameraSettings.position.x, this._cameraSettings.position.y, this._cameraSettings.position.z)+1000)*2;
         	},
 
         	// Attempts to determine where the camera should be looking based on the graph settings
         	calculateLookAt: function(graphObject) {
 				var graphObjectArea = new THREE.Box3().setFromObject(graphObject);
 
-	        	this._cameraLookatX = 0;
-	        	this._cameraLookatY = (graphObjectArea.size().y/2);
-	        	this._cameraLookatZ = 0;
+	        	this._cameraSettings.lookAt.x = 0;
+	        	this._cameraSettings.lookAt.y = (graphObjectArea.size().y/2);
+	        	this._cameraSettings.lookAt.z = 0;
         	},
 
         	createSkybox: function(skySize) {
