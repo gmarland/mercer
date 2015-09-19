@@ -375,6 +375,16 @@
 				return maxDataVal;
 			},
 
+			getFactoredDataValues: function(values, maxDataValBeforeFactor, maxDataValue) {
+				var factoredValues = [];
+
+				for (var i=0; i<values.length; i++) {
+					factoredValues.push(maxDataValBeforeFactor*(values[i]/maxDataValue));			
+				}
+
+				return factoredValues;
+			},
+
 			// ----- Functions for drawing the graphs
 
         	// Calling will create a standard line graph
@@ -502,25 +512,14 @@
 					this.createBase();
 
 					// Get the max value so we can factor values
-					var maxDataVal = this.getMaxDataValue(graphData.data);
-
-					// Normalize the data so that the max value is at 100 units tall
-					var originalMaxValue = maxDataVal;
-
-					maxDataVal = maxDataValBeforeFactor;
+					var maxDataValue = this.getMaxDataValue(graphData.data);
 
     				for (var i=0; i<graphData.data.length; i++) {
-    					graphData.data[i].factoredValues = [];
-
-    					for (var j=0; j<graphData.data[i].values.length; j++) {
-    						var percentageOfMax = graphData.data[i].values[j]/originalMaxValue;
-
-							graphData.data[i].factoredValues.push(maxDataVal*percentageOfMax);			
-    					}
+    					graphData.data[i].factoredValues = this.getFactoredDataValues(graphData.data[i].values, maxDataValBeforeFactor, maxDataValue)
 					}
 
 					// Add the measurement lines
-					if (this._showMeasurementLines) this.createMeasurementsLines(maxDataValBeforeFactor, originalMaxValue);
+					if (this._showMeasurementLines) this.createMeasurementsLines(maxDataValBeforeFactor, maxDataValue);
 
 					for (var i=0; i<graphData.data.length; i++) {
     					// Figure out the color for the bar. Pick a random one is one isn't defined
@@ -742,25 +741,14 @@
 					this.createBase();
 
 					// Get the max value so we can factor values
-					var maxDataVal = this.getMaxDataValue(graphData.data);
-
-					// Normalize the data so that the max value is at 100 units tall
-					var originalMaxValue = maxDataVal;
-
-					maxDataVal = maxDataValBeforeFactor;
-
+					var maxDataValue = this.getMaxDataValue(graphData.data);
+					
     				for (var i=0; i<graphData.data.length; i++) {
-    					graphData.data[i].factoredValues = [];
-
-    					for (var j=0; j<graphData.data[i].values.length; j++) {
-    						var percentageOfMax = graphData.data[i].values[j]/originalMaxValue;
-
-							graphData.data[i].factoredValues.push(maxDataVal*percentageOfMax);			
-    					}
+    					graphData.data[i].factoredValues = this.getFactoredDataValues(graphData.data[i].values, maxDataValBeforeFactor, maxDataValue)
 					}
 
 					// Add the measurement lines
-					if (this._showMeasurementLines) this.createMeasurementsLines(maxDataValBeforeFactor, originalMaxValue);
+					if (this._showMeasurementLines) this.createMeasurementsLines(maxDataValBeforeFactor, maxDataValue);
 
 					for (var i=0; i<graphData.data.length; i++) {
     					// Figure out the color for the bar. Pick a random one is one isn't defined
@@ -1105,25 +1093,14 @@
 					this.createBase();
 
 					// Get the max value so we can factor values
-					var maxDataVal = this.getMaxDataValue(graphData.data);
-
-					// Normalize the data so that the max value is at 100 units tall
-					var originalMaxValue = maxDataVal;
-
-					maxDataVal = maxDataValBeforeFactor;
-
+					var maxDataValue = this.getMaxDataValue(graphData.data);
+					
     				for (var i=0; i<graphData.data.length; i++) {
-    					graphData.data[i].factoredValues = [];
-
-    					for (var j=0; j<graphData.data[i].values.length; j++) {
-    						var percentageOfMax = graphData.data[i].values[j]/originalMaxValue;
-
-							graphData.data[i].factoredValues.push(maxDataVal*percentageOfMax);			
-    					}
+    					graphData.data[i].factoredValues = this.getFactoredDataValues(graphData.data[i].values, maxDataValBeforeFactor, maxDataValue)
 					}
 
 					// Add the measurement lines to the grap assuming it has been configured
-					if (this._showMeasurementLines) this.createMeasurementsLines(maxDataValBeforeFactor, originalMaxValue);
+					if (this._showMeasurementLines) this.createMeasurementsLines(maxDataValBeforeFactor, maxDataValue);
 
     				for (var i=0; i<graphData.data.length; i++) {
     					// Figure out the color for the bar. Pick a random one is one isn't defined
