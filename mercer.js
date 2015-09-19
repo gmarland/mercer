@@ -59,6 +59,7 @@
 			_baseColor: 0xaaaaaa, // the color for the base
 
 			_locked: false, // whether or not to allow the rotation of the graph
+
 			_showMeasurementLines: true, // whether or not to show measurement lines
 			_measurementLineColor: 0x222222, // the default color of the measurement lines
 			_measurementLabelFont: "helvetiker", // the font for the measurement label
@@ -100,6 +101,8 @@
 	        		}
 
         			if (graphData.baseEdge !== undefined) this._baseEdge = graphData.baseEdge;
+
+        			if (graphData.baseThickness !== undefined) this._baseThickness = graphData.baseThickness;
 
         			if (graphData.baseWidth !== undefined) this._baseWidth = graphData.baseWidth;
 
@@ -173,16 +176,15 @@
         	},
 
         	createBase: function() {
-	    		// Create the base (a simple plane should do)
-				var base = new THREE.Mesh(new THREE.PlaneGeometry(this._baseWidth, this._baseLength), new THREE.MeshBasicMaterial({ 
-					color: this._baseColor, 
-					side: THREE.DoubleSide
-				}));
+        		var baseGeometry = new THREE.BoxGeometry(this._baseWidth, this._baseThickness, this._baseLength),
+					baseMesh = new THREE.Mesh(baseGeometry, new THREE.MeshLambertMaterial({
+						color: this._baseColor, 
+						side: THREE.DoubleSide
+					}));
 
-				// rotate it 90 degrees so it's flat
-				base.rotation.x = (Math.PI/2);
+				baseMesh.position.y -= (this._baseThickness/2);
 
-				this._graphObject.add(base);
+				this._graphObject.add(baseMesh);
         	},
 
 			createMeasurementsLines: function(graphHeight, barValue) {
