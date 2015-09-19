@@ -12,7 +12,7 @@
 		<script type="text/javascript" src="http://mrdoob.github.com/three.js/examples/fonts/helvetiker_regular.typeface.js"></script>
 		<script type="text/javascript" src="mercer.js"></script>
     </head>
-	<body style="background: #ff0000">
+	<body>
 		<div id="data-container", style="width:1000px;height:800px;"></div>
 		<script type="text/javascript">
 			var barData = {
@@ -44,8 +44,8 @@
 			};
 
 			var tdv = new tdv();
-			//tdv.BarChart("data-container", barData);
-			tdv.AreaChart("data-container", barData);
+			tdv.BarChart("data-container", barData);
+			//tdv.AreaChart("data-container", barData);
 		</script>
 	</body>
 </html>

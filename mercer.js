@@ -147,11 +147,7 @@
 	        	this._cameraSettings.lookAt.z = 0;
         	},
 
-<<<<<<< HEAD
         	createBase: function(graphObject) {
-=======
-        	createBase: function(graphObject, baseWidth, baseLength, color) {
->>>>>>> 78ba2be1c23a47b474709e8a148301150b2ce4b0
 	    		// Create the base (a simple plane should do)
 				var base = new THREE.Mesh(new THREE.PlaneGeometry(this._baseWidth, this._baseLength), new THREE.MeshBasicMaterial({ 
 					color: this._baseColor, 
