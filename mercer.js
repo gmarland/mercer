@@ -41,6 +41,14 @@
         		}
         	},
 
+
+        	// Details of the base
+			_baseEdge: 10, // the distance around the graphing area for the base
+			_baseThickness: 1, // the thickness of the graph base
+			_baseWidth: 200, // the base width which will be show if no data is added
+			_baseLength: 200, // the base length which will be show if no data is added
+			_baseColor: 0xaaaaaa, // the color for the base
+
         	//Skybox
         	_skyboxColor: 0xffffff,
 
@@ -69,6 +77,14 @@
 		        			if (graphData.directionalLight.position.z !== undefined) _directionalLight.position.z = graphData.directionalLight.position.z;
 		        		}
 	        		}
+
+        			if (graphData.baseEdge !== undefined) this._baseEdge = graphData.baseEdge;
+
+        			if (graphData.baseWidth !== undefined) this._baseWidth = graphData.baseWidth;
+
+        			if (graphData.baseLength !== undefined) this._baseLength = graphData.baseLength;
+
+        			if (graphData.baseColor !== undefined) this._baseColor = graphData.baseColor
         		}
         	},
 
@@ -122,19 +138,10 @@
 	        	this._cameraSettings.lookAt.z = 0;
         	},
 
-        	createSkybox: function(skySize) {
-				var skyMesh = new THREE.Mesh(new THREE.BoxGeometry(skySize, skySize, skySize), new THREE.MeshBasicMaterial({
-					color: this._skyboxColor,
-					side:THREE.DoubleSide 
-				}));
-
-				this._scene.add(skyMesh);
-        	},
-
-        	createBase: function(graphObject, baseWidth, baseLength, color) {
+        	createBase: function(graphObject) {
 	    		// Create the base (a simple plane should do)
-				var base = new THREE.Mesh(new THREE.PlaneGeometry(baseWidth, baseLength), new THREE.MeshBasicMaterial({ 
-					color: color, 
+				var base = new THREE.Mesh(new THREE.PlaneGeometry(this._baseWidth, this._baseLength), new THREE.MeshBasicMaterial({ 
+					color: this._baseColor, 
 					side: THREE.DoubleSide
 				}));
 
@@ -144,7 +151,7 @@
 				graphObject.add(base);
         	},
 
-			createMeasurementsLines: function(graphObject, baseWidth, baseLength, lineColor, labelFont, labelSize, labelColor, graphHeight, barValue) {
+			createMeasurementsLines: function(graphObject, lineColor, labelFont, labelSize, labelColor, graphHeight, barValue) {
 				if (barValue < 10) barValue = 10;
 
 				var stepsEachLine = Math.ceil(graphHeight/10);
@@ -153,9 +160,9 @@
 					var mesurementLineObject = new THREE.Object3D();
 
 					var measureLineGeometry = new THREE.Geometry();
-					measureLineGeometry.vertices.push(new THREE.Vector3((baseWidth/2)*-1, (stepsEachLine*i), (baseLength/2)));
-					measureLineGeometry.vertices.push(new THREE.Vector3((baseWidth/2)*-1, (stepsEachLine*i), (baseLength/2)*-1));
-					measureLineGeometry.vertices.push(new THREE.Vector3((baseWidth/2), (stepsEachLine*i), (baseLength/2)*-1));
+					measureLineGeometry.vertices.push(new THREE.Vector3((this._baseWidth/2)*-1, (stepsEachLine*i), (this._baseLength/2)));
+					measureLineGeometry.vertices.push(new THREE.Vector3((this._baseWidth/2)*-1, (stepsEachLine*i), (this._baseLength/2)*-1));
+					measureLineGeometry.vertices.push(new THREE.Vector3((this._baseWidth/2), (stepsEachLine*i), (this._baseLength/2)*-1));
 
 					var measureLine = new THREE.Line(measureLineGeometry, new THREE.LineBasicMaterial({
 						color: lineColor,
@@ -176,9 +183,9 @@
 
 					var textBoxArea = new THREE.Box3().setFromObject(textMesh);
 
-					textMesh.position.x += ((baseWidth/2)+5);
+					textMesh.position.x += ((this._baseWidth/2)+5);
 					textMesh.position.y += ((stepsEachLine*i)-(textBoxArea.size().y/2));
-					textMesh.position.z -= (baseLength/2);
+					textMesh.position.z -= (this._baseLength/2);
 
 					mesurementLineObject.add(textMesh);
 
@@ -202,10 +209,6 @@
         		var targetRotationX = null; // used for rotations
 
         		var areaWidth = 4,
-        			baseEdge = 10, // the distance around the graphing area for the base
-        			baseWidth = 200, // the base width which will be show if no data is added
-        			baseLength = 200, // the base length which will be show if no data is added
-        			baseColor = 0xaaaaaa, // the color for the base
         			rowSpace = 30, // the space between each row
         			rowLabelFont = "helvetiker", // the font for the row label
         			rowLabelSize = 4, // the font size for the row label
@@ -223,14 +226,6 @@
         			if (graphData.maxDataValBeforeFactor !== undefined) maxDataValBeforeFactor = graphData.maxDataValBeforeFactor;
 
         			if (graphData.areaWidth !== undefined) areaWidth = graphData.areaWidth;
-
-        			if (graphData.baseEdge !== undefined) baseEdge = graphData.baseEdge;
-
-        			if (graphData.baseWidth !== undefined) baseWidth = graphData.baseWidth;
-
-        			if (graphData.baseLength !== undefined) baseLength = graphData.baseLength;
-
-        			if (graphData.baseColor !== undefined) baseColor = graphData.baseColor
         			
         			if (graphData.rowSpace !== undefined) rowSpace = graphData.rowSpace;
 
@@ -264,8 +259,8 @@
 				var createAreaGraph = function(row, factoredValues, originalValues, color) {	
 	        		var areaObject = new THREE.Object3D();
 
-					var xPosStart = (((baseWidth/2)*-1) + baseEdge), // this is our zero
-						zPosStart = (((baseLength/2)*-1) + baseEdge);
+					var xPosStart = (((self._baseWidth/2)*-1) + self._baseEdge), // this is our zero
+						zPosStart = (((self._baseLength/2)*-1) + self._baseEdge);
 
 					var frontVertices = [],
 						backVertices = [];
@@ -358,10 +353,10 @@
 
 					var textBoxArea = new THREE.Box3().setFromObject(textMesh);
 
-					textMesh.position.x += (baseWidth/2) + 3;
+					textMesh.position.x += (self._baseWidth/2) + 3;
 
-					textMesh.position.z -= (baseLength/2);
-					textMesh.position.z += baseEdge + (row*rowSpace) + (row*areaWidth) + (textBoxArea.size().z/2);
+					textMesh.position.z -= (self._baseLength/2);
+					textMesh.position.z += self._baseEdge + (row*rowSpace) + (row*areaWidth) + (textBoxArea.size().z/2);
 
 					graphObject.add(textMesh);
 				};
@@ -468,10 +463,10 @@
         			// Setting up the base plane for the area chart
     				// Get the length (the z axis)
 					if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
-						if (graphData.data.length > graphData.rowLabels.values.length) baseLength = (areaWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (baseEdge*2);
-						else baseLength = (areaWidth*graphData.rowLabels.values.length) + (rowSpace*graphData.rowLabels.values.length) - rowSpace + (baseEdge*2);
+						if (graphData.data.length > graphData.rowLabels.values.length) this._baseLength = (areaWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
+						else this._baseLength = (areaWidth*graphData.rowLabels.values.length) + (rowSpace*graphData.rowLabels.values.length) - rowSpace + (this._baseEdge*2);
 					}
-					else if (graphData.data) baseLength = (barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (baseEdge*2);
+					else if (graphData.data) this._baseLength = (barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
 
     				// Figure out what the base width should be (the x axis)
     				var maxData = 0;
@@ -482,15 +477,15 @@
 
 					if ((graphData.columnLabels) && (graphData.columnLabels.values)) {
 						if (maxData) {
-							if (maxData > graphData.columnLabels.values.length) baseWidth = (pointSpace*maxData) - pointSpace + (baseEdge*2);
-							else baseWidth = (pointSpace*graphData.columnLabels.values.length) - pointSpace + (baseEdge*2);
+							if (maxData > graphData.columnLabels.values.length) this._baseWidth = (pointSpace*maxData) - pointSpace + (this._baseEdge*2);
+							else this._baseWidth = (pointSpace*graphData.columnLabels.values.length) - pointSpace + (this._baseEdge*2);
 						}
-						else baseWidth = (pointSpace*graphData.columnLabels.values.length) - pointSpace + (baseEdge*2);
+						else this._baseWidth = (pointSpace*graphData.columnLabels.values.length) - pointSpace + (this._baseEdge*2);
 					}
-					else if (maxData) baseWidth = (pointSpace*maxData) - pointSpace + (baseEdge*2);
+					else if (maxData) this._baseWidth = (pointSpace*maxData) - pointSpace + (this._baseEdge*2);
 
 					// add it to the scene
-					this.createBase(graphObject, baseWidth, baseLength, baseColor);
+					this.createBase(graphObject);
 
 					// Get the max value so we can factor values
 					var maxDataVal = 0;
@@ -517,7 +512,7 @@
 					}
 
 					// Add the measurement lines
-					if (showMeasurementLines) this.createMeasurementsLines(graphObject, baseWidth, baseLength, measurementLineColor, measurementLabelFont, measurementLabelSize, measurementLabelColor, maxDataValBeforeFactor, originalMaxValue);
+					if (showMeasurementLines) this.createMeasurementsLines(graphObject, measurementLineColor, measurementLabelFont, measurementLabelSize, measurementLabelColor, maxDataValBeforeFactor, originalMaxValue);
 
 					for (var i=0; i<graphData.data.length; i++) {
     					// Figure out the color for the bar. Pick a random one is one isn't defined
@@ -538,9 +533,6 @@
 
 				// Add the graph to the scene
 				this._scene.add(graphObject);
-
-				// We need to make the skybox big enough that it contains the graph but not so big that it goes beyond the _far setting
-        		this.createSkybox((Math.max(baseWidth, baseLength, maxDataValBeforeFactor)+500)*2);
 
         		// If we don't have camera graphData then we'll try and determine the camera position 
     			if ((!graphData) || (!graphData.camera)) this.calculateCamera(graphObject);
@@ -592,10 +584,6 @@
         			columnLabelFont = "helvetiker", // the font for the col label
         			columnLabelSize = 4, // the font size for the col label
         			columnLabelColor = 0x000000, // the default color for the col label
-        			baseColor = 0xaaaaaa, // the color for the base
-        			baseEdge = 10, // the distance around the graphing area for the base
-        			baseWidth = 200, // the base width which will be show if no data is added
-        			baseLength = 200, // the base length which will be show if no data is added
         			locked = false, // whether or not to allow the rotation of the graph
         			showMeasurementLines = true, // whether or not to show measurement lines
         			measurementLineColor = 0x222222, // the default color of the measurement lines
@@ -639,14 +627,6 @@
 	        			if (graphData.columnLabels.color !== undefined) columnLabelColor = new THREE.Color(graphData.columnLabels.color);
 	        		}
 
-        			if (graphData.baseColor !== undefined) baseColor = new THREE.Color(graphData.baseColor);
-
-        			if (graphData.baseEdge !== undefined) baseEdge = graphData.baseEdge;
-
-        			if (graphData.baseWidth !== undefined) baseWidth = graphData.baseWidth;
-
-        			if (graphData.baseLength !== undefined) baseLength = graphData.baseLength;
-
         			if (graphData.showMeasurementLines !== undefined) showMeasurementLines = graphData.showMeasurementLines;
 
         			if (graphData.measurementLineColor !== undefined) measurementLineColor = new THREE.Color(graphData.measurementLineColor);
@@ -687,8 +667,8 @@
 
 					// First, calculate the bar geometry
 
-					var xPos = (((baseWidth/2)*-1) + baseEdge), // this is our zero
-						zPos = (((baseLength/2)*-1) + baseEdge);
+					var xPos = (((self._baseWidth/2)*-1) + self._baseEdge), // this is our zero
+						zPos = (((self._baseLength/2)*-1) + self._baseEdge);
 
 					xPos += ((col*columnSpace) + (col*barWidth)) + (barWidth/2);
 					zPos += ((row*rowSpace) + (row*barWidth)) + (barWidth/2);
@@ -831,10 +811,10 @@
 
 					var textBoxArea = new THREE.Box3().setFromObject(textMesh);
 
-					textMesh.position.z += (baseLength/2) + textBoxArea.size().z + 3;
+					textMesh.position.z += (self._baseLength/2) + textBoxArea.size().z + 3;
 
-					textMesh.position.x = (baseWidth/2)*-1;
-					textMesh.position.x += (baseEdge + (barWidth/2) + (textBoxArea.size().x/2)) + (col*columnSpace) + (col*barWidth);
+					textMesh.position.x = (self._baseWidth/2)*-1;
+					textMesh.position.x += (self._baseEdge + (barWidth/2) + (textBoxArea.size().x/2)) + (col*columnSpace) + (col*barWidth);
 
 					graphObject.add(textMesh);
 				};
@@ -854,10 +834,10 @@
 
 					var textBoxArea = new THREE.Box3().setFromObject(textMesh);
 
-					textMesh.position.x += (baseWidth/2) + 3;
+					textMesh.position.x += (self._baseWidth/2) + 3;
 
-					textMesh.position.z -= (baseLength/2);
-					textMesh.position.z += baseEdge + (barWidth/2) + (row*rowSpace) + (row*barWidth) + (textBoxArea.size().z/2);
+					textMesh.position.z -= (self._baseLength/2);
+					textMesh.position.z += self._baseEdge + (barWidth/2) + (row*rowSpace) + (row*barWidth) + (textBoxArea.size().z/2);
 
 					graphObject.add(textMesh);
 				};
@@ -964,10 +944,10 @@
 	        		// Setting up the base plane for the bar chart
 					// Get the length (the z axis)
 					if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
-						if (graphData.data.length > graphData.rowLabels.values.length) baseLength = (barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (baseEdge*2);
-						else baseLength = (barWidth*graphData.rowLabels.values.length) + (rowSpace*graphData.rowLabels.values.length) - rowSpace + (baseEdge*2);
+						if (graphData.data.length > graphData.rowLabels.values.length) this._baseLength = (barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
+						else this._baseLength = (barWidth*graphData.rowLabels.values.length) + (rowSpace*graphData.rowLabels.values.length) - rowSpace + (this._baseEdge*2);
 					}
-					else if (graphData.data) baseLength = (barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (baseEdge*2);
+					else if (graphData.data) this._baseLength = (barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
 
 					// Figure out what the base width should be (the x axis)
 					var maxData = 0;
@@ -978,15 +958,15 @@
 
 					if ((graphData.columnLabels) && (graphData.columnLabels.values)) {
 						if (maxData) {
-							if (maxData > graphData.columnLabels.values.length) baseWidth = (barWidth*maxData) + (columnSpace*maxData) - columnSpace + (baseEdge*2);
-							else baseWidth = (barWidth*graphData.columnLabels.values.length) + (columnSpace*graphData.columnLabels.values.length) - columnSpace + (baseEdge*2);
+							if (maxData > graphData.columnLabels.values.length) this._baseWidth = (barWidth*maxData) + (columnSpace*maxData) - columnSpace + (this._baseEdge*2);
+							else this._baseWidth = (barWidth*graphData.columnLabels.values.length) + (columnSpace*graphData.columnLabels.values.length) - columnSpace + (this._baseEdge*2);
 						}
-						else baseWidth = (barWidth*graphData.columnLabels.values.length) + (columnSpace*graphData.columnLabels.values.length) - columnSpace + (baseEdge*2);
+						else this._baseWidth = (barWidth*graphData.columnLabels.values.length) + (columnSpace*graphData.columnLabels.values.length) - columnSpace + (this._baseEdge*2);
 					}
-					else if (maxData) baseWidth = (barWidth*maxData) + (columnSpace*maxData) - columnSpace + (baseEdge*2);
+					else if (maxData) this._baseWidth = (barWidth*maxData) + (columnSpace*maxData) - columnSpace + (this._baseEdge*2);
 
 					// add it to the scene
-					this.createBase(graphObject, baseWidth, baseLength, baseColor);
+					this.createBase(graphObject);
 
 					// Get the max value so we can factor values
 					var maxDataVal = 0;
@@ -1013,7 +993,7 @@
 					}
 
 					// Add the measurement lines to the grap assuming it has been configured
-					if (showMeasurementLines) this.createMeasurementsLines(graphObject, baseWidth, baseLength, measurementLineColor, measurementLabelFont, measurementLabelSize, measurementLabelColor, maxDataValBeforeFactor, originalMaxValue);
+					if (showMeasurementLines) this.createMeasurementsLines(graphObject, measurementLineColor, measurementLabelFont, measurementLabelSize, measurementLabelColor, maxDataValBeforeFactor, originalMaxValue);
 
     				for (var i=0; i<graphData.data.length; i++) {
     					// Figure out the color for the bar. Pick a random one is one isn't defined
@@ -1046,9 +1026,6 @@
 
 				// Add the graph to the scene
 				this._scene.add(graphObject);
-
-				// We need to make the skybox big enough that it contains the graph but not so big that it goes beyond the _far setting
-        		this.createSkybox((Math.max(baseWidth, baseLength, maxDataValBeforeFactor)+500)*2);
 
         		// If we don't have camera graphData then we'll try and determine the camera position 
     			if ((!graphData) || (!graphData.camera)) this.calculateCamera(graphObject);
