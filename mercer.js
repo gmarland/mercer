@@ -344,6 +344,20 @@
 				renderScene();
 			},
 
+			// ----- Some random functions used through graphs
+			getMaxDataValue: function(data) {		
+				// Get the max value so we can factor values
+				var maxDataVal = 0;
+
+				for (var i=0; i<data.length; i++) {
+					for (var j=0; j<data[i].values.length; j++) {
+						if (data[i].values[j] > maxDataVal) maxDataVal = data[i].values[j];
+					}
+				}
+
+				return maxDataVal;
+			},
+
         	// Calling will create a standard line graph
         	LineGraph: function(container, graphData) {
 				var self = this;
@@ -469,13 +483,7 @@
 					this.createBase();
 
 					// Get the max value so we can factor values
-					var maxDataVal = 0;
-
-    				for (var i=0; i<graphData.data.length; i++) {
-    					for (var j=0; j<graphData.data[i].values.length; j++) {
-							if (graphData.data[i].values[j] > maxDataVal) maxDataVal = graphData.data[i].values[j];
-    					}
-					}
+					var maxDataVal = this.getMaxDataValue(graph.data);
 
 					// Normalize the data so that the max value is at 100 units tall
 					var originalMaxValue = maxDataVal;
@@ -715,13 +723,7 @@
 					this.createBase();
 
 					// Get the max value so we can factor values
-					var maxDataVal = 0;
-
-    				for (var i=0; i<graphData.data.length; i++) {
-    					for (var j=0; j<graphData.data[i].values.length; j++) {
-							if (graphData.data[i].values[j] > maxDataVal) maxDataVal = graphData.data[i].values[j];
-    					}
-					}
+					var maxDataVal = this.getMaxDataValue(graph.data);
 
 					// Normalize the data so that the max value is at 100 units tall
 					var originalMaxValue = maxDataVal;
@@ -1084,13 +1086,7 @@
 					this.createBase();
 
 					// Get the max value so we can factor values
-					var maxDataVal = 0;
-
-    				for (var i=0; i<graphData.data.length; i++) {
-    					for (var j=0; j<graphData.data[i].values.length; j++) {
-							if (graphData.data[i].values[j] > maxDataVal) maxDataVal = graphData.data[i].values[j];
-    					}
-					}
+					var maxDataVal = this.getMaxDataValue(graph.data);
 
 					// Normalize the data so that the max value is at 100 units tall
 					var originalMaxValue = maxDataVal;
