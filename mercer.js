@@ -4,6 +4,9 @@
         	// The div that will contain the visualization
         	_container: null,
 
+        	// Switch to dermine if the renderer should keep ticking to allow animations
+        	_keepRenderingScene: false,
+
         	// Camera settings
         	_fov: 75,
         	_near: 0.1,
@@ -51,10 +54,15 @@
 
         	//Skybox
         	_skyboxColor: 0xffffff,
+        	_skyboxOpacity: 1,
 
         	setGlobalOptions: function(graphData) {
         		if (graphData !== undefined) {
         			if (graphData.background !== undefined) this._skyboxColor = new THREE.Color(graphData.background);
+        			if (graphData.backgroundTransparent !== undefined) {
+        				if (graphData.backgroundTransparent) this._skyboxOpacity = 0;
+        				else this._skyboxOpacity = 1;
+        			}
 
         			if (graphData.cameraX != undefined) this._cameraSettings.position.x = graphData.cameraX;
         			if (graphData.cameraY != undefined) this._cameraSettings.position.y = graphData.cameraY;
@@ -94,8 +102,9 @@
 
 				this._scene = new THREE.Scene();
 
-				this._renderer = new THREE.WebGLRenderer({ antialias: true });
+				this._renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 				this._renderer.setSize(containerWidth, containerHeight);
+				this._renderer.setClearColor(this._skyboxColor, this._skyboxOpacity);
 
 				this._container.appendChild(this._renderer.domElement);
 		      
@@ -138,7 +147,11 @@
 	        	this._cameraSettings.lookAt.z = 0;
         	},
 
+<<<<<<< HEAD
         	createBase: function(graphObject) {
+=======
+        	createBase: function(graphObject, baseWidth, baseLength, color) {
+>>>>>>> 78ba2be1c23a47b474709e8a148301150b2ce4b0
 	    		// Create the base (a simple plane should do)
 				var base = new THREE.Mesh(new THREE.PlaneGeometry(this._baseWidth, this._baseLength), new THREE.MeshBasicMaterial({ 
 					color: this._baseColor, 
@@ -373,6 +386,8 @@
 
         			 	startPositionX = e.clientX-(window.innerWidth/2);
 	        			startRotationX = graphObject.rotation.y;
+
+	        			startRendering();
 	        		}, false );
 
         			self._renderer.domElement.addEventListener( "mousemove", function(e) {
@@ -391,11 +406,15 @@
 
 			        	startPositionX = null;
 	        			targetRotationX = null;
+
+	        			stopRendering();
 			        }, false );
         			
-        			self._renderer.domElement.removeEventListener( "mouseout", function(e) {
+        			self._renderer.domElement.addEventListener( "mouseout", function(e) {
 			        	startPositionX = null;
 	        			targetRotationX = null;
+
+	        			stopRendering();
 			        }, false );
 
 			        // touch events
@@ -405,6 +424,8 @@
 
 	        			 	startPositionX = e.touches[0].pageX-(window.innerWidth/2);
 	        				startRotationX = graphObject.rotation.y;
+
+	        				startRendering();
 		        		}
 	        		}, false );
 
@@ -422,11 +443,15 @@
 			        self._renderer.domElement.addEventListener( "touchend", function(e) {
 			        	startPositionX = null;
 	        			targetRotationX = null;
+
+	        			stopRendering();
 			        }, false );
 
 			        self._renderer.domElement.addEventListener( "touchcancel", function(e) {
 			        	startPositionX = null;
 	        			targetRotationX = null;
+
+	        			stopRendering();
 			        }, false );
 	        	};
 
@@ -438,16 +463,22 @@
 	        		}
 	        	};
 
-				var startRenderScene = function() {
-					var render = function () {
-						requestAnimationFrame( render );
+	        	var startRendering = function() {
+	        		this._keepRenderingScene = true;
 
-						update();
+	        		render();
+	        	};
 
-						self._renderer.render(self._scene, self._camera);
-					};
+	        	var stopRendering = function() {
+	        		this._keepRenderingScene = false;
+	        	};
 
-					render();
+				var render = function () {
+					if (this._keepRenderingScene) requestAnimationFrame( render );
+
+					update();
+
+					self._renderer.render(self._scene, self._camera);
 				};
 
         		this._container = document.getElementById(container);
@@ -548,7 +579,7 @@
 
 				this.addCamera();
 
-        		if (this._camera) startRenderScene();
+        		if (this._camera) render();
         	},
 
         	// Calling will create a standard bar chart
@@ -854,6 +885,8 @@
 
         			 	startPositionX = e.clientX-(window.innerWidth/2);
 	        			startRotationX = graphObject.rotation.y;
+
+	        			startRendering();
 	        		}, false );
 
         			self._renderer.domElement.addEventListener( "mousemove", function(e) {
@@ -872,11 +905,15 @@
 
 			        	startPositionX = null;
 	        			targetRotationX = null;
+
+	        			stopRendering();
 			        }, false );
         			
-        			self._renderer.domElement.removeEventListener( "mouseout", function(e) {
+        			self._renderer.domElement.addEventListener( "mouseout", function(e) {
 			        	startPositionX = null;
 	        			targetRotationX = null;
+
+	        			stopRendering();
 			        }, false );
 
 			        // touch events
@@ -886,6 +923,8 @@
 
 	        			 	startPositionX = e.touches[0].pageX-(window.innerWidth/2);
 	        				startRotationX = graphObject.rotation.y;
+
+	        				startRendering();
 		        		}
 	        		}, false );
 
@@ -903,11 +942,15 @@
 			        self._renderer.domElement.addEventListener( "touchend", function(e) {
 			        	startPositionX = null;
 	        			targetRotationX = null;
+
+	        			stopRendering();
 			        }, false );
 
 			        self._renderer.domElement.addEventListener( "touchcancel", function(e) {
 			        	startPositionX = null;
 	        			targetRotationX = null;
+
+	        			stopRendering();
 			        }, false );
 	        	};
 
@@ -919,16 +962,22 @@
 	        		}
 	        	};
 
-				var startRenderScene = function() {
-					var render = function () {
-						requestAnimationFrame( render );
+	        	var startRendering = function() {
+	        		this._keepRenderingScene = true;
 
-						update();
+	        		render();
+	        	};
 
-						self._renderer.render(self._scene, self._camera);
-					};
+	        	var stopRendering = function() {
+	        		this._keepRenderingScene = false;
+	        	};
 
-					render();
+				var render = function () {
+					if (this._keepRenderingScene) requestAnimationFrame( render );
+
+					update();
+
+					self._renderer.render(self._scene, self._camera);
 				};
 
         		this._container = document.getElementById(container);
@@ -1041,7 +1090,7 @@
 
 				this.addCamera();
 
-        		if (this._camera) startRenderScene();
+        		if (this._camera) render();
         	}
         }
     };
