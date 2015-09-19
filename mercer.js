@@ -70,6 +70,8 @@
         	_skyboxColor: 0xffffff,
         	_skyboxOpacity: 1,
 
+        	// ----- Method to overwrite the global options 
+
         	setGlobalOptions: function(graphData) {
         		if (graphData !== undefined) {
         			if (graphData.background !== undefined) this._skyboxColor = new THREE.Color(graphData.background);
@@ -124,6 +126,8 @@
         		}
         	},
 
+        	// -----  Function for creating the scene
+
         	createScene: function() {
         		var containerWidth = parseInt(this._container.style.width,10), 
         			containerHeight = parseInt(this._container.style.height,10);
@@ -142,6 +146,9 @@
 				this._scene.add(directionalLight);
         	},
 
+        	// ----- Functions for setting up the camera
+
+        	// Add the camera to the scene
         	addCamera: function() {
         		var containerWidth = parseInt(this._container.style.width,10), 
         			containerHeight = parseInt(this._container.style.height,10);
@@ -155,7 +162,7 @@
 				this._camera.lookAt(new THREE.Vector3(this._cameraSettings.lookAt.x, this._cameraSettings.lookAt.y, this._cameraSettings.lookAt.z));
         	},
 				
-			// This attempts to find a camera position based on 
+			// This attempts to find a camera position based on the graph object dimensions
 			calculateCamera: function() {
 				var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
 
@@ -175,6 +182,8 @@
 	        	this._cameraSettings.lookAt.z = 0;
         	},
 
+        	// ----- Functions for drawing the base
+
         	createBase: function() {
         		var baseGeometry = new THREE.BoxGeometry(this._baseWidth, this._baseThickness, this._baseLength),
 					baseMesh = new THREE.Mesh(baseGeometry, new THREE.MeshLambertMaterial({
@@ -186,6 +195,8 @@
 
 				this._graphObject.add(baseMesh);
         	},
+
+        	// ----- Functions for drawing the measurement lines
 
 			createMeasurementsLines: function(graphHeight, barValue) {
 				if (barValue < 10) barValue = 10;
@@ -229,6 +240,9 @@
 				}
 			},
 
+			// ----- Event binding
+
+			// Binding mouse events
         	bindEvents: function() {
         		var self = this;
 
@@ -312,6 +326,8 @@
 		        }, false );
         	},
 
+        	// ----- Functions for rendering the graphs
+
         	updateScene: function() {
         		if ((this._targetRotationX) && (this._graphObject)) {
         			var newRotation = ( this._targetRotationX - this._graphObject.rotation.y ) * 0.1;
@@ -345,8 +361,9 @@
 			},
 
 			// ----- Some random functions used through graphs
+
+			// Returns rhe maximum value in a data set
 			getMaxDataValue: function(data) {		
-				// Get the max value so we can factor values
 				var maxDataVal = 0;
 
 				for (var i=0; i<data.length; i++) {
@@ -357,6 +374,8 @@
 
 				return maxDataVal;
 			},
+
+			// ----- Functions for drawing the graphs
 
         	// Calling will create a standard line graph
         	LineGraph: function(container, graphData) {
