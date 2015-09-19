@@ -52,6 +52,13 @@
 			_baseLength: 200, // the base length which will be show if no data is added
 			_baseColor: 0xaaaaaa, // the color for the base
 
+			_locked: false, // whether or not to allow the rotation of the graph
+			_showMeasurementLines: true, // whether or not to show measurement lines
+			_measurementLineColor: 0x222222, // the default color of the measurement lines
+			_measurementLabelFont: "helvetiker", // the font for the measurement label
+			_measurementLabelSize: 2.5, // the font size for the measurement label
+			_measurementLabelColor: 0x000000, // the default color for the measurement label
+
         	//Skybox
         	_skyboxColor: 0xffffff,
         	_skyboxOpacity: 1,
@@ -92,7 +99,19 @@
 
         			if (graphData.baseLength !== undefined) this._baseLength = graphData.baseLength;
 
-        			if (graphData.baseColor !== undefined) this._baseColor = graphData.baseColor
+        			if (graphData.baseColor !== undefined) this._baseColor = graphData.baseColor;
+
+        			if (graphData.locked !== undefined) this._locked = graphData.locked;
+
+        			if (graphData.showMeasurementLines !== undefined) this._showMeasurementLines = graphData.showMeasurementLines;
+
+        			if (graphData.measurementLineColor !== undefined) this._measurementLineColor = new THREE.Color(graphData.measurementLineColor);
+
+        			if (graphData.measurementLabelFont !== undefined) this._measurementLabelFont = graphData.measurementLabelFont;
+
+        			if (graphData.measurementLabelSize !== undefined) this._measurementLabelSize = graphData.measurementLabelSize;
+
+        			if (graphData.measurementLabelColor !== undefined) this._measurementLabelColor = new THREE.Color(graphData.measurementLabelColor);
         		}
         	},
 
@@ -160,7 +179,7 @@
 				graphObject.add(base);
         	},
 
-			createMeasurementsLines: function(graphObject, lineColor, labelFont, labelSize, labelColor, graphHeight, barValue) {
+			createMeasurementsLines: function(graphObject, graphHeight, barValue) {
 				if (barValue < 10) barValue = 10;
 
 				var stepsEachLine = Math.ceil(graphHeight/10);
@@ -174,20 +193,20 @@
 					measureLineGeometry.vertices.push(new THREE.Vector3((this._baseWidth/2), (stepsEachLine*i), (this._baseLength/2)*-1));
 
 					var measureLine = new THREE.Line(measureLineGeometry, new THREE.LineBasicMaterial({
-						color: lineColor,
+						color: this._measurementLineColor,
 						side: THREE.DoubleSide
 					}));
 
 					mesurementLineObject.add(measureLine);
 
 					var textGeometry = new THREE.TextGeometry(Math.round((barValue/10)*i), {
-						font: labelFont,
-    	 				size: labelSize,
+						font: this._measurementLabelFont,
+    	 				size: this._measurementLabelSize,
 						height: .2
 					});
 					
 					var textMesh = new THREE.Mesh(textGeometry, new THREE.MeshBasicMaterial({
-						color: labelColor
+						color: this._measurementLabelColor
 					}));
 
 					var textBoxArea = new THREE.Box3().setFromObject(textMesh);
@@ -222,13 +241,7 @@
         			rowLabelFont = "helvetiker", // the font for the row label
         			rowLabelSize = 4, // the font size for the row label
         			rowLabelColor = 0x000000, // the default color for the row label
-        			pointSpace = 15, // the space between each column in a row
-        			locked = false, // whether or not to allow the rotation of the graph
-        			showMeasurementLines = true, // whether or not to show measurement lines
-        			measurementLineColor = 0x222222, // the default color of the measurement lines
-        			measurementLabelFont = "helvetiker", // the font for the measurement label
-        			measurementLabelSize = 2.5, // the font size for the measurement label
-        			measurementLabelColor = 0x000000; // the default color for the measurement label
+        			pointSpace = 15; // the space between each column in a row
 
         		// Allow the override using the graphData options if they exist
         		if (graphData !== undefined) {
@@ -246,19 +259,7 @@
 	        			if (graphData.rowLabels.color !== undefined) rowLabelColor = new THREE.Color(graphData.rowLabels.color);
 	        		}
 
-        			if (graphData.pointSpace !== undefined) locked = graphData.locked;
-
-        			if (graphData.locked !== undefined) locked = graphData.locked;
-
-        			if (graphData.showMeasurementLines !== undefined) showMeasurementLines = graphData.showMeasurementLines;
-
-        			if (graphData.measurementLineColor !== undefined) measurementLineColor = new THREE.Color(graphData.measurementLineColor);
-
-        			if (graphData.measurementLabelFont !== undefined) measurementLabelFont = graphData.measurementLabelFont;
-
-        			if (graphData.measurementLabelSize !== undefined) measurementLabelSize = graphData.measurementLabelSize;
-
-        			if (graphData.measurementLabelColor !== undefined) measurementLabelColor = new THREE.Color(graphData.measurementLabelColor);
+        			if (graphData.pointSpace !== undefined) pointSpace = graphData.pointSpace;
 
         			this.setGlobalOptions(graphData);
         		}
@@ -539,7 +540,7 @@
 					}
 
 					// Add the measurement lines
-					if (showMeasurementLines) this.createMeasurementsLines(graphObject, measurementLineColor, measurementLabelFont, measurementLabelSize, measurementLabelColor, maxDataValBeforeFactor, originalMaxValue);
+					if (this._showMeasurementLines) this.createMeasurementsLines(graphObject, maxDataValBeforeFactor, originalMaxValue);
 
 					for (var i=0; i<graphData.data.length; i++) {
     					// Figure out the color for the bar. Pick a random one is one isn't defined
@@ -571,7 +572,7 @@
 				if (this._startRotation) graphObject.rotation.y = this._startRotation;
 
     			// bind all mouse/touch events
-				if (!locked) bindEvents();
+				if (!this._locked) bindEvents();
 
 				this.addCamera();
 
@@ -610,13 +611,7 @@
         			columnSpace = 10, // the space between each column in a row
         			columnLabelFont = "helvetiker", // the font for the col label
         			columnLabelSize = 4, // the font size for the col label
-        			columnLabelColor = 0x000000, // the default color for the col label
-        			locked = false, // whether or not to allow the rotation of the graph
-        			showMeasurementLines = true, // whether or not to show measurement lines
-        			measurementLineColor = 0x222222, // the default color of the measurement lines
-        			measurementLabelFont = "helvetiker", // the font for the measurement label
-        			measurementLabelSize = 2.5, // the font size for the measurement label
-        			measurementLabelColor = 0x000000; // the default color for the measurement label
+        			columnLabelColor = 0x000000; // the default color for the col label
 
         		// Allow the override using the graphData options if they exist
         		if (graphData !== undefined) {
@@ -653,18 +648,6 @@
 
 	        			if (graphData.columnLabels.color !== undefined) columnLabelColor = new THREE.Color(graphData.columnLabels.color);
 	        		}
-
-        			if (graphData.showMeasurementLines !== undefined) showMeasurementLines = graphData.showMeasurementLines;
-
-        			if (graphData.measurementLineColor !== undefined) measurementLineColor = new THREE.Color(graphData.measurementLineColor);
-
-        			if (graphData.measurementLabelFont !== undefined) measurementLabelFont = graphData.measurementLabelFont;
-
-        			if (graphData.measurementLabelSize !== undefined) measurementLabelSize = graphData.measurementLabelSize;
-
-        			if (graphData.measurementLabelColor !== undefined) measurementLabelColor = new THREE.Color(graphData.measurementLabelColor);
-
-        			if (graphData.locked !== undefined) locked = graphData.locked;
 
         			this.setGlobalOptions(graphData);
         		}
@@ -1038,7 +1021,7 @@
 					}
 
 					// Add the measurement lines to the grap assuming it has been configured
-					if (showMeasurementLines) this.createMeasurementsLines(graphObject, measurementLineColor, measurementLabelFont, measurementLabelSize, measurementLabelColor, maxDataValBeforeFactor, originalMaxValue);
+					if (this._showMeasurementLines) this.createMeasurementsLines(graphObject, maxDataValBeforeFactor, originalMaxValue);
 
     				for (var i=0; i<graphData.data.length; i++) {
     					// Figure out the color for the bar. Pick a random one is one isn't defined
@@ -1082,7 +1065,7 @@
 				if (this._startRotation) graphObject.rotation.y = this._startRotation;
 
     			// bind all mouse/touch events
-				if (!locked) bindEvents();
+				if (!this._locked) bindEvents();
 
 				this.addCamera();
 
