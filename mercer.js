@@ -483,7 +483,7 @@
 					this.createBase();
 
 					// Get the max value so we can factor values
-					var maxDataVal = this.getMaxDataValue(graph.data);
+					var maxDataVal = this.getMaxDataValue(graphData.data);
 
 					// Normalize the data so that the max value is at 100 units tall
 					var originalMaxValue = maxDataVal;
@@ -723,7 +723,7 @@
 					this.createBase();
 
 					// Get the max value so we can factor values
-					var maxDataVal = this.getMaxDataValue(graph.data);
+					var maxDataVal = this.getMaxDataValue(graphData.data);
 
 					// Normalize the data so that the max value is at 100 units tall
 					var originalMaxValue = maxDataVal;
@@ -1086,7 +1086,7 @@
 					this.createBase();
 
 					// Get the max value so we can factor values
-					var maxDataVal = this.getMaxDataValue(graph.data);
+					var maxDataVal = this.getMaxDataValue(graphData.data);
 
 					// Normalize the data so that the max value is at 100 units tall
 					var originalMaxValue = maxDataVal;
