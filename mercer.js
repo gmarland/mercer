@@ -4,8 +4,14 @@
         	// The div that will contain the visualization
         	_container: null,
 
+			// The actual graph object
+			_graphObject: new THREE.Object3D(),
+
         	// Switch to dermine if the renderer should keep ticking to allow animations
         	_keepRenderingScene: false,
+
+        	// Used when rotating the graph
+        	_targetRotationX: null,
 
         	// Camera settings
         	_fov: 75,
@@ -147,8 +153,8 @@
         	},
 				
 			// This attempts to find a camera position based on 
-			calculateCamera: function(graphObject) {
-				var graphObjectArea = new THREE.Box3().setFromObject(graphObject);
+			calculateCamera: function() {
+				var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
 
     			this._cameraSettings.position.x = 0;
     			this._cameraSettings.position.y = graphObjectArea.size().y;
@@ -158,15 +164,15 @@
         	},
 
         	// Attempts to determine where the camera should be looking based on the graph settings
-        	calculateLookAt: function(graphObject) {
-				var graphObjectArea = new THREE.Box3().setFromObject(graphObject);
+        	calculateLookAt: function() {
+				var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
 
 	        	this._cameraSettings.lookAt.x = 0;
 	        	this._cameraSettings.lookAt.y = (graphObjectArea.size().y/2);
 	        	this._cameraSettings.lookAt.z = 0;
         	},
 
-        	createBase: function(graphObject) {
+        	createBase: function() {
 	    		// Create the base (a simple plane should do)
 				var base = new THREE.Mesh(new THREE.PlaneGeometry(this._baseWidth, this._baseLength), new THREE.MeshBasicMaterial({ 
 					color: this._baseColor, 
@@ -176,10 +182,10 @@
 				// rotate it 90 degrees so it's flat
 				base.rotation.x = (Math.PI/2);
 
-				graphObject.add(base);
+				this._graphObject.add(base);
         	},
 
-			createMeasurementsLines: function(graphObject, graphHeight, barValue) {
+			createMeasurementsLines: function(graphHeight, barValue) {
 				if (barValue < 10) barValue = 10;
 
 				var stepsEachLine = Math.ceil(graphHeight/10);
@@ -217,24 +223,134 @@
 
 					mesurementLineObject.add(textMesh);
 
-					graphObject.add(mesurementLineObject);
+					this._graphObject.add(mesurementLineObject);
 				}
+			},
+
+        	bindEvents: function() {
+        		var self = this;
+
+	        	// These variables are required for rotating the graph
+        		var startPositionX = null,
+        			startRotationX = null;
+
+        		// mouse events
+        		this._renderer.domElement.addEventListener("mousedown", function(e) {
+        			e.preventDefault();
+        			e.stopPropagation();
+
+    			 	startPositionX = e.clientX-(window.innerWidth/2);
+        			startRotationX = self._graphObject.rotation.y;
+
+        			self.startRendering();
+        		}, false );
+
+    			this._renderer.domElement.addEventListener( "mousemove", function(e) {
+        			e.preventDefault();
+        			e.stopPropagation();
+
+    				if (startPositionX) {
+      	  				var mouseX = e.clientX-(window.innerWidth/2);
+      	  				self._targetRotationX = startRotationX+(mouseX - startPositionX) * 0.02;
+      	  			}
+		        }, false );
+
+		        this._renderer.domElement.addEventListener( "mouseup", function(e) {
+        			e.preventDefault();
+        			e.stopPropagation();
+
+		        	startPositionX = null;
+        			self._targetRotationX = null;
+
+        			self.stopRendering();
+		        }, false );
+    			
+    			this._renderer.domElement.addEventListener( "mouseout", function(e) {
+		        	startPositionX = null;
+        			self._targetRotationX = null;
+
+        			self.stopRendering();
+		        }, false );
+
+		        // touch events
+        		this._renderer.domElement.addEventListener("touchstart", function(e) {
+			        if (e.touches.length == 1) {
+		                e.preventDefault();
+
+        			 	startPositionX = e.touches[0].pageX-(window.innerWidth/2);
+        				startRotationX = self._graphObject.rotation.y;
+
+        				self.startRendering();
+	        		}
+        		}, false );
+
+    			this._renderer.domElement.addEventListener( "touchmove", function(e) {
+    				if (startPositionX) {
+				        if (e.touches.length == 1) {
+			                e.preventDefault();
+
+	      	  				var mouseX = e.touches[0].pageX-(window.innerWidth/2);
+	      	  				self._targetRotationX = (mouseX - startPositionX) * 0.05;
+	      	  			}
+      	  			}
+		        }, false );
+
+		        this._renderer.domElement.addEventListener( "touchend", function(e) {
+		        	startPositionX = null;
+        			self._targetRotationX = null;
+
+        			self.stopRendering();
+		        }, false );
+
+		        this._renderer.domElement.addEventListener( "touchcancel", function(e) {
+		        	startPositionX = null;
+        			self._targetRotationX = null;
+
+        			self.stopRendering();
+		        }, false );
+        	},
+
+        	updateScene: function() {
+        		if ((this._targetRotationX) && (this._graphObject)) {
+        			var newRotation = ( this._targetRotationX - this._graphObject.rotation.y ) * 0.1;
+
+        			this._graphObject.rotation.y += newRotation;
+        		}
+        	},
+
+        	startRendering: function() {
+        		this._keepRenderingScene = true;
+
+        		this.render();
+        	},
+
+        	stopRendering: function() {
+        		this._keepRenderingScene = false;
+        	},
+
+			render: function () {
+				var self = this;
+
+				var renderScene = function () {
+					if (self._keepRenderingScene) requestAnimationFrame( renderScene );
+
+					self.updateScene();
+
+					self._renderer.render(self._scene, self._camera);
+				};
+
+				renderScene();
 			},
 
         	// Calling will create a standard ares chart
         	AreaChart: function(container, graphData) {
 				var self = this;
 
-        		// The actual graph object
-        		var graphObject = new THREE.Object3D();
-
         		// The areas to the graph
         		var areas = [];
 
 				// This is the maximum value allowed to be reached before it starts to factor
 				var maxDataValBeforeFactor = 150;
-
-        		var targetRotationX = null; // used for rotations
 
         		var areaWidth = 4,
         			rowSpace = 30, // the space between each row
@@ -343,7 +459,7 @@
 
 					areaObject.add(areaLine);
 
-					graphObject.add(areaObject);
+					self._graphObject.add(areaObject);
 
 					return areaObject;
 				};
@@ -368,114 +484,7 @@
 					textMesh.position.z -= (self._baseLength/2);
 					textMesh.position.z += self._baseEdge + (row*rowSpace) + (row*areaWidth) + (textBoxArea.size().z/2);
 
-					graphObject.add(textMesh);
-				};
-
-	        	var bindEvents = function() {
-		        	// These variables are required for rotating the graph
-	        		var startPositionX = null,
-	        			startRotationX = null;
-
-	        		// mouse events
-	        		self._renderer.domElement.addEventListener("mousedown", function(e) {
-	        			e.preventDefault();
-	        			e.stopPropagation();
-
-        			 	startPositionX = e.clientX-(window.innerWidth/2);
-	        			startRotationX = graphObject.rotation.y;
-
-	        			startRendering();
-	        		}, false );
-
-        			self._renderer.domElement.addEventListener( "mousemove", function(e) {
-	        			e.preventDefault();
-	        			e.stopPropagation();
-
-        				if (startPositionX) {
-	      	  				var mouseX = e.clientX-(window.innerWidth/2);
-	      	  				targetRotationX = startRotationX+(mouseX - startPositionX) * 0.02;
-	      	  			}
-			        }, false );
-
-			        self._renderer.domElement.addEventListener( "mouseup", function(e) {
-	        			e.preventDefault();
-	        			e.stopPropagation();
-
-			        	startPositionX = null;
-	        			targetRotationX = null;
-
-	        			stopRendering();
-			        }, false );
-        			
-        			self._renderer.domElement.addEventListener( "mouseout", function(e) {
-			        	startPositionX = null;
-	        			targetRotationX = null;
-
-	        			stopRendering();
-			        }, false );
-
-			        // touch events
-	        		self._renderer.domElement.addEventListener("touchstart", function(e) {
-				        if (e.touches.length == 1) {
-			                e.preventDefault();
-
-	        			 	startPositionX = e.touches[0].pageX-(window.innerWidth/2);
-	        				startRotationX = graphObject.rotation.y;
-
-	        				startRendering();
-		        		}
-	        		}, false );
-
-        			self._renderer.domElement.addEventListener( "touchmove", function(e) {
-        				if (startPositionX) {
-					        if (e.touches.length == 1) {
-				                e.preventDefault();
-
-		      	  				var mouseX = e.touches[0].pageX-(window.innerWidth/2);
-		      	  				targetRotationX = (mouseX - startPositionX) * 0.05;
-		      	  			}
-	      	  			}
-			        }, false );
-
-			        self._renderer.domElement.addEventListener( "touchend", function(e) {
-			        	startPositionX = null;
-	        			targetRotationX = null;
-
-	        			stopRendering();
-			        }, false );
-
-			        self._renderer.domElement.addEventListener( "touchcancel", function(e) {
-			        	startPositionX = null;
-	        			targetRotationX = null;
-
-	        			stopRendering();
-			        }, false );
-	        	};
-
-	        	var update = function() {
-	        		if ((targetRotationX) && (graphObject)) {
-	        			var newRotation = ( targetRotationX - graphObject.rotation.y ) * 0.1;
-
-	        			graphObject.rotation.y += newRotation;
-	        		}
-	        	};
-
-	        	var startRendering = function() {
-	        		this._keepRenderingScene = true;
-
-	        		render();
-	        	};
-
-	        	var stopRendering = function() {
-	        		this._keepRenderingScene = false;
-	        	};
-
-				var render = function () {
-					if (this._keepRenderingScene) requestAnimationFrame( render );
-
-					update();
-
-					self._renderer.render(self._scene, self._camera);
+					self._graphObject.add(textMesh);
 				};
 
         		this._container = document.getElementById(container);
@@ -483,8 +492,8 @@
         		this.createScene();
 
         		// Give it a name just for simplicity
-        		if ((graphData) && (graphData.name)) graphObject.name = graphData.name;
-        		else graphObject.name = "areaGraph";
+        		if ((graphData) && (graphData.name)) this._graphObject.name = graphData.name;
+        		else this._graphObject.name = "areaGraph";
 
 				// check that we've have some data passed in
 				if (graphData) {
@@ -513,7 +522,7 @@
 					else if (maxData) this._baseWidth = (pointSpace*maxData) - pointSpace + (this._baseEdge*2);
 
 					// add it to the scene
-					this.createBase(graphObject);
+					this.createBase();
 
 					// Get the max value so we can factor values
 					var maxDataVal = 0;
@@ -540,7 +549,7 @@
 					}
 
 					// Add the measurement lines
-					if (this._showMeasurementLines) this.createMeasurementsLines(graphObject, maxDataValBeforeFactor, originalMaxValue);
+					if (this._showMeasurementLines) this.createMeasurementsLines(maxDataValBeforeFactor, originalMaxValue);
 
 					for (var i=0; i<graphData.data.length; i++) {
     					// Figure out the color for the bar. Pick a random one is one isn't defined
@@ -560,31 +569,28 @@
 				}
 
 				// Add the graph to the scene
-				this._scene.add(graphObject);
+				this._scene.add(this._graphObject);
 
         		// If we don't have camera graphData then we'll try and determine the camera position 
-    			if ((!graphData) || (!graphData.camera)) this.calculateCamera(graphObject);
+    			if ((!graphData) || (!graphData.camera)) this.calculateCamera();
 
     			// If we don't have camera graphData then we'll try and determine the cameras lookat 
-    			if ((!graphData) || (!graphData.lookAt)) this.calculateLookAt(graphObject);
+    			if ((!graphData) || (!graphData.lookAt)) this.calculateLookAt();
 
 				// Set the initial rotation
-				if (this._startRotation) graphObject.rotation.y = this._startRotation;
+				if (this._startRotation) this._graphObject.rotation.y = this._startRotation;
 
     			// bind all mouse/touch events
-				if (!this._locked) bindEvents();
+				if (!this._locked) this.bindEvents();
 
 				this.addCamera();
 
-        		if (this._camera) render();
+        		if (this._camera) this.render();
         	},
 
         	// Calling will create a standard bar chart
         	BarChart: function(container, graphData) {
 				var self = this;
-
-        		// The actual graph object
-        		var graphObject = new THREE.Object3D();
 
         		// The bars to the graph
         		var bars = [];
@@ -594,8 +600,6 @@
 
 				// This is the maximum value allowed to be reached before it starts to factor
 				var maxDataValBeforeFactor = 150;
-
-        		var targetRotationX = null; // used for rotations
 
         		// Set up the basic configuration for the bar
         		var barWidth = 15, // the width of the bar
@@ -798,7 +802,7 @@
 						barObject.add(valueMesh);
 					}
 
-					graphObject.add(barObject);
+					self._graphObject.add(barObject);
 
 					// Return the created bar
 
@@ -826,7 +830,7 @@
 					textMesh.position.x = (self._baseWidth/2)*-1;
 					textMesh.position.x += (self._baseEdge + (barWidth/2) + (textBoxArea.size().x/2)) + (col*columnSpace) + (col*barWidth);
 
-					graphObject.add(textMesh);
+					self._graphObject.add(textMesh);
 				};
 
 				var createRowLabel = function(row, text) {
@@ -849,114 +853,7 @@
 					textMesh.position.z -= (self._baseLength/2);
 					textMesh.position.z += self._baseEdge + (barWidth/2) + (row*rowSpace) + (row*barWidth) + (textBoxArea.size().z/2);
 
-					graphObject.add(textMesh);
-				};
-
-	        	var bindEvents = function() {
-		        	// These variables are required for rotating the graph
-	        		var startPositionX = null,
-	        			startRotationX = null;
-
-	        		// mouse events
-	        		self._renderer.domElement.addEventListener("mousedown", function(e) {
-	        			e.preventDefault();
-	        			e.stopPropagation();
-
-        			 	startPositionX = e.clientX-(window.innerWidth/2);
-	        			startRotationX = graphObject.rotation.y;
-
-	        			startRendering();
-	        		}, false );
-
-        			self._renderer.domElement.addEventListener( "mousemove", function(e) {
-	        			e.preventDefault();
-	        			e.stopPropagation();
-
-        				if (startPositionX) {
-	      	  				var mouseX = e.clientX-(window.innerWidth/2);
-	      	  				targetRotationX = startRotationX+(mouseX - startPositionX) * 0.02;
-	      	  			}
-			        }, false );
-
-			        self._renderer.domElement.addEventListener( "mouseup", function(e) {
-	        			e.preventDefault();
-	        			e.stopPropagation();
-
-			        	startPositionX = null;
-	        			targetRotationX = null;
-
-	        			stopRendering();
-			        }, false );
-        			
-        			self._renderer.domElement.addEventListener( "mouseout", function(e) {
-			        	startPositionX = null;
-	        			targetRotationX = null;
-
-	        			stopRendering();
-			        }, false );
-
-			        // touch events
-	        		self._renderer.domElement.addEventListener("touchstart", function(e) {
-				        if (e.touches.length == 1) {
-			                e.preventDefault();
-
-	        			 	startPositionX = e.touches[0].pageX-(window.innerWidth/2);
-	        				startRotationX = graphObject.rotation.y;
-
-	        				startRendering();
-		        		}
-	        		}, false );
-
-        			self._renderer.domElement.addEventListener( "touchmove", function(e) {
-        				if (startPositionX) {
-					        if (e.touches.length == 1) {
-				                e.preventDefault();
-
-		      	  				var mouseX = e.touches[0].pageX-(window.innerWidth/2);
-		      	  				targetRotationX = (mouseX - startPositionX) * 0.05;
-		      	  			}
-	      	  			}
-			        }, false );
-
-			        self._renderer.domElement.addEventListener( "touchend", function(e) {
-			        	startPositionX = null;
-	        			targetRotationX = null;
-
-	        			stopRendering();
-			        }, false );
-
-			        self._renderer.domElement.addEventListener( "touchcancel", function(e) {
-			        	startPositionX = null;
-	        			targetRotationX = null;
-
-	        			stopRendering();
-			        }, false );
-	        	};
-
-	        	var update = function() {
-	        		if ((targetRotationX) && (graphObject)) {
-	        			var newRotation = ( targetRotationX - graphObject.rotation.y ) * 0.1;
-
-	        			graphObject.rotation.y += newRotation;
-	        		}
-	        	};
-
-	        	var startRendering = function() {
-	        		this._keepRenderingScene = true;
-
-	        		render();
-	        	};
-
-	        	var stopRendering = function() {
-	        		this._keepRenderingScene = false;
-	        	};
-
-				var render = function () {
-					if (this._keepRenderingScene) requestAnimationFrame( render );
-
-					update();
-
-					self._renderer.render(self._scene, self._camera);
+					self._graphObject.add(textMesh);
 				};
 
         		this._container = document.getElementById(container);
@@ -964,8 +861,8 @@
         		this.createScene();
 
         		// Give it a name just for simplicity
-        		if ((graphData) && (graphData.name)) graphObject.name = graphData.name;
-        		else graphObject.name = "barGraph";
+        		if ((graphData) && (graphData.name)) this._graphObject.name = graphData.name;
+        		else this._graphObject.name = "barGraph";
 
 				// check that we've have some data passed in
 				if (graphData) {
@@ -994,7 +891,7 @@
 					else if (maxData) this._baseWidth = (barWidth*maxData) + (columnSpace*maxData) - columnSpace + (this._baseEdge*2);
 
 					// add it to the scene
-					this.createBase(graphObject);
+					this.createBase();
 
 					// Get the max value so we can factor values
 					var maxDataVal = 0;
@@ -1021,7 +918,7 @@
 					}
 
 					// Add the measurement lines to the grap assuming it has been configured
-					if (this._showMeasurementLines) this.createMeasurementsLines(graphObject, maxDataValBeforeFactor, originalMaxValue);
+					if (this._showMeasurementLines) this.createMeasurementsLines(maxDataValBeforeFactor, originalMaxValue);
 
     				for (var i=0; i<graphData.data.length; i++) {
     					// Figure out the color for the bar. Pick a random one is one isn't defined
@@ -1053,23 +950,23 @@
 				}
 
 				// Add the graph to the scene
-				this._scene.add(graphObject);
+				this._scene.add(this._graphObject);
 
         		// If we don't have camera graphData then we'll try and determine the camera position 
-    			if ((!graphData) || (!graphData.camera)) this.calculateCamera(graphObject);
+    			if ((!graphData) || (!graphData.camera)) this.calculateCamera();
 
     			// If we don't have camera graphData then we'll try and determine the cameras lookat 
-    			if ((!graphData) || (!graphData.lookAt)) this.calculateLookAt(graphObject);
+    			if ((!graphData) || (!graphData.lookAt)) this.calculateLookAt();
 
 				// Set the initial rotation
-				if (this._startRotation) graphObject.rotation.y = this._startRotation;
+				if (this._startRotation) this._graphObject.rotation.y = this._startRotation;
 
     			// bind all mouse/touch events
-				if (!this._locked) bindEvents();
+				if (!this._locked) this.bindEvents();
 
 				this.addCamera();
 
-        		if (this._camera) render();
+        		if (this._camera) this.render();
         	}
         }
     };
