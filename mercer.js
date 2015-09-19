@@ -7,6 +7,9 @@
 			// The actual graph object
 			_graphObject: new THREE.Object3D(),
 
+			// This is the maximum values are allowed to be reached before it starts to factor
+			_maxDataValBeforeFactor: 150,
+
         	// Switch to dermine if the renderer should keep ticking to allow animations
         	_keepRenderingScene: false,
 
@@ -50,7 +53,6 @@
         		}
         	},
 
-
         	// Details of the base
 			_baseEdge: 10, // the distance around the graphing area for the base
 			_baseThickness: 1, // the thickness of the graph base
@@ -74,6 +76,8 @@
 
         	setGlobalOptions: function(graphData) {
         		if (graphData !== undefined) {
+        			if (graphData.maxDataValBeforeFactor !== undefined) this._maxDataValBeforeFactor = graphData.maxDataValBeforeFactor;
+
         			if (graphData.background !== undefined) this._skyboxColor = new THREE.Color(graphData.background);
         			if (graphData.backgroundTransparent !== undefined) {
         				if (graphData.backgroundTransparent) this._skyboxOpacity = 0;
@@ -375,11 +379,11 @@
 				return maxDataVal;
 			},
 
-			getFactoredDataValues: function(values, maxDataValBeforeFactor, maxDataValue) {
+			getFactoredDataValues: function(values, maxDataValue) {
 				var factoredValues = [];
 
 				for (var i=0; i<values.length; i++) {
-					factoredValues.push(maxDataValBeforeFactor*(values[i]/maxDataValue));			
+					factoredValues.push(this._maxDataValBeforeFactor*(values[i]/maxDataValue));			
 				}
 
 				return factoredValues;
@@ -394,9 +398,6 @@
         		// The areas to the graph
         		var lines = [];
 
-				// This is the maximum value allowed to be reached before it starts to factor
-				var maxDataValBeforeFactor = 150;
-
         		var lineWidth = 2, // the width of the lines on the graph
         			rowSpace = 30, // the space between each row
         			rowLabelFont = "helvetiker", // the font for the row label
@@ -406,8 +407,6 @@
 
         		// Allow the override using the graphData options if they exist
         		if (graphData !== undefined) {
-        			if (graphData.maxDataValBeforeFactor !== undefined) maxDataValBeforeFactor = graphData.maxDataValBeforeFactor;
-
         			if (graphData.lineWidth !== undefined) lineWidth = graphData.lineWidth;
         			
         			if (graphData.rowSpace !== undefined) rowSpace = graphData.rowSpace;
@@ -515,11 +514,11 @@
 					var maxDataValue = this.getMaxDataValue(graphData.data);
 
     				for (var i=0; i<graphData.data.length; i++) {
-    					graphData.data[i].factoredValues = this.getFactoredDataValues(graphData.data[i].values, maxDataValBeforeFactor, maxDataValue)
+    					graphData.data[i].factoredValues = this.getFactoredDataValues(graphData.data[i].values, maxDataValue);
 					}
 
 					// Add the measurement lines
-					if (this._showMeasurementLines) this.createMeasurementsLines(maxDataValBeforeFactor, maxDataValue);
+					if (this._showMeasurementLines) this.createMeasurementsLines(this._maxDataValBeforeFactor, maxDataValue);
 
 					for (var i=0; i<graphData.data.length; i++) {
     					// Figure out the color for the bar. Pick a random one is one isn't defined
@@ -565,9 +564,6 @@
         		// The areas to the graph
         		var areas = [];
 
-				// This is the maximum value allowed to be reached before it starts to factor
-				var maxDataValBeforeFactor = 150;
-
         		var areaWidth = 4, // the width of the area graph
         			rowSpace = 30, // the space between each row
         			rowLabelFont = "helvetiker", // the font for the row label
@@ -577,8 +573,6 @@
 
         		// Allow the override using the graphData options if they exist
         		if (graphData !== undefined) {
-        			if (graphData.maxDataValBeforeFactor !== undefined) maxDataValBeforeFactor = graphData.maxDataValBeforeFactor;
-
         			if (graphData.areaWidth !== undefined) areaWidth = graphData.areaWidth;
         			
         			if (graphData.rowSpace !== undefined) rowSpace = graphData.rowSpace;
@@ -744,11 +738,11 @@
 					var maxDataValue = this.getMaxDataValue(graphData.data);
 					
     				for (var i=0; i<graphData.data.length; i++) {
-    					graphData.data[i].factoredValues = this.getFactoredDataValues(graphData.data[i].values, maxDataValBeforeFactor, maxDataValue)
+    					graphData.data[i].factoredValues = this.getFactoredDataValues(graphData.data[i].values, maxDataValue);
 					}
 
 					// Add the measurement lines
-					if (this._showMeasurementLines) this.createMeasurementsLines(maxDataValBeforeFactor, maxDataValue);
+					if (this._showMeasurementLines) this.createMeasurementsLines(this._maxDataValBeforeFactor, maxDataValue);
 
 					for (var i=0; i<graphData.data.length; i++) {
     					// Figure out the color for the bar. Pick a random one is one isn't defined
@@ -797,9 +791,6 @@
         		// set the default rotation
         		this._startRotation = -0.65;
 
-				// This is the maximum value allowed to be reached before it starts to factor
-				var maxDataValBeforeFactor = 150;
-
         		// Set up the basic configuration for the bar
         		var barWidth = 15, // the width of the bar
         			barOpacity = 0.65, // how opaque the bars are
@@ -818,8 +809,6 @@
 
         		// Allow the override using the graphData options if they exist
         		if (graphData !== undefined) {
-        			if (graphData.maxDataValBeforeFactor !== undefined) maxDataValBeforeFactor = graphData.maxDataValBeforeFactor;
-
         			if (graphData.barWidth !== undefined) barWidth = graphData.barWidth;
 
         			if (graphData.barOpacity !== undefined) barOpacity = graphData.barOpacity;
@@ -1096,11 +1085,11 @@
 					var maxDataValue = this.getMaxDataValue(graphData.data);
 					
     				for (var i=0; i<graphData.data.length; i++) {
-    					graphData.data[i].factoredValues = this.getFactoredDataValues(graphData.data[i].values, maxDataValBeforeFactor, maxDataValue)
+    					graphData.data[i].factoredValues = this.getFactoredDataValues(graphData.data[i].values, maxDataValue);
 					}
 
 					// Add the measurement lines to the grap assuming it has been configured
-					if (this._showMeasurementLines) this.createMeasurementsLines(maxDataValBeforeFactor, maxDataValue);
+					if (this._showMeasurementLines) this.createMeasurementsLines(this._maxDataValBeforeFactor, maxDataValue);
 
     				for (var i=0; i<graphData.data.length; i++) {
     					// Figure out the color for the bar. Pick a random one is one isn't defined
