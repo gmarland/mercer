@@ -344,7 +344,195 @@
 				renderScene();
 			},
 
-        	// Calling will create a standard ares chart
+        	// Calling will create a standard line graph
+        	LineGraph: function(container, graphData) {
+				var self = this;
+
+        		// The areas to the graph
+        		var lines = [];
+
+				// This is the maximum value allowed to be reached before it starts to factor
+				var maxDataValBeforeFactor = 150;
+
+        		var lineWidth = 2, // the width of the lines on the graph
+        			rowSpace = 30, // the space between each row
+        			rowLabelFont = "helvetiker", // the font for the row label
+        			rowLabelSize = 4, // the font size for the row label
+        			rowLabelColor = 0x000000, // the default color for the row label
+        			pointSpace = 15; // the space between each column in a row
+
+        		// Allow the override using the graphData options if they exist
+        		if (graphData !== undefined) {
+        			if (graphData.maxDataValBeforeFactor !== undefined) maxDataValBeforeFactor = graphData.maxDataValBeforeFactor;
+
+        			if (graphData.lineWidth !== undefined) lineWidth = graphData.lineWidth;
+        			
+        			if (graphData.rowSpace !== undefined) rowSpace = graphData.rowSpace;
+
+        			if (graphData.rowLabels !== undefined) {
+	        			if (graphData.rowLabels.fontFamily !== undefined) rowLabelFont = graphData.rowLabels.fontFamily;
+
+	        			if (graphData.rowLabels.size !== undefined) rowLabelSize = graphData.rowLabels.size;
+
+	        			if (graphData.rowLabels.color !== undefined) rowLabelColor = new THREE.Color(graphData.rowLabels.color);
+	        		}
+
+        			if (graphData.pointSpace !== undefined) pointSpace = graphData.pointSpace;
+
+        			this.setGlobalOptions(graphData);
+        		}
+
+
+        		// The method to create the lines
+				var createLineGraph = function(row, factoredValues, originalValues, color) {	
+	        		var lineObject = new THREE.Object3D();
+
+					var xPosStart = (((self._baseWidth/2)*-1) + self._baseEdge), // this is our zero
+						zPosStart = (((self._baseLength/2)*-1) + self._baseEdge);
+
+					// Generate the outline
+					var lineGeometry = new THREE.Geometry();
+					for (var i=0; i<factoredValues.length; i++) {
+						lineGeometry.vertices.push(new THREE.Vector3(xPosStart+(i*pointSpace), factoredValues[i], zPosStart+(row*rowSpace)+(row*lineWidth)));
+					}
+
+					var lineMesh = new THREE.Line(lineGeometry, new THREE.LineBasicMaterial({
+						color: color,
+					 	linewidth: lineWidth
+					}));
+
+					lineObject.add(lineMesh);
+
+					self._graphObject.add(lineObject);
+
+					return lineObject;
+				};
+
+				var createRowLabel = function(row, text) {
+					var textGeometry = new THREE.TextGeometry(text, {
+						font: rowLabelFont,
+    	 				size: rowLabelSize,
+						height: .2
+					});
+					
+					var textMesh = new THREE.Mesh( textGeometry, new THREE.MeshBasicMaterial({
+						color: rowLabelColor
+					}) );
+
+					textMesh.rotation.x = (Math.PI/2)*-1;
+
+					var textBoxArea = new THREE.Box3().setFromObject(textMesh);
+
+					textMesh.position.x += (self._baseWidth/2) + 3;
+
+					textMesh.position.z -= (self._baseLength/2);
+					textMesh.position.z += self._baseEdge + (row*rowSpace) + (row*lineWidth) + (textBoxArea.size().z/2);
+
+					self._graphObject.add(textMesh);
+				};
+
+        		this._container = document.getElementById(container);
+
+        		this.createScene();
+
+        		// Give it a name just for simplicity
+        		if ((graphData) && (graphData.name)) this._graphObject.name = graphData.name;
+        		else this._graphObject.name = "LineGraph";
+
+				// check that we've have some data passed in
+				if (graphData) {
+        			// Setting up the base for the line graph
+    				// Get the length (the z axis)
+					if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
+						if (graphData.data.length > graphData.rowLabels.values.length) this._baseLength = (lineWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
+						else this._baseLength = (lineWidth*graphData.rowLabels.values.length) + (rowSpace*graphData.rowLabels.values.length) - rowSpace + (this._baseEdge*2);
+					}
+					else if (graphData.data) this._baseLength = (barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
+
+    				// Figure out what the base width should be (the x axis)
+    				var maxData = 0;
+
+    				for (var i=0; i<graphData.data.length; i++) {
+						if ((graphData.data[i].values) && (graphData.data[i].values.length > maxData)) maxData = graphData.data[i].values.length;
+					}
+
+					if ((graphData.columnLabels) && (graphData.columnLabels.values)) {
+						if (maxData) {
+							if (maxData > graphData.columnLabels.values.length) this._baseWidth = (pointSpace*maxData) - pointSpace + (this._baseEdge*2);
+							else this._baseWidth = (pointSpace*graphData.columnLabels.values.length) - pointSpace + (this._baseEdge*2);
+						}
+						else this._baseWidth = (pointSpace*graphData.columnLabels.values.length) - pointSpace + (this._baseEdge*2);
+					}
+					else if (maxData) this._baseWidth = (pointSpace*maxData) - pointSpace + (this._baseEdge*2);
+
+					// add it to the scene
+					this.createBase();
+
+					// Get the max value so we can factor values
+					var maxDataVal = 0;
+
+    				for (var i=0; i<graphData.data.length; i++) {
+    					for (var j=0; j<graphData.data[i].values.length; j++) {
+							if (graphData.data[i].values[j] > maxDataVal) maxDataVal = graphData.data[i].values[j];
+    					}
+					}
+
+					// Normalize the data so that the max value is at 100 units tall
+					var originalMaxValue = maxDataVal;
+
+					maxDataVal = maxDataValBeforeFactor;
+
+    				for (var i=0; i<graphData.data.length; i++) {
+    					graphData.data[i].factoredValues = [];
+
+    					for (var j=0; j<graphData.data[i].values.length; j++) {
+    						var percentageOfMax = graphData.data[i].values[j]/originalMaxValue;
+
+							graphData.data[i].factoredValues.push(maxDataVal*percentageOfMax);			
+    					}
+					}
+
+					// Add the measurement lines
+					if (this._showMeasurementLines) this.createMeasurementsLines(maxDataValBeforeFactor, originalMaxValue);
+
+					for (var i=0; i<graphData.data.length; i++) {
+    					// Figure out the color for the bar. Pick a random one is one isn't defined
+    					var areaColor = null;
+
+    					if (graphData.data[i].color !== undefined) areaColor = new THREE.Color(graphData.data[i].color);
+    					else areaColor = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
+
+						lines.push(createLineGraph(i, graphData.data[i].factoredValues, graphData.data[i].values, areaColor));
+					}
+
+					if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
+						for (var i=0; i<graphData.rowLabels.values.length; i++) {
+							createRowLabel(i, graphData.rowLabels.values[i]);
+						}
+					}
+				}
+
+				// Add the graph to the scene
+				this._scene.add(this._graphObject);
+
+        		// If we don't have camera graphData then we'll try and determine the camera position 
+    			if ((!graphData) || (!graphData.camera)) this.calculateCamera();
+
+    			// If we don't have camera graphData then we'll try and determine the cameras lookat 
+    			if ((!graphData) || (!graphData.lookAt)) this.calculateLookAt();
+
+				// Set the initial rotation
+				if (this._startRotation) this._graphObject.rotation.y = this._startRotation;
+
+    			// bind all mouse/touch events
+				if (!this._locked) this.bindEvents();
+
+				this.addCamera();
+
+        		if (this._camera) this.render();
+        	},
+
+        	// Calling will create a standard area chart
         	AreaChart: function(container, graphData) {
 				var self = this;
 
@@ -354,7 +542,7 @@
 				// This is the maximum value allowed to be reached before it starts to factor
 				var maxDataValBeforeFactor = 150;
 
-        		var areaWidth = 4,
+        		var areaWidth = 4, // the width of the area graph
         			rowSpace = 30, // the space between each row
         			rowLabelFont = "helvetiker", // the font for the row label
         			rowLabelSize = 4, // the font size for the row label
@@ -383,8 +571,8 @@
         		}
 
 
-        		// The method to create the bar. Actually easier to plot the verticies than use available shapes
-				var createAreaGraph = function(row, factoredValues, originalValues, color) {	
+        		// The method to create the area chart.
+				var createAreaChart = function(row, factoredValues, originalValues, color) {	
 	        		var areaObject = new THREE.Object3D();
 
 					var xPosStart = (((self._baseWidth/2)*-1) + self._baseEdge), // this is our zero
@@ -495,7 +683,7 @@
 
         		// Give it a name just for simplicity
         		if ((graphData) && (graphData.name)) this._graphObject.name = graphData.name;
-        		else this._graphObject.name = "areaGraph";
+        		else this._graphObject.name = "areaChart";
 
 				// check that we've have some data passed in
 				if (graphData) {
@@ -560,7 +748,7 @@
     					if (graphData.data[i].color !== undefined) areaColor = new THREE.Color(graphData.data[i].color);
     					else areaColor = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
 
-						areas.push(createAreaGraph(i, graphData.data[i].factoredValues, graphData.data[i].values, areaColor));
+						areas.push(createAreaChart(i, graphData.data[i].factoredValues, graphData.data[i].values, areaColor));
 					}
 
 					if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
