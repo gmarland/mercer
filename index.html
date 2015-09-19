@@ -16,7 +16,6 @@
 		<div id="data-container", style="width:1000px;height:800px;"></div>
 		<script type="text/javascript">
 			var barData = {
-				showMeasurementLines: true,
 				rowLabels: {
 					fontFamily: "helvetiker",
 					color: "#ff0000",
@@ -30,23 +29,23 @@
 				},
 				data: [{
 					color: "#0000ff",
-					values: [ 1, 2, 4, 4, 3, 2, 2, 4, 4, 3, 2, 1 ]
+					values: [ 100, 200, 400, 400, 300, 200, 200, 400, 400, 300, 200, 100 ]
 				},
 				{
 					color: "#ff0000",
-					values: [ 30, 20, 20, 80, 10, 30, 20, 20, 80, 10, 30, 10 ]
+					values: [ 300, 200, 200, 800, 100, 300, 200, 200, 800, 100, 300, 100 ]
 				},
 				{
 					color: "#00ff00",
 					showBarLabels: true,
-					values: [ 7, 2, 5, 4, 4, 3, 20, 80, 10, 30, 20, 90 ]
+					values: [ 170, 200, 150, 140, 140, 130, 120, 180, 110, 130, 120, 190 ]
 				}]
 			};
 
 			var tdv = new tdv();
-			//tdv.BarChart("data-container", barData);
+			tdv.BarChart("data-container", barData);
 			//tdv.AreaChart("data-container", barData);
-			tdv.LineGraph("data-container", barData);
+			//tdv.LineGraph("data-container", barData);
 		</script>
 	</body>
 </html>

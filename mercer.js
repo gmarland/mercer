@@ -8,7 +8,7 @@
 			_graphObject: new THREE.Object3D(),
 
 			// This is the maximum values are allowed to be reached before it starts to factor
-			_maxDataValBeforeFactor: 150,
+			_graphHeight: 150,
 
         	// Switch to dermine if the renderer should keep ticking to allow animations
         	_keepRenderingScene: false,
@@ -63,6 +63,7 @@
 			_locked: false, // whether or not to allow the rotation of the graph
 
 			_showMeasurementLines: true, // whether or not to show measurement lines
+			_numberOfMeasurementLines: 10,
 			_measurementLineColor: 0x222222, // the default color of the measurement lines
 			_measurementLabelFont: "helvetiker", // the font for the measurement label
 			_measurementLabelSize: 2.5, // the font size for the measurement label
@@ -76,7 +77,7 @@
 
         	setGlobalOptions: function(graphData) {
         		if (graphData !== undefined) {
-        			if (graphData.maxDataValBeforeFactor !== undefined) this._maxDataValBeforeFactor = graphData.maxDataValBeforeFactor;
+        			if (graphData.graphHeight !== undefined) this._graphHeight = graphData.graphHeight;
 
         			if (graphData.background !== undefined) this._skyboxColor = new THREE.Color(graphData.background);
         			if (graphData.backgroundTransparent !== undefined) {
@@ -171,7 +172,7 @@
 				var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
 
     			this._cameraSettings.position.x = 0;
-    			this._cameraSettings.position.y = graphObjectArea.size().y;
+    			this._cameraSettings.position.y = (graphObjectArea.size().y/2);
     			this._cameraSettings.position.z = (graphObjectArea.size().x/2)+(graphObjectArea.size().z);
 
     			this._far = (Math.max(this._cameraSettings.position.x, this._cameraSettings.position.y, this._cameraSettings.position.z)+1000)*2;
@@ -202,12 +203,10 @@
 
         	// ----- Functions for drawing the measurement lines
 
-			createMeasurementsLines: function(graphHeight, barValue) {
-				if (barValue < 10) barValue = 10;
+			createMeasurementsLines: function(minValue, maxValue) {
+				var stepsEachLine = Math.ceil(this._graphHeight/this._numberOfMeasurementLines);
 
-				var stepsEachLine = Math.ceil(graphHeight/10);
-
-				for (var i=1; i<=10; i++) {
+				for (var i=1; i<=this._numberOfMeasurementLines; i++) {
 					var mesurementLineObject = new THREE.Object3D();
 
 					var measureLineGeometry = new THREE.Geometry();
@@ -222,7 +221,7 @@
 
 					mesurementLineObject.add(measureLine);
 
-					var textGeometry = new THREE.TextGeometry(Math.round((barValue/10)*i), {
+					var textGeometry = new THREE.TextGeometry(minValue+Math.round((maxValue-minValue)/this._numberOfMeasurementLines)*i, {
 						font: this._measurementLabelFont,
     	 				size: this._measurementLabelSize,
 						height: .2
@@ -366,7 +365,7 @@
 
 			// ----- Some random functions used through graphs
 
-			// Returns rhe maximum value in a data set
+			// Returns the maximum value in a data set
 			getMaxDataValue: function(data) {		
 				var maxDataVal = 0;
 
@@ -379,14 +378,17 @@
 				return maxDataVal;
 			},
 
-			getFactoredDataValues: function(values, maxDataValue) {
-				var factoredValues = [];
+			// Returns the maximum value in a data set
+			getMinDataValue: function(data) {		
+				var minDataVal = null;
 
-				for (var i=0; i<values.length; i++) {
-					factoredValues.push(this._maxDataValBeforeFactor*(values[i]/maxDataValue));			
+				for (var i=0; i<data.length; i++) {
+					for (var j=0; j<data[i].values.length; j++) {
+						if ((!minDataVal) || (data[i].values[j] < minDataVal)) minDataVal = data[i].values[j];
+					}
 				}
 
-				return factoredValues;
+				return minDataVal;
 			},
 
 			// ----- Functions for drawing the graphs
@@ -429,7 +431,8 @@
 				var createLineGraph = function(row, factoredValues, originalValues, color) {	
 	        		var lineObject = new THREE.Object3D();
 
-					var xPosStart = (((self._baseWidth/2)*-1) + self._baseEdge), // this is our zero
+	        		// this is our zero
+					var xPosStart = (((self._baseWidth/2)*-1) + self._baseEdge), 
 						zPosStart = (((self._baseLength/2)*-1) + self._baseEdge);
 
 					// Generate the outline
@@ -511,14 +514,23 @@
 					this.createBase();
 
 					// Get the max value so we can factor values
-					var maxDataValue = this.getMaxDataValue(graphData.data);
+					var minDataValue = this.getMinDataValue(graphData.data),
+						maxDataValue = this.getMaxDataValue(graphData.data),
+						minGraphRange = (minDataValue - minDataValue % 10),
+						maxGraphRange = (10 - maxDataValue % 10) + maxDataValue;
+
+					var pointModifier = this._graphHeight/(maxGraphRange-minGraphRange);
 
     				for (var i=0; i<graphData.data.length; i++) {
-    					graphData.data[i].factoredValues = this.getFactoredDataValues(graphData.data[i].values, maxDataValue);
+	    				graphData.data[i].factoredValues = [];
+
+	    				for (var j=0; j<graphData.data[i].values.length; j++) {
+	    					graphData.data[i].factoredValues.push((graphData.data[i].values[j]-minGraphRange)*pointModifier);
+	    				}
 					}
 
 					// Add the measurement lines
-					if (this._showMeasurementLines) this.createMeasurementsLines(this._maxDataValBeforeFactor, maxDataValue);
+					if (this._showMeasurementLines) this.createMeasurementsLines(minGraphRange, maxGraphRange);
 
 					for (var i=0; i<graphData.data.length; i++) {
     					// Figure out the color for the bar. Pick a random one is one isn't defined
@@ -735,14 +747,23 @@
 					this.createBase();
 
 					// Get the max value so we can factor values
-					var maxDataValue = this.getMaxDataValue(graphData.data);
-					
+					var minDataValue = this.getMinDataValue(graphData.data),
+						maxDataValue = this.getMaxDataValue(graphData.data),
+						minGraphRange = (minDataValue - minDataValue % 10),
+						maxGraphRange = (10 - maxDataValue % 10) + maxDataValue;
+
+					var pointModifier = this._graphHeight/(maxGraphRange-minGraphRange);
+
     				for (var i=0; i<graphData.data.length; i++) {
-    					graphData.data[i].factoredValues = this.getFactoredDataValues(graphData.data[i].values, maxDataValue);
+	    				graphData.data[i].factoredValues = [];
+
+	    				for (var j=0; j<graphData.data[i].values.length; j++) {
+	    					graphData.data[i].factoredValues.push((graphData.data[i].values[j]-minGraphRange)*pointModifier);
+	    				}
 					}
 
 					// Add the measurement lines
-					if (this._showMeasurementLines) this.createMeasurementsLines(this._maxDataValBeforeFactor, maxDataValue);
+					if (this._showMeasurementLines) this.createMeasurementsLines(minGraphRange, maxGraphRange);
 
 					for (var i=0; i<graphData.data.length; i++) {
     					// Figure out the color for the bar. Pick a random one is one isn't defined
@@ -1082,14 +1103,23 @@
 					this.createBase();
 
 					// Get the max value so we can factor values
-					var maxDataValue = this.getMaxDataValue(graphData.data);
-					
+					var minDataValue = this.getMinDataValue(graphData.data),
+						maxDataValue = this.getMaxDataValue(graphData.data),
+						minGraphRange = (minDataValue - minDataValue % 10),
+						maxGraphRange = (10 - maxDataValue % 10) + maxDataValue;
+
+					var pointModifier = this._graphHeight/(maxGraphRange-minGraphRange);
+
     				for (var i=0; i<graphData.data.length; i++) {
-    					graphData.data[i].factoredValues = this.getFactoredDataValues(graphData.data[i].values, maxDataValue);
+	    				graphData.data[i].factoredValues = [];
+
+	    				for (var j=0; j<graphData.data[i].values.length; j++) {
+	    					graphData.data[i].factoredValues.push((graphData.data[i].values[j]-minGraphRange)*pointModifier);
+	    				}
 					}
 
-					// Add the measurement lines to the grap assuming it has been configured
-					if (this._showMeasurementLines) this.createMeasurementsLines(this._maxDataValBeforeFactor, maxDataValue);
+					// Add the measurement lines
+					if (this._showMeasurementLines) this.createMeasurementsLines(minGraphRange, maxGraphRange);
 
     				for (var i=0; i<graphData.data.length; i++) {
     					// Figure out the color for the bar. Pick a random one is one isn't defined
