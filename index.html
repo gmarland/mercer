@@ -16,6 +16,7 @@
 		<div id="data-container", style="width:1000px;height:800px;"></div>
 		<script type="text/javascript">
 			var barData = {
+				showMeasurementLines: false,
 				rowLabels: {
 					fontFamily: "helvetiker",
 					color: "#ff0000",
@@ -43,8 +44,8 @@
 			};
 
 			var tdv = new tdv();
-			tdv.BarChart("data-container", barData);
-			//tdv.AreaChart("data-container", barData);
+			//tdv.BarChart("data-container", barData);
+			tdv.AreaChart("data-container", barData);
 			//tdv.LineGraph("data-container", barData);
 		</script>
 	</body>

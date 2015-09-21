@@ -58,7 +58,7 @@
 			_baseThickness: 1, // the thickness of the graph base
 			_baseWidth: 200, // the base width which will be show if no data is added
 			_baseLength: 200, // the base length which will be show if no data is added
-			_baseColor: 0xaaaaaa, // the color for the base
+			_baseColor: 0xececec, // the color for the base
 
 			_locked: false, // whether or not to allow the rotation of the graph
 
@@ -144,11 +144,6 @@
 				this._renderer.setClearColor(this._skyboxColor, this._skyboxOpacity);
 
 				this._container.appendChild(this._renderer.domElement);
-		      
-				var directionalLight = new THREE.DirectionalLight(this._directionalLight.color, this._directionalLight.intensity); 
-				directionalLight.position.set(this._directionalLight.position.x, this._directionalLight.position.y, this._directionalLight.position.z);
- 
-				this._scene.add(directionalLight);
         	},
 
         	// ----- Functions for setting up the camera
@@ -157,6 +152,11 @@
         	addCamera: function() {
         		var containerWidth = parseInt(this._container.style.width,10), 
         			containerHeight = parseInt(this._container.style.height,10);
+		      
+				var directionalLight = new THREE.PointLight(this._directionalLight.color, this._directionalLight.intensity); 
+				directionalLight.position.set(this._cameraSettings.position.x, this._cameraSettings.position.y, this._cameraSettings.position.z);
+ 
+				this._scene.add(directionalLight);
 
 				this._camera = new THREE.PerspectiveCamera(this._fov, this._aspectRatio, this._near, this._far);
 
@@ -172,8 +172,8 @@
 				var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
 
     			this._cameraSettings.position.x = 0;
-    			this._cameraSettings.position.y = (graphObjectArea.size().y/2);
-    			this._cameraSettings.position.z = (graphObjectArea.size().x/2)+(graphObjectArea.size().z);
+    			this._cameraSettings.position.y = graphObjectArea.size().y;
+    			this._cameraSettings.position.z = graphObjectArea.size().x;
 
     			this._far = (Math.max(this._cameraSettings.position.x, this._cameraSettings.position.y, this._cameraSettings.position.z)+1000)*2;
         	},
@@ -365,6 +365,22 @@
 
 			// ----- Some random functions used through graphs
 
+			// Figures out the closet 10, 100, 100 etc the distance between the min and max meets
+			getRoundingInteger: function(min, max) {
+				var diff = max-min;
+
+				if (diff === 0) return 1;
+				else {
+					var multiplier = 0;
+
+					while (true) {
+						if ((diff >= Math.pow(10, multiplier)) && (diff < Math.pow(10, multiplier+1))) return Math.pow(10, (multiplier));
+
+						multiplier++;
+					}
+				}
+			},
+
 			// Returns the maximum value in a data set
 			getMaxDataValue: function(data) {		
 				var maxDataVal = 0;
@@ -400,7 +416,7 @@
         		// The areas to the graph
         		var lines = [];
 
-        		var lineWidth = 2, // the width of the lines on the graph
+        		var lineWidth = 2.5, // the width of the lines on the graph
         			rowSpace = 30, // the space between each row
         			rowLabelFont = "helvetiker", // the font for the row label
         			rowLabelSize = 4, // the font size for the row label
@@ -515,9 +531,14 @@
 
 					// Get the max value so we can factor values
 					var minDataValue = this.getMinDataValue(graphData.data),
-						maxDataValue = this.getMaxDataValue(graphData.data),
-						minGraphRange = (minDataValue - minDataValue % 10),
-						maxGraphRange = (10 - maxDataValue % 10) + maxDataValue;
+						maxDataValue = this.getMaxDataValue(graphData.data);
+
+					var rangeStep = this.getRoundingInteger(minDataValue, maxDataValue);
+
+					var minGraphRange = (minDataValue - minDataValue %  rangeStep);
+					if (minGraphRange != 0) minGraphRange -= rangeStep;
+
+					var maxGraphRange = (rangeStep - maxDataValue % rangeStep) + maxDataValue;
 
 					var pointModifier = this._graphHeight/(maxGraphRange-minGraphRange);
 
@@ -748,9 +769,14 @@
 
 					// Get the max value so we can factor values
 					var minDataValue = this.getMinDataValue(graphData.data),
-						maxDataValue = this.getMaxDataValue(graphData.data),
-						minGraphRange = (minDataValue - minDataValue % 10),
-						maxGraphRange = (10 - maxDataValue % 10) + maxDataValue;
+						maxDataValue = this.getMaxDataValue(graphData.data);
+
+					var rangeStep = this.getRoundingInteger(minDataValue, maxDataValue);
+
+					var minGraphRange = (minDataValue - minDataValue %  rangeStep);
+					if (minGraphRange != 0) minGraphRange -= rangeStep;
+
+					var maxGraphRange = (rangeStep - maxDataValue % rangeStep) + maxDataValue;
 
 					var pointModifier = this._graphHeight/(maxGraphRange-minGraphRange);
 
@@ -1104,9 +1130,14 @@
 
 					// Get the max value so we can factor values
 					var minDataValue = this.getMinDataValue(graphData.data),
-						maxDataValue = this.getMaxDataValue(graphData.data),
-						minGraphRange = (minDataValue - minDataValue % 10),
-						maxGraphRange = (10 - maxDataValue % 10) + maxDataValue;
+						maxDataValue = this.getMaxDataValue(graphData.data);
+
+					var rangeStep = this.getRoundingInteger(minDataValue, maxDataValue);
+
+					var minGraphRange = (minDataValue - minDataValue %  rangeStep);
+					if (minGraphRange != 0) minGraphRange -= rangeStep;
+
+					var maxGraphRange = (rangeStep - maxDataValue % rangeStep) + maxDataValue;
 
 					var pointModifier = this._graphHeight/(maxGraphRange-minGraphRange);
 
