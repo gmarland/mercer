@@ -1,5 +1,5 @@
 (function () {
-    var tdv = function(data) {
+    var Mercer = function(data) {
         return {
         	// The div that will contain the visualization
         	_container: null,
@@ -1203,5 +1203,5 @@
         }
     };
 
-    if(!window.tdv) window.tdv = tdv;
+    if(!window.Mercer) window.Mercer = Mercer;
 })();
