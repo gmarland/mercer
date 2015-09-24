@@ -880,7 +880,7 @@
 
         			if (graphData.columnSpace !== undefined) columnSpace = graphData.columnSpace;
 
-        			if (graphData.rowLabels !== undefined) {
+        			if (graphData.columnLabels !== undefined) {
 	        			if (graphData.columnLabels.fontFamily !== undefined) columnLabelFont = graphData.columnLabels.fontFamily;
 
 	        			if (graphData.columnLabels.size !== undefined) columnLabelSize = graphData.columnLabels.size;
