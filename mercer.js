@@ -17,9 +17,6 @@
         	_targetRotationX: null,
 
         	// Camera settings
-        	_fov: 75,
-        	_near: 0.1,
-        	_far: null,
 
         	_cameraSettings: {
         		position: {
@@ -35,7 +32,7 @@
         	},
 
 			// Default setting for rotation
-        	_startRotation: 0,
+        	_startRotation: -0.65,
 
         	// THREE layout
         	_scene: null,
@@ -66,7 +63,7 @@
 			_numberOfMeasurementLines: 10,
 			_measurementLineColor: 0x222222, // the default color of the measurement lines
 			_measurementLabelFont: "helvetiker", // the font for the measurement label
-			_measurementLabelSize: 2.5, // the font size for the measurement label
+			_measurementLabelSize: 3.5, // the font size for the measurement label
 			_measurementLabelColor: 0x000000, // the default color for the measurement label
 
         	//Skybox
@@ -158,13 +155,20 @@
  
 				this._scene.add(directionalLight);
 
-				this._camera = new THREE.PerspectiveCamera(this._fov, this._aspectRatio, this._near, this._far);
+                // take the maximum distance from the camera add 100 and double it
+                var far = ((Math.max(this._cameraSettings.position.x, this._cameraSettings.position.y, this._cameraSettings.position.z)+1000)*2);
+
+                var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
+
+				this._camera = new THREE.PerspectiveCamera(75, containerWidth/containerHeight, 0.1, this._far);
 
 				this._camera.position.x = this._cameraSettings.position.x;
 				this._camera.position.y = this._cameraSettings.position.y;
 				this._camera.position.z = this._cameraSettings.position.z;
 
 				this._camera.lookAt(new THREE.Vector3(this._cameraSettings.lookAt.x, this._cameraSettings.lookAt.y, this._cameraSettings.lookAt.z));
+
+                this._camera.updateProjectionMatrix();
         	},
 				
 			// This attempts to find a camera position based on the graph object dimensions
@@ -172,10 +176,8 @@
 				var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
 
     			this._cameraSettings.position.x = 0;
-    			this._cameraSettings.position.y = graphObjectArea.size().y;
-    			this._cameraSettings.position.z = graphObjectArea.size().x;
-
-    			this._far = (Math.max(this._cameraSettings.position.x, this._cameraSettings.position.y, this._cameraSettings.position.z)+1000)*2;
+    			this._cameraSettings.position.y = graphObjectArea.size().y/2;
+    			this._cameraSettings.position.z = Math.max(graphObjectArea.size().x, graphObjectArea.size().z);
         	},
 
         	// Attempts to determine where the camera should be looking based on the graph settings
@@ -183,7 +185,7 @@
 				var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
 
 	        	this._cameraSettings.lookAt.x = 0;
-	        	this._cameraSettings.lookAt.y = (graphObjectArea.size().y/2);
+	        	this._cameraSettings.lookAt.y = 0;
 	        	this._cameraSettings.lookAt.z = 0;
         	},
 
@@ -570,6 +572,10 @@
 					}
 				}
 
+                // position the object so it will view well
+                var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
+                this._graphObject.position.y -= ((graphObjectArea.size().y/2)-(graphObjectArea.size().y/6));
+
 				// Add the graph to the scene
 				this._scene.add(this._graphObject);
 
@@ -808,6 +814,10 @@
 					}
 				}
 
+                // position the object so it will view well
+                var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
+                this._graphObject.position.y -= ((graphObjectArea.size().y/2)-(graphObjectArea.size().y/6));
+
 				// Add the graph to the scene
 				this._scene.add(this._graphObject);
 
@@ -834,9 +844,6 @@
 
         		// The bars to the graph
         		var bars = [];
-
-        		// set the default rotation
-        		this._startRotation = -0.65;
 
         		// Set up the basic configuration for the bar
         		var barWidth = 15, // the width of the bar
@@ -1180,6 +1187,10 @@
 						}
 					}
 				}
+
+                // position the object so it will view well
+                var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
+                this._graphObject.position.y -= ((graphObjectArea.size().y/2)-(graphObjectArea.size().y/4));
 
 				// Add the graph to the scene
 				this._scene.add(this._graphObject);

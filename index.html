@@ -13,10 +13,9 @@
 		<script type="text/javascript" src="mercer.js"></script>
     </head>
 	<body>
-		<div id="data-container", style="width:1000px;height:800px;"></div>
+		<div id="data-container", style="width:800px;height:600px;"></div>
 		<script type="text/javascript">
 			var barData = {
-				showMeasurementLines: false,
 				rowLabels: {
 					fontFamily: "helvetiker",
 					color: "#ff0000",
@@ -24,7 +23,6 @@
 				},
 				columnLabels: {
 					fontFamily: "helvetiker",
-					size: 6,
 					color: "#0000ff",
 					values: [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "July", "Apr", "Sept", "Oct", "Nov", "Dec" ]
 				},
@@ -45,8 +43,8 @@
 
 			var mercer = new Mercer();
 			//mercer.BarChart("data-container", barData);
-			mercer.AreaChart("data-container", barData);
-			//mercer.LineGraph("data-container", barData);
+			//mercer.AreaChart("data-container", barData);
+			mercer.LineGraph("data-container", barData);
 		</script>
 	</body>
 </html>
