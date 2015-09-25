@@ -32,7 +32,7 @@
         	},
 
 			// Default setting for rotation
-        	_startRotation: -0.65,
+        	_startRotation: 0,
 
         	// THREE layout
         	_scene: null,
@@ -158,8 +158,6 @@
                 // take the maximum distance from the camera add 100 and double it
                 var far = ((Math.max(this._cameraSettings.position.x, this._cameraSettings.position.y, this._cameraSettings.position.z)+1000)*2);
 
-                var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
-
 				this._camera = new THREE.PerspectiveCamera(75, containerWidth/containerHeight, 0.1, this._far);
 
 				this._camera.position.x = this._cameraSettings.position.x;
@@ -167,6 +165,17 @@
 				this._camera.position.z = this._cameraSettings.position.z;
 
 				this._camera.lookAt(new THREE.Vector3(this._cameraSettings.lookAt.x, this._cameraSettings.lookAt.y, this._cameraSettings.lookAt.z));
+
+                // Calculating the zoom required to make the object fit the scene
+                var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
+
+                var vFOV = 75 * Math.PI / 180;
+                var height = 2 * Math.tan( vFOV / 2 ) * (this._cameraSettings.position.z-(graphObjectArea.size().z));
+
+                var aspect =containerWidth/containerHeight;
+                var width = height * aspect;
+
+                this._camera.zoom = (width/graphObjectArea.size().x);
 
                 this._camera.updateProjectionMatrix();
         	},
@@ -176,7 +185,7 @@
 				var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
 
     			this._cameraSettings.position.x = 0;
-    			this._cameraSettings.position.y = graphObjectArea.size().y/2;
+    			this._cameraSettings.position.y = (graphObjectArea.size().y/2);
     			this._cameraSettings.position.z = Math.max(graphObjectArea.size().x, graphObjectArea.size().z);
         	},
 
@@ -585,13 +594,13 @@
     			// If we don't have camera graphData then we'll try and determine the cameras lookat 
     			if ((!graphData) || (!graphData.lookAt)) this.calculateLookAt();
 
-				// Set the initial rotation
-				if (this._startRotation) this._graphObject.rotation.y = this._startRotation;
-
     			// bind all mouse/touch events
 				if (!this._locked) this.bindEvents();
 
 				this.addCamera();
+
+                // Set the initial rotation
+                if (this._startRotation) this._graphObject.rotation.y = this._startRotation;
 
         		if (this._camera) this.render();
         	},
