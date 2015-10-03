@@ -41,10 +41,39 @@
 				}]
 			};
 
+			var scatterData = {
+				data: [{
+					color: "#0000ff",
+					values: [ 
+						{ x: 100, y: 200, z: 400 }, 
+						{ x: 400, y: 300, z: 200 }, 
+						{ x: 200, y: 400, z: 400 }, 
+						{ x: 200, y: 100, z: 200 }, 
+						{ x: 400, y: 400, z: 300 }, 
+						{ x: 200, y: 200, z: 400 }, 
+						{ x: 400, y: 300, z: 200 }, 
+						{ x: 100, y: 200, z: 400 }, 
+						{ x: 400, y: 300, z: 200 }, 
+						{ x: 200, y: 400, z: 400 }, 
+						{ x: 300, y: 200, z: 100 } 
+					]
+				},
+				{
+					color: "#ff0000",
+					values: [ { x: 300, y: 200 , z: 200 }, { x: 800, y: 100, z: 300 }, { x: 200, y: 200, z: 800 }, { x: 100, y: 300, z: 100 } ]
+				},
+				{
+					color: "#00ff00",
+					showBarLabels: true,
+					values: [ { x: 170, y: 200, z: 150 }, { x: 140, y: 140, z: 130 }, { x: 120, y: 180, z: 110 }, { x: 130, y: 120, z: 190 } ]
+				}]
+			};
+
 			var mercer = new Mercer();
 			//mercer.BarChart("data-container", barData);
-			mercer.AreaChart("data-container", barData);
+			//mercer.AreaChart("data-container", barData);
 			//mercer.LineGraph("data-container", barData);
+			mercer.ScatterGraph("data-container", scatterData);
 		</script>
 	</body>
 </html>

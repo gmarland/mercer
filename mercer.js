@@ -424,9 +424,6 @@
         	LineGraph: function(container, graphData) {
 				var self = this;
 
-        		// The areas to the graph
-        		var lines = [];
-
         		var lineWidth = 2.5, // the width of the lines on the graph
         			rowSpace = 30, // the space between each row
         			rowLabelFont = "helvetiker", // the font for the row label
@@ -453,7 +450,6 @@
         			this.setGlobalOptions(graphData);
         		}
 
-
         		// The method to create the lines
 				var createLineGraph = function(row, factoredValues, originalValues, color) {	
 	        		var lineObject = new THREE.Object3D();
@@ -476,8 +472,6 @@
 					lineObject.add(lineMesh);
 
 					self._graphObject.add(lineObject);
-
-					return lineObject;
 				};
 
 				var createRowLabel = function(row, text) {
@@ -519,7 +513,7 @@
 						if (graphData.data.length > graphData.rowLabels.values.length) this._baseLength = (lineWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
 						else this._baseLength = (lineWidth*graphData.rowLabels.values.length) + (rowSpace*graphData.rowLabels.values.length) - rowSpace + (this._baseEdge*2);
 					}
-					else if (graphData.data) this._baseLength = (barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
+					else if (graphData.data) this._baseLength = (lineWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
 
     				// Figure out what the base width should be (the x axis)
     				var maxData = 0;
@@ -571,7 +565,7 @@
     					if (graphData.data[i].color !== undefined) areaColor = new THREE.Color(graphData.data[i].color);
     					else areaColor = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
 
-						lines.push(createLineGraph(i, graphData.data[i].factoredValues, graphData.data[i].values, areaColor));
+						createLineGraph(i, graphData.data[i].factoredValues, graphData.data[i].values, areaColor);
 					}
 
 					if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
@@ -608,9 +602,6 @@
         	// Calling will create a standard area chart
         	AreaChart: function(container, graphData) {
 				var self = this;
-
-        		// The areas to the graph
-        		var areas = [];
 
         		var areaWidth = 4, // the width of the area graph
         			rowSpace = 30, // the space between each row
@@ -718,8 +709,6 @@
 					areaObject.add(areaLine);
 
 					self._graphObject.add(areaObject);
-
-					return areaObject;
 				};
 
 				var createRowLabel = function(row, text) {
@@ -761,7 +750,7 @@
 						if (graphData.data.length > graphData.rowLabels.values.length) this._baseLength = (areaWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
 						else this._baseLength = (areaWidth*graphData.rowLabels.values.length) + (rowSpace*graphData.rowLabels.values.length) - rowSpace + (this._baseEdge*2);
 					}
-					else if (graphData.data) this._baseLength = (barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
+					else if (graphData.data) this._baseLength = (areaWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
 
     				// Figure out what the base width should be (the x axis)
     				var maxData = 0;
@@ -813,7 +802,7 @@
     					if (graphData.data[i].color !== undefined) areaColor = new THREE.Color(graphData.data[i].color);
     					else areaColor = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
 
-						areas.push(createAreaChart(i, graphData.data[i].factoredValues, graphData.data[i].values, areaColor));
+						createAreaChart(i, graphData.data[i].factoredValues, graphData.data[i].values, areaColor);
 					}
 
 					if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
@@ -850,9 +839,6 @@
         	// Calling will create a standard bar chart
         	BarChart: function(container, graphData) {
 				var self = this;
-
-        		// The bars to the graph
-        		var bars = [];
 
         		// Set up the basic configuration for the bar
         		var barWidth = 15, // the width of the bar
@@ -1054,10 +1040,6 @@
 					}
 
 					self._graphObject.add(barObject);
-
-					// Return the created bar
-
-					return barObject;
 				};
 
 				var createColumnLabel = function(col, text) {
@@ -1180,7 +1162,7 @@
     					if (graphData.data[i].showBarLabels !== undefined) makeBarsLabelsVisible = graphData.data[i].showBarLabels;
 
     					for (var j=0; j<graphData.data[i].values.length; j++) {
-							bars.push(createBar(i, j, graphData.data[i].factoredValues[j], graphData.data[i].values[j], barColor, makeBarsLabelsVisible));
+							createBar(i, j, graphData.data[i].factoredValues[j], graphData.data[i].values[j], barColor, makeBarsLabelsVisible);
     					}
 					}
 
@@ -1217,6 +1199,143 @@
 				if (!this._locked) this.bindEvents();
 
 				this.addCamera();
+
+        		if (this._camera) this.render();
+        	},
+
+        	// Calling will create a standard line graph
+        	ScatterGraph: function(container, graphData) {
+				var self = this;
+
+        		// The areas to the graph
+        		var lines = [];
+
+        		var xSpace = 10, // the space between each x Position on the graph
+        			ySpace = 10, // the space between each y Position on the graph
+        			zSpace = 10, // the space between each z Position on the graph
+        			pointSize = 20; // the size of each point on the graph
+
+        		// Allow the override using the graphData options if they exist
+        		if (graphData !== undefined) {
+        			if (graphData.pointSpace !== undefined) {
+        				xSpace = graphData.pointSpace;
+        				ySpace = graphData.pointSpace;
+        				zSpace = graphData.pointSpace;
+        			}
+
+        			if (graphData.xSpace !== undefined) xSpace = graphData.xSpace;
+        			
+        			if (graphData.ySpace !== undefined) ySpace = graphData.ySpace;
+        			
+        			if (graphData.zSpace !== undefined) zSpace = graphData.zSpace;
+
+        			if (graphData.pointSize !== undefined) pointSize = graphData.pointSize;
+
+        			this.setGlobalOptions(graphData);
+        		}
+
+        		// The method to create the lines
+				var plotScatterGraph = function(data, color) {	
+				};
+
+        		this._container = document.getElementById(container);
+
+        		this.createScene();
+
+        		// Give it a name just for simplicity
+        		if ((graphData) && (graphData.name)) this._graphObject.name = graphData.name;
+        		else this._graphObject.name = "ScatterGraph";
+
+				// check that we've have some data passed in
+				if (graphData) {
+        			// Setting up the base for the line graph
+    				// Get the length (the z axis)
+					if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
+						if (graphData.data.length > graphData.rowLabels.values.length) this._baseLength = (lineWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
+						else this._baseLength = (lineWidth*graphData.rowLabels.values.length) + (rowSpace*graphData.rowLabels.values.length) - rowSpace + (this._baseEdge*2);
+					}
+					else if (graphData.data) this._baseLength = (lineWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
+
+    				// Figure out what the base width should be (the x axis)
+    				var maxData = 0;
+
+    				for (var i=0; i<graphData.data.length; i++) {
+						if ((graphData.data[i].values) && (graphData.data[i].values.length > maxData)) maxData = graphData.data[i].values.length;
+					}
+
+					if ((graphData.columnLabels) && (graphData.columnLabels.values)) {
+						if (maxData) {
+							if (maxData > graphData.columnLabels.values.length) this._baseWidth = (pointSpace*maxData) - pointSpace + (this._baseEdge*2);
+							else this._baseWidth = (pointSpace*graphData.columnLabels.values.length) - pointSpace + (this._baseEdge*2);
+						}
+						else this._baseWidth = (pointSpace*graphData.columnLabels.values.length) - pointSpace + (this._baseEdge*2);
+					}
+					else if (maxData) this._baseWidth = (pointSpace*maxData) - pointSpace + (this._baseEdge*2);
+
+					// add it to the scene
+					this.createBase();
+
+					// Get the max value so we can factor values
+					var minDataValue = this.getMinDataValue(graphData.data),
+						maxDataValue = this.getMaxDataValue(graphData.data);
+
+					var rangeStep = this.getRoundingInteger(minDataValue, maxDataValue);
+
+					var minGraphRange = (minDataValue - minDataValue %  rangeStep);
+					if (minGraphRange != 0) minGraphRange -= rangeStep;
+
+					var maxGraphRange = (rangeStep - maxDataValue % rangeStep) + maxDataValue;
+
+					var pointModifier = this._graphHeight/(maxGraphRange-minGraphRange);
+
+    				for (var i=0; i<graphData.data.length; i++) {
+	    				graphData.data[i].factoredValues = [];
+
+	    				for (var j=0; j<graphData.data[i].values.length; j++) {
+	    					graphData.data[i].factoredValues.push((graphData.data[i].values[j]-minGraphRange)*pointModifier);
+	    				}
+					}
+
+					// Add the measurement lines
+					if (this._showMeasurementLines) this.createMeasurementsLines(minGraphRange, maxGraphRange);
+
+					for (var i=0; i<graphData.data.length; i++) {
+    					// Figure out the color for the bar. Pick a random one is one isn't defined
+    					var areaColor = null;
+
+    					if (graphData.data[i].color !== undefined) areaColor = new THREE.Color(graphData.data[i].color);
+    					else areaColor = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
+
+						lines.push(createLineGraph(i, graphData.data[i].factoredValues, graphData.data[i].values, areaColor));
+					}
+
+					if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
+						for (var i=0; i<graphData.rowLabels.values.length; i++) {
+							createRowLabel(i, graphData.rowLabels.values[i]);
+						}
+					}
+				}
+
+                // position the object so it will view well
+                var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
+                this._graphObject.position.y -= ((graphObjectArea.size().y/2)-(graphObjectArea.size().y/6));
+
+				// Add the graph to the scene
+				this._scene.add(this._graphObject);
+
+        		// If we don't have camera graphData then we'll try and determine the camera position 
+    			if ((!graphData) || (!graphData.camera)) this.calculateCamera();
+
+    			// If we don't have camera graphData then we'll try and determine the cameras lookat 
+    			if ((!graphData) || (!graphData.lookAt)) this.calculateLookAt();
+
+    			// bind all mouse/touch events
+				if (!this._locked) this.bindEvents();
+
+				this.addCamera();
+
+                // Set the initial rotation
+                if (this._startRotation) this._graphObject.rotation.y = this._startRotation;
 
         		if (this._camera) this.render();
         	}
