@@ -172,8 +172,11 @@
                 var vFOV = 75 * Math.PI / 180;
                 var height = 2 * Math.tan( vFOV / 2 ) * (this._cameraSettings.position.z-(graphObjectArea.size().z));
 
+                console.log(height)
+                console.log((graphObjectArea.size().z))
+
                 var aspect = containerWidth/containerHeight;
-                var width = height * aspect;
+                var width = graphObjectArea.size().y * aspect;
 
                 this._camera.zoom = (width/graphObjectArea.size().x);
 
@@ -1310,9 +1313,6 @@
                     // add the base to the scene
                     this.createBase();
 
-                    // Add the measurement lines
-                    if (this._showMeasurementLines) this.createMeasurementsLines(minGraphRangeY, maxGraphRangeY);
-
                     // Get the min and max data values
                     var minValues = this.getMinDataValues(graphData.data),
                         maxValues = this.getMaxDataValues(graphData.data);
@@ -1336,6 +1336,9 @@
                     if (minGraphRangeZ != 0) minGraphRangeZ -= rangeStepZ;
 
                     var maxGraphRangeZ = (rangeStepZ - maxValues.z % rangeStepZ) + maxValues.z;
+
+                    // Add the measurement lines
+                    if (this._showMeasurementLines) this.createMeasurementsLines(minGraphRangeY, maxGraphRangeY);
 
                     var pointModifierX = this._graphWidth/(maxGraphRangeX-minGraphRangeX),
                         pointModifierY = this._graphHeight/(maxGraphRangeY-minGraphRangeY),
@@ -1363,7 +1366,7 @@
 
                 // position the object so it will view well
                 var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
-                //this._graphObject.position.y -= ((graphObjectArea.size().y/2)-(graphObjectArea.size().y/6));
+                this._graphObject.position.y -= ((graphObjectArea.size().y/2)-(graphObjectArea.size().y/6));
 
 				// Add the graph to the scene
 				this._scene.add(this._graphObject);
@@ -1378,8 +1381,6 @@
 				if (!this._locked) this.bindEvents();
 
 				this.addCamera();
-
-                console.log(this._cameraSettings)
 
                 // Set the initial rotation
                 if (this._startRotation) this._graphObject.rotation.y = this._startRotation;
