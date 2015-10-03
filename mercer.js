@@ -176,7 +176,7 @@
                 console.log((graphObjectArea.size().z))
 
                 var aspect = containerWidth/containerHeight;
-                var width = graphObjectArea.size().y * aspect;
+                var width = height * aspect;
 
                 this._camera.zoom = (width/graphObjectArea.size().x);
 
@@ -1253,28 +1253,10 @@
         	ScatterGraph: function(container, graphData) {
 				var self = this;
 
-        		// The areas to the graph
-        		var lines = [];
-
-        		var xSpace = 10, // the space between each x Position on the graph
-        			ySpace = 10, // the space between each y Position on the graph
-        			zSpace = 10, // the space between each z Position on the graph
-        			pointSize = 4; // the size of each point on the graph
+        		var pointSize = 4; // the size of each point on the graph
 
         		// Allow the override using the graphData options if they exist
         		if (graphData !== undefined) {
-        			if (graphData.pointSpace !== undefined) {
-        				xSpace = graphData.pointSpace;
-        				ySpace = graphData.pointSpace;
-        				zSpace = graphData.pointSpace;
-        			}
-
-        			if (graphData.xSpace !== undefined) xSpace = graphData.xSpace;
-        			
-        			if (graphData.ySpace !== undefined) ySpace = graphData.ySpace;
-        			
-        			if (graphData.zSpace !== undefined) zSpace = graphData.zSpace;
-
         			if (graphData.pointSize !== undefined) pointSize = graphData.pointSize;
 
         			this.setGlobalOptions(graphData);
