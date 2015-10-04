@@ -29,19 +29,24 @@
 
 <p></p>
 
-<h3>
-<a id="bar-chart" class="anchor" href="#bar-chart" aria-hidden="true"><span class="octicon octicon-link"></span></a>Bar Chart</h3>
+<h3><a id="bar-chart" class="anchor" href="#bar-chart" aria-hidden="true"><span class="octicon octicon-link"></span></a>Bar Chart</h3>
 
 <div id="bar-chart-container" style="width:800px;height:600px;"></div>
 
 <p></p>
 
-<h3>
-<a id="line-graph" class="anchor" href="#line-graph" aria-hidden="true"><span class="octicon octicon-link"></span></a>Line Graph</h3>
+<h3><a id="line-graph" class="anchor" href="#line-graph" aria-hidden="true"><span class="octicon octicon-link"></span></a>Line Graph</h3>
 
 <p></p>
 
 <div id="line-graph-container" style="width:800px;height:600px;"></div>
+
+
+<h3><a id="scatter-graph" class="anchor" href="#scatter-graph" aria-hidden="true"><span class="octicon octicon-link"></span></a>Line Graph</h3>
+
+<p></p>
+
+<div id="scatter-graph-container" style="width:800px;height:600px;"></div>
 
 <h3>
 <a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
@@ -133,5 +138,75 @@
 
 		var lineMercer = new Mercer();
 		lineMercer.LineGraph("line-graph-container", lineData);
+
+		var scatterData = {
+			rowLabels: {
+				fontFamily: "helvetiker",
+				color: "#ff0000"
+			},
+			data: [{
+				color: "#0000ff",
+				values: [{
+					x: 100, 
+					y: 200, 
+					z: 400
+				}, {
+					x: 400, 
+					y: 300, 
+					z: 200 
+				}, {
+					x: 200, 
+					y: 400, 
+					z: 400
+				}, {
+					x: 300, 
+					y: 200, 
+					z: 100 
+				}]
+			},
+			{
+				color: "#ff0000",
+				values: [{ 
+					x: 300, 
+					y: 200, 
+					z: 200
+				}, {
+					x: 800, 
+					y: 100, 
+					z: 300
+				}, {
+					x: 200, 
+					y: 200, 
+					z: 800
+				}, {
+					x: 100, 
+					y: 300, 
+					z: 100
+				}]
+			},
+			{
+				color: "#00ff00",
+				values: [{
+					x: 170, 
+					y: 200, 
+					x: 150
+				}, {
+					x: 140, 
+					y: 140, 
+					z: 130
+				}, {
+					x: 120, 
+					y: 180, 
+					z: 110
+				}, {
+					x: 130, 
+					y: 120, 
+					z: 190
+				}]
+			}]
+		};
+
+		var scatterMercer = new Mercer();
+		scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
   </script>
 </html>
