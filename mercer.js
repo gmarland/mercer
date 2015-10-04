@@ -14,6 +14,8 @@
         	// Used when rotating the graph
         	_targetRotationX: null,
 
+            _fov: 75,
+
         	// Camera settings
 
         	_cameraSettings: {
@@ -148,7 +150,8 @@
         	// Add the camera to the scene
         	addCamera: function() {
         		var containerWidth = parseInt(this._container.style.width,10), 
-        			containerHeight = parseInt(this._container.style.height,10);
+        			containerHeight = parseInt(this._container.style.height,10),
+                    aspect = containerWidth /containerHeight;
 		      
 				var directionalLight = new THREE.PointLight(this._directionalLight.color, this._directionalLight.intensity); 
 				directionalLight.position.set(this._cameraSettings.position.x, this._cameraSettings.position.y, this._cameraSettings.position.z);
@@ -158,38 +161,34 @@
                 // take the maximum distance from the camera add 100 and double it
                 var far = ((Math.max(this._cameraSettings.position.x, this._cameraSettings.position.y, this._cameraSettings.position.z)+1000)*2);
 
-				this._camera = new THREE.PerspectiveCamera(75, containerWidth/containerHeight, 0.1, this._far);
+				this._camera = new THREE.PerspectiveCamera(this._fov, aspect, 0.1, this._far);
 
 				this._camera.position.x = this._cameraSettings.position.x;
 				this._camera.position.y = this._cameraSettings.position.y;
 				this._camera.position.z = this._cameraSettings.position.z;
 
 				this._camera.lookAt(new THREE.Vector3(this._cameraSettings.lookAt.x, this._cameraSettings.lookAt.y, this._cameraSettings.lookAt.z));
-
-                // Calculating the zoom required to make the object fit the scene
-                var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
-
-                var vFOV = 75 * Math.PI / 180;
-                var height = 2 * Math.tan( vFOV / 2 ) * (this._cameraSettings.position.z-(graphObjectArea.size().z));
-
-                console.log(height)
-                console.log((graphObjectArea.size().z))
-
-                var aspect = containerWidth/containerHeight;
-                var width = height * aspect;
-
-                this._camera.zoom = (width/graphObjectArea.size().x);
-
-                this._camera.updateProjectionMatrix();
         	},
 				
 			// This attempts to find a camera position based on the graph object dimensions
 			calculateCamera: function() {
+                var containerWidth = parseInt(this._container.style.width,10), 
+                    containerHeight = parseInt(this._container.style.height,10),
+                    aspect = containerWidth /containerHeight;
+
+                var containerWidth = parseInt(this._container.style.width,10), 
+                    containerHeight = parseInt(this._container.style.height,10);
+
 				var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
 
     			this._cameraSettings.position.x = 0;
     			this._cameraSettings.position.y = (graphObjectArea.size().y/2);
-    			this._cameraSettings.position.z = Math.max(graphObjectArea.size().x, graphObjectArea.size().z);
+
+                var vFOV = this._fov * Math.PI / 180; 
+
+                var dist = (graphObjectArea.size().x/aspect)/2/Math.tan((vFOV / 2));
+
+                this._cameraSettings.position.z = dist+(graphObjectArea.size().z/2)+(graphObjectArea.size().y/4);
         	},
 
         	// Attempts to determine where the camera should be looking based on the graph settings
