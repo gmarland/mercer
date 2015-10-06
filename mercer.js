@@ -928,7 +928,7 @@
                             color: color,
                             side:THREE.DoubleSide, 
                             transparent: true,
-                            opacity: 0.65
+                            opacity: 0.5
                         }));
 
                         pointObject.add(pointSphere);
