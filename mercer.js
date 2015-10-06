@@ -52,8 +52,8 @@
 
         	// Details of the graph
             _graphHeight: 150,
-            _graphWidth: 200, // the base width which will be show if no data is added
-            _graphLength: 200, // the base length which will be show if no data is added
+            _graphWidth: null, // the base width which will be show if no data is added
+            _graphLength: null, // the base length which will be show if no data is added
 
 			_baseEdge: 10, // the distance around the graphing area for the base
 			_baseThickness: 1, // the thickness of the graph base
@@ -394,6 +394,16 @@
 				}
 			},
 
+            getMaxValueCount: function(data) {
+                var maxValueCount = 0;
+
+                for (var i=0; i<data.length; i++) {
+                    if ((data[i].values != undefined) && (data[i].values.length > maxValueCount)) maxValueCount = data[i].values.length;
+                }
+
+                return maxValueCount;
+            },
+
 			// Returns the maximum value in a data set
 			getMaxDataValue: function(data) {		
 				var maxDataVal = 0;
@@ -409,9 +419,9 @@
 
             // Returns the maximum value in a data set for x, y or z
             getMaxDataValues: function (data) {
-                var maxXDataVal = 0,
-                    maxYDataVal = 0,
-                    maxZDataVal = 0;
+                var maxXDataVal = null,
+                    maxYDataVal = null,
+                    maxZDataVal = null;
 
                 for (var i=0; i<data.length; i++) {
                     for (var j=0; j<data[i].values.length; j++) {
@@ -474,7 +484,7 @@
         			rowLabelFont = "helvetiker", // the font for the row label
         			rowLabelSize = 4, // the font size for the row label
         			rowLabelColor = 0x000000, // the default color for the row label
-        			pointSpace = 15; // the space between each column in a row
+        			pointSpace = 5; // the space between each column in a row
 
         		// Allow the override using the graphData options if they exist
         		if (graphData !== undefined) {
@@ -506,7 +516,7 @@
 					// Generate the outline
 					var lineGeometry = new THREE.Geometry();
 					for (var i=0; i<factoredValues.length; i++) {
-						lineGeometry.vertices.push(new THREE.Vector3(xPosStart+(i*pointSpace), factoredValues[i], zPosStart+(row*rowSpace)+(row*lineWidth)));
+						lineGeometry.vertices.push(new THREE.Vector3(factoredValues[i].x-(self._graphWidth/2), factoredValues[i].y, zPosStart+(row*rowSpace)+(row*lineWidth)));
 					}
 
 					var lineMesh = new THREE.Line(lineGeometry, new THREE.LineBasicMaterial({
@@ -552,56 +562,67 @@
 
 				// check that we've have some data passed in
 				if (graphData) {
-        			// Setting up the base for the line graph
-    				// Get the length (the z axis)
-					if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
-						if (graphData.data.length > graphData.rowLabels.values.length) this._graphLength = (lineWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
-						else this._graphLength = (lineWidth*graphData.rowLabels.values.length) + (rowSpace*graphData.rowLabels.values.length) - rowSpace + (this._baseEdge*2);
-					}
-					else if (graphData.data) this._graphLength = (lineWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
+                    var maxValueCount = this.getMaxValueCount(graphData.data),
+                        minValues = this.getMinDataValues(graphData.data),
+                        maxValues = this.getMaxDataValues(graphData.data);
 
-    				// Figure out what the base width should be (the x axis)
-    				var maxData = 0;
+					var rangeStepX = this.getRoundingInteger(minValues.x, maxValues.x),
+                        rangeStepY = this.getRoundingInteger(minValues.y, maxValues.y);
+
+                    var minGraphRangeX = (minValues.x - minValues.x %  rangeStepX);
+                    if (minGraphRangeX != 0) minGraphRangeX -= rangeStepX;
+
+                    var maxGraphRangeX = (rangeStepX - maxValues.x % rangeStepX) + maxValues.x;
+
+                    var minGraphRangeY = (minValues.y - minValues.y %  rangeStepY);
+                    if (minGraphRangeY != 0) minGraphRangeY -= rangeStepY;
+
+                    var maxGraphRangeY = (rangeStepY - maxValues.y % rangeStepY) + maxValues.y;
+
+                    // Setting up the base for the line graph
+
+                    if (!this._graphLength) {
+                        // Get the length (the z axis)
+                        if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
+                            if (graphData.data.length > graphData.rowLabels.values.length) this._graphLength = (lineWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
+                            else this._graphLength = (lineWidth*graphData.rowLabels.values.length) + (rowSpace*graphData.rowLabels.values.length) - rowSpace + (this._baseEdge*2);
+                        }
+                        else if (graphData.data) this._graphLength = (lineWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
+                    }
+
+                    if (!this._graphWidth) {
+                        var widthRangeStep = rangeStepX;
+                        if (widthRangeStep >= 10) widthRangeStep = (widthRangeStep/10)*2;
+
+                        this._graphWidth = ((maxGraphRangeX-minGraphRangeX)/widthRangeStep)*pointSpace;
+                    }
+
+                    // add it to the scene
+                    this.createBase();
+
+                    // Figure out how we need to modify the points to fit on the graph
+					var pointModifierX = this._graphWidth/(maxGraphRangeX-minGraphRangeX),
+                        pointModifierY = this._graphHeight/(maxGraphRangeY-minGraphRangeY);
 
     				for (var i=0; i<graphData.data.length; i++) {
-						if ((graphData.data[i].values) && (graphData.data[i].values.length > maxData)) maxData = graphData.data[i].values.length;
-					}
+                        // sort byt the x value, we have to do this so they arent crazy placed
+                        graphData.data[i].values.sort(function(a,b) {
+                            return a.x > b.x ? 1 : a.x < b.x ? -1 : 0;
+                        });
 
-					if ((graphData.columnLabels) && (graphData.columnLabels.values)) {
-						if (maxData) {
-							if (maxData > graphData.columnLabels.values.length) this._graphWidth = (pointSpace*maxData) - pointSpace + (this._baseEdge*2);
-							else this._graphWidth = (pointSpace*graphData.columnLabels.values.length) - pointSpace + (this._baseEdge*2);
-						}
-						else this._graphWidth = (pointSpace*graphData.columnLabels.values.length) - pointSpace + (this._baseEdge*2);
-					}
-					else if (maxData) this._graphWidth = (pointSpace*maxData) - pointSpace + (this._baseEdge*2);
-
-					// add it to the scene
-					this.createBase();
-
-					// Get the max value so we can factor values
-					var minDataValue = this.getMinDataValue(graphData.data),
-						maxDataValue = this.getMaxDataValue(graphData.data);
-
-					var rangeStep = this.getRoundingInteger(minDataValue, maxDataValue);
-
-					var minGraphRange = (minDataValue - minDataValue %  rangeStep);
-					if (minGraphRange != 0) minGraphRange -= rangeStep;
-
-					var maxGraphRange = (rangeStep - maxDataValue % rangeStep) + maxDataValue;
-
-					var pointModifier = this._graphHeight/(maxGraphRange-minGraphRange);
-
-    				for (var i=0; i<graphData.data.length; i++) {
+                        // we have x values ordered so we need to modify them to sit on the graph
 	    				graphData.data[i].factoredValues = [];
 
 	    				for (var j=0; j<graphData.data[i].values.length; j++) {
-	    					graphData.data[i].factoredValues.push((graphData.data[i].values[j]-minGraphRange)*pointModifier);
+	    					graphData.data[i].factoredValues.push({
+                                x: (graphData.data[i].values[j].x-minGraphRangeX)*pointModifierX,
+                                y: (graphData.data[i].values[j].y-minGraphRangeY)*pointModifierY
+                            });
 	    				}
 					}
 
 					// Add the measurement lines
-					if (this._showMeasurementLines) this.createMeasurementsLines(minGraphRange, maxGraphRange);
+					if (this._showMeasurementLines) this.createMeasurementsLines(minGraphRangeY, maxGraphRangeY, rangeStepY);
 
 					for (var i=0; i<graphData.data.length; i++) {
     					// Figure out the color for the bar. Pick a random one is one isn't defined
@@ -611,12 +632,8 @@
     					else areaColor = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
 
 						createLineGraph(i, graphData.data[i].factoredValues, graphData.data[i].values, areaColor);
-					}
 
-					if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
-						for (var i=0; i<graphData.rowLabels.values.length; i++) {
-							createRowLabel(i, graphData.rowLabels.values[i]);
-						}
+                        if (graphData.data[i].title) createRowLabel(i, graphData.data[i].title);
 					}
 				}
 

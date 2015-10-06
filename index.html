@@ -41,6 +41,98 @@
 				}]
 			};
 
+			var lineData = {
+				rowLabels: {
+					fontFamily: "helvetiker",
+					color: "#ff0000"
+				},
+				columnLabels: {
+					fontFamily: "helvetiker",
+					color: "#0000ff"
+				},
+				data: [{
+					title: "2013",
+					color: "#0000ff",
+					values: [{ 
+						x: 100, 
+						y: 200
+					}, {
+						x: 200, 
+						y: 400
+					}, {
+						x: 300, 
+						y: 200
+					}, {
+						x: 400, 
+						y: 400
+					}, {
+						x: 500, 
+						y: 300
+					}, {
+						x: 600, 
+						y: 100 
+					}, {
+						x: 700, 
+						y: 400
+					}, {
+						x: 800, 
+						y: 300
+					}, {
+						x: 900, 
+						y: 200
+					}, {
+						x: 1000, 
+						y: 400
+					}]
+				},
+				{
+					title: "2014",
+					color: "#ff0000",
+					values: [{
+						x: 300, 
+						y: 200
+					}, {
+						x: 200, 
+						y: 800
+					}, {
+						x: 100, 
+						y: 300
+					}, {
+						x: 200, 
+						y: 200
+					}, {
+						x: 800, 
+						y: 100
+					}, {
+						x: 300, 
+						y: 100
+					}]
+				},
+				{
+					title: "2015",
+					color: "#00ff00",
+					values: [{
+						x: 170, 
+						y: 200
+					}, {
+						x: 150, 
+						y: 140
+					}, {
+						x: 140, 
+						y: 130 
+					}, {
+						x: 120, 
+						y: 180 
+					}, {
+						x: 110, 
+						y: 130, 
+					}, {
+						x: 180, 
+						y: 190 
+					}]
+				}]
+			};
+
 			var scatterData = {
 				data: [{
 					color: "#0000ff",
@@ -71,9 +163,9 @@
 
 			var mercer = new Mercer();
 			//mercer.BarChart("data-container", barData);
-			//mercer.AreaChart("data-container", barData);
-			//mercer.LineGraph("data-container", barData);
-			mercer.ScatterGraph("data-container", scatterData);
+			//mercer.AreaChart("data-container", lineData);
+			mercer.LineGraph("data-container", lineData);
+			//mercer.ScatterGraph("data-container", scatterData);
 		</script>
 	</body>
 </html>
