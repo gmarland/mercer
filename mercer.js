@@ -926,7 +926,9 @@
 
                         var pointSphere = new THREE.Mesh(new THREE.SphereGeometry(pointSize, 100, 100), new THREE.MeshLambertMaterial({
                             color: color,
-                            side:THREE.DoubleSide
+                            side:THREE.DoubleSide, 
+                            transparent: true,
+                            opacity: 0.65
                         }));
 
                         pointObject.add(pointSphere);
