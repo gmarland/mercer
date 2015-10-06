@@ -516,7 +516,7 @@
 					// Generate the outline
 					var lineGeometry = new THREE.Geometry();
 					for (var i=0; i<factoredValues.length; i++) {
-						lineGeometry.vertices.push(new THREE.Vector3(factoredValues[i].x-(self._graphWidth/2), factoredValues[i].y, zPosStart+(row*rowSpace)+(row*lineWidth)));
+						lineGeometry.vertices.push(new THREE.Vector3(xPosStart+factoredValues[i].x, factoredValues[i].y, zPosStart+(row*rowSpace)+(row*lineWidth)));
 					}
 
 					var lineMesh = new THREE.Line(lineGeometry, new THREE.LineBasicMaterial({
@@ -670,7 +670,7 @@
         			rowLabelFont = "helvetiker", // the font for the row label
         			rowLabelSize = 4, // the font size for the row label
         			rowLabelColor = 0x000000, // the default color for the row label
-        			pointSpace = 15; // the space between each column in a row
+        			pointSpace = 5; // the space between each column in a row
 
         		// Allow the override using the graphData options if they exist
         		if (graphData !== undefined) {
@@ -707,10 +707,10 @@
 					// create the front verticies
 
 					for (var i=0; i<factoredValues.length; i++) {
-						frontVertices.push(new THREE.Vector3(xPosStart+(i*pointSpace), 0, zPosStart+(row*rowSpace)+(row*areaWidth)+(areaWidth/2)));
-						frontVertices.push(new THREE.Vector3(xPosStart+(i*pointSpace), factoredValues[i], zPosStart+(row*rowSpace)+(row*areaWidth)+(areaWidth/2)));
-						backVertices.push(new THREE.Vector3(xPosStart+(i*pointSpace), 0, zPosStart+(row*rowSpace)+(row*areaWidth)-(areaWidth/2)));
-						backVertices.push(new THREE.Vector3(xPosStart+(i*pointSpace), factoredValues[i], zPosStart+(row*rowSpace)+(row*areaWidth)-(areaWidth/2)));
+						frontVertices.push(new THREE.Vector3(xPosStart+factoredValues[i].x, 0, zPosStart+(row*rowSpace)+(row*areaWidth)+(areaWidth/2)));
+						frontVertices.push(new THREE.Vector3(xPosStart+factoredValues[i].x, factoredValues[i].y, zPosStart+(row*rowSpace)+(row*areaWidth)+(areaWidth/2)));
+						backVertices.push(new THREE.Vector3(xPosStart+factoredValues[i].x, 0, zPosStart+(row*rowSpace)+(row*areaWidth)-(areaWidth/2)));
+						backVertices.push(new THREE.Vector3(xPosStart+factoredValues[i].x, factoredValues[i].y, zPosStart+(row*rowSpace)+(row*areaWidth)-(areaWidth/2)));
 					}
 
 					for (var i=0; i<frontVertices.length; i++) {
@@ -761,7 +761,7 @@
 					// Generate the outline
 					var areaLineGeometry = new THREE.Geometry();
 					for (var i=0; i<factoredValues.length; i++) {
-						areaLineGeometry.vertices.push(new THREE.Vector3(xPosStart+(i*pointSpace), factoredValues[i], zPosStart+(row*rowSpace)+(row*areaWidth)+(areaWidth/2)));
+						areaLineGeometry.vertices.push(new THREE.Vector3(xPosStart+factoredValues[i].x, factoredValues[i].y, zPosStart+(row*rowSpace)+(row*areaWidth)+(areaWidth/2)));
 					}
 
 					var areaLine = new THREE.Line(areaLineGeometry, new THREE.LineBasicMaterial({
@@ -804,98 +804,105 @@
         		if ((graphData) && (graphData.name)) this._graphObject.name = graphData.name;
         		else this._graphObject.name = "areaChart";
 
-				// check that we've have some data passed in
-				if (graphData) {
-        			// Setting up the base plane for the area chart
-    				// Get the length (the z axis)
-					if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
-						if (graphData.data.length > graphData.rowLabels.values.length) this._graphLength = (areaWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
-						else this._graphLength = (areaWidth*graphData.rowLabels.values.length) + (rowSpace*graphData.rowLabels.values.length) - rowSpace + (this._baseEdge*2);
-					}
-					else if (graphData.data) this._graphLength = (areaWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
+                // check that we've have some data passed in
+                if (graphData) {
+                    var maxValueCount = this.getMaxValueCount(graphData.data),
+                        minValues = this.getMinDataValues(graphData.data),
+                        maxValues = this.getMaxDataValues(graphData.data);
 
-    				// Figure out what the base width should be (the x axis)
-    				var maxData = 0;
+                    var rangeStepX = this.getRoundingInteger(minValues.x, maxValues.x),
+                        rangeStepY = this.getRoundingInteger(minValues.y, maxValues.y);
 
-    				for (var i=0; i<graphData.data.length; i++) {
-						if ((graphData.data[i].values) && (graphData.data[i].values.length > maxData)) maxData = graphData.data[i].values.length;
-					}
+                    var minGraphRangeX = (minValues.x - minValues.x %  rangeStepX);
+                    if (minGraphRangeX != 0) minGraphRangeX -= rangeStepX;
 
-					if ((graphData.columnLabels) && (graphData.columnLabels.values)) {
-						if (maxData) {
-							if (maxData > graphData.columnLabels.values.length) this._graphWidth = (pointSpace*maxData) - pointSpace + (this._baseEdge*2);
-							else this._graphWidth = (pointSpace*graphData.columnLabels.values.length) - pointSpace + (this._baseEdge*2);
-						}
-						else this._graphWidth = (pointSpace*graphData.columnLabels.values.length) - pointSpace + (this._baseEdge*2);
-					}
-					else if (maxData) this._graphWidth = (pointSpace*maxData) - pointSpace + (this._baseEdge*2);
+                    var maxGraphRangeX = (rangeStepX - maxValues.x % rangeStepX) + maxValues.x;
 
-					// add it to the scene
-					this.createBase();
+                    var minGraphRangeY = (minValues.y - minValues.y %  rangeStepY);
+                    if (minGraphRangeY != 0) minGraphRangeY -= rangeStepY;
 
-					// Get the max value so we can factor values
-					var minDataValue = this.getMinDataValue(graphData.data),
-						maxDataValue = this.getMaxDataValue(graphData.data);
+                    var maxGraphRangeY = (rangeStepY - maxValues.y % rangeStepY) + maxValues.y;
 
-					var rangeStep = this.getRoundingInteger(minDataValue, maxDataValue);
+                    // Setting up the base for the line graph
 
-					var minGraphRange = (minDataValue - minDataValue %  rangeStep);
-					if (minGraphRange != 0) minGraphRange -= rangeStep;
+                    if (!this._graphLength) {
+                        // Get the length (the z axis)
+                        if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
+                            if (graphData.data.length > graphData.rowLabels.values.length) this._graphLength = (areaWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
+                            else this._graphLength = (areaWidth*graphData.rowLabels.values.length) + (rowSpace*graphData.rowLabels.values.length) - rowSpace + (this._baseEdge*2);
+                        }
+                        else if (graphData.data) this._graphLength = (areaWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
+                    }
 
-					var maxGraphRange = (rangeStep - maxDataValue % rangeStep) + maxDataValue;
+                    if (!this._graphWidth) {
+                        var widthRangeStep = rangeStepX;
+                        if (widthRangeStep >= 10) widthRangeStep = (widthRangeStep/10)*2;
 
-					var pointModifier = this._graphHeight/(maxGraphRange-minGraphRange);
+                        this._graphWidth = ((maxGraphRangeX-minGraphRangeX)/widthRangeStep)*pointSpace;
+                    }
 
-    				for (var i=0; i<graphData.data.length; i++) {
-	    				graphData.data[i].factoredValues = [];
+                    // add it to the scene
+                    this.createBase();
 
-	    				for (var j=0; j<graphData.data[i].values.length; j++) {
-	    					graphData.data[i].factoredValues.push((graphData.data[i].values[j]-minGraphRange)*pointModifier);
-	    				}
-					}
+                    // Figure out how we need to modify the points to fit on the graph
+                    var pointModifierX = this._graphWidth/(maxGraphRangeX-minGraphRangeX),
+                        pointModifierY = this._graphHeight/(maxGraphRangeY-minGraphRangeY);
 
-					// Add the measurement lines
-					if (this._showMeasurementLines) this.createMeasurementsLines(minGraphRange, maxGraphRange);
+                    for (var i=0; i<graphData.data.length; i++) {
+                        // sort byt the x value, we have to do this so they arent crazy placed
+                        graphData.data[i].values.sort(function(a,b) {
+                            return a.x > b.x ? 1 : a.x < b.x ? -1 : 0;
+                        });
 
-					for (var i=0; i<graphData.data.length; i++) {
-    					// Figure out the color for the bar. Pick a random one is one isn't defined
-    					var areaColor = null;
+                        // we have x values ordered so we need to modify them to sit on the graph
+                        graphData.data[i].factoredValues = [];
 
-    					if (graphData.data[i].color !== undefined) areaColor = new THREE.Color(graphData.data[i].color);
-    					else areaColor = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
+                        for (var j=0; j<graphData.data[i].values.length; j++) {
+                            graphData.data[i].factoredValues.push({
+                                x: (graphData.data[i].values[j].x-minGraphRangeX)*pointModifierX,
+                                y: (graphData.data[i].values[j].y-minGraphRangeY)*pointModifierY
+                            });
+                        }
+                    }
 
-						createAreaChart(i, graphData.data[i].factoredValues, graphData.data[i].values, areaColor);
-					}
+                    // Add the measurement lines
+                    if (this._showMeasurementLines) this.createMeasurementsLines(minGraphRangeY, maxGraphRangeY, rangeStepY);
 
-					if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
-						for (var i=0; i<graphData.rowLabels.values.length; i++) {
-							createRowLabel(i, graphData.rowLabels.values[i]);
-						}
-					}
-				}
+                    for (var i=0; i<graphData.data.length; i++) {
+                        // Figure out the color for the bar. Pick a random one is one isn't defined
+                        var areaColor = null;
+
+                        if (graphData.data[i].color !== undefined) areaColor = new THREE.Color(graphData.data[i].color);
+                        else areaColor = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
+
+                        createAreaChart(i, graphData.data[i].factoredValues, graphData.data[i].values, areaColor);
+
+                        if (graphData.data[i].title) createRowLabel(i, graphData.data[i].title);
+                    }
+                }
 
                 // position the object so it will view well
                 var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
                 this._graphObject.position.y -= ((graphObjectArea.size().y/2)-(graphObjectArea.size().y/6));
 
-				// Add the graph to the scene
-				this._scene.add(this._graphObject);
+                // Add the graph to the scene
+                this._scene.add(this._graphObject);
 
-        		// If we don't have camera graphData then we'll try and determine the camera position 
-    			if ((!graphData) || (!graphData.camera)) this.calculateCamera();
+                // If we don't have camera graphData then we'll try and determine the camera position 
+                if ((!graphData) || (!graphData.camera)) this.calculateCamera();
 
-    			// If we don't have camera graphData then we'll try and determine the cameras lookat 
-    			if ((!graphData) || (!graphData.lookAt)) this.calculateLookAt();
+                // If we don't have camera graphData then we'll try and determine the cameras lookat 
+                if ((!graphData) || (!graphData.lookAt)) this.calculateLookAt();
 
-				// Set the initial rotation
-				if (this._startRotation) this._graphObject.rotation.y = this._startRotation;
+                // bind all mouse/touch events
+                if (!this._locked) this.bindEvents();
 
-    			// bind all mouse/touch events
-				if (!this._locked) this.bindEvents();
+                this.addCamera();
 
-				this.addCamera();
+                // Set the initial rotation
+                if (this._startRotation) this._graphObject.rotation.y = this._startRotation;
 
-        		if (this._camera) this.render();
+                if (this._camera) this.render();
         	},
 
         	// Calling will create a standard bar chart
