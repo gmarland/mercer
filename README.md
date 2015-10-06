@@ -1,2 +1,2 @@
 # mercer
-3D Graphing
+Mercer is a 3D data visualization library built using three.js.
