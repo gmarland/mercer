@@ -307,8 +307,6 @@
 		        // touch events
         		this._renderer.domElement.addEventListener("touchstart", function(e) {
 			        if (e.touches.length == 1) {
-		                e.preventDefault();
-
         			 	startPositionX = e.touches[0].pageX-(window.innerWidth/2);
         				startRotationX = self._graphObject.rotation.y;
 
@@ -319,8 +317,6 @@
     			this._renderer.domElement.addEventListener( "touchmove", function(e) {
     				if (startPositionX) {
 				        if (e.touches.length == 1) {
-			                e.preventDefault();
-
 	      	  				var mouseX = e.touches[0].pageX-(window.innerWidth/2);
 	      	  				self._targetRotationX = (mouseX - startPositionX) * 0.05;
 	      	  			}
