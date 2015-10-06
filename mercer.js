@@ -905,6 +905,145 @@
                 if (this._camera) this.render();
         	},
 
+            // Calling will create a standard line graph
+            ScatterGraph: function(container, graphData) {
+                var self = this;
+
+                var pointSize = 4, // the size of each point on the graph
+                    pointSpace = 10; // the space between each measurement point section
+
+                // Allow the override using the graphData options if they exist
+                if (graphData !== undefined) {
+                    if (graphData.pointSize !== undefined) pointSize = graphData.pointSize;
+
+                    this.setGlobalOptions(graphData);
+                }
+
+                // The method to create the lines
+                var plotScatterGraph = function(data, factoredData, color) {    
+                    for (var i=0; i<factoredData.length; i++) {
+                        var pointObject = new THREE.Object3D();
+
+                        var pointSphere = new THREE.Mesh(new THREE.SphereGeometry(pointSize, 100, 100), new THREE.MeshLambertMaterial({
+                            color: color,
+                            side:THREE.DoubleSide
+                        }));
+
+                        pointObject.add(pointSphere);
+
+                        pointObject.position.x = factoredData[i].x-(self._graphWidth/2)+self._baseEdge;
+                        pointObject.position.y = factoredData[i].y;
+                        pointObject.position.z = factoredData[i].z-(self._graphLength/2)+self._baseEdge;
+
+                        self._graphObject.add(pointObject);
+                    }
+                };
+
+                this._container = document.getElementById(container);
+
+                this.createScene();
+
+                // Give it a name just for simplicity
+                if ((graphData) && (graphData.name)) this._graphObject.name = graphData.name;
+                else this._graphObject.name = "ScatterGraph";
+
+                // check that we've have some data passed in
+                if (graphData) {
+                    // add the base to the scene
+                    this.createBase();
+
+                    // Get the min and max data values
+                    var minValues = this.getMinDataValues(graphData.data),
+                        maxValues = this.getMaxDataValues(graphData.data);
+
+                    // Figure out the range step
+                    var rangeStepX = this.getRoundingInteger(minValues.x, maxValues.x),
+                        rangeStepY = this.getRoundingInteger(minValues.y, maxValues.y),
+                        rangeStepZ = this.getRoundingInteger(minValues.z, maxValues.z);
+
+                    var minGraphRangeX = (minValues.x - minValues.x % rangeStepX);
+                    if (minGraphRangeX != 0) minGraphRangeX -= rangeStepX;
+
+                    var maxGraphRangeX = (rangeStepX - maxValues.x % rangeStepX) + maxValues.x;
+
+                    var minGraphRangeY = (minValues.y - minValues.y % rangeStepY);
+                    if (minGraphRangeY != 0) minGraphRangeY -= rangeStepY;
+
+                    var maxGraphRangeY = (rangeStepY - maxValues.y % rangeStepY) + maxValues.y;
+
+                    var minGraphRangeZ = (minValues.z - minValues.z % rangeStepZ);
+                    if (minGraphRangeZ != 0) minGraphRangeZ -= rangeStepZ;
+
+                    var maxGraphRangeZ = (rangeStepZ - maxValues.z % rangeStepZ) + maxValues.z;
+
+                    if (!this._graphWidth) {
+                        var widthRangeStepX = rangeStepX;
+                        if (widthRangeStepX >= 10) widthRangeStepX = (widthRangeStepX/10)*2;
+
+                        this._graphWidth = ((maxGraphRangeX-minGraphRangeX)/widthRangeStepX)*pointSpace;
+                    }
+
+                    if (!this._graphLength) {
+                        var widthRangeStepZ = rangeStepZ;
+                        if (widthRangeStepZ >= 10) widthRangeStepZ = (widthRangeStepZ/10)*2;
+
+                        this._graphLength = ((maxGraphRangeZ-minGraphRangeZ)/widthRangeStepZ)*pointSpace;
+                    }
+
+                    // add it to the scene
+                    this.createBase();
+
+                    // Add the measurement lines
+                    if (this._showMeasurementLines) this.createMeasurementsLines(minGraphRangeY, maxGraphRangeY);
+
+                    var pointModifierX = this._graphWidth/(maxGraphRangeX-minGraphRangeX),
+                        pointModifierY = this._graphHeight/(maxGraphRangeY-minGraphRangeY),
+                        pointModifierZ = this._graphLength/(maxGraphRangeZ-minGraphRangeZ);
+
+                    for (var i=0; i<graphData.data.length; i++) {
+                        graphData.data[i].factoredValues = [];
+
+                        for (var j=0; j<graphData.data[i].values.length; j++) {
+                            graphData.data[i].factoredValues.push({
+                                x: (graphData.data[i].values[j].x-minGraphRangeX)*pointModifierX,
+                                y: (graphData.data[i].values[j].y-minGraphRangeY)*pointModifierY,
+                                z: (graphData.data[i].values[j].z-minGraphRangeZ)*pointModifierZ
+                            });
+                        }
+
+                        var pointColor = null;
+
+                        if (graphData.data[i].color !== undefined) pointColor = new THREE.Color(graphData.data[i].color);
+                        else pointColor = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
+
+                        plotScatterGraph(graphData.data[i].values, graphData.data[i].factoredValues, pointColor);
+                    }
+                }
+
+                // position the object so it will view well
+                var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
+                this._graphObject.position.y -= ((graphObjectArea.size().y/2)-(graphObjectArea.size().y/6));
+
+                // Add the graph to the scene
+                this._scene.add(this._graphObject);
+
+                // If we don't have camera graphData then we'll try and determine the camera position 
+                if ((!graphData) || (!graphData.camera)) this.calculateCamera();
+
+                // If we don't have camera graphData then we'll try and determine the cameras lookat 
+                if ((!graphData) || (!graphData.lookAt)) this.calculateLookAt();
+
+                // bind all mouse/touch events
+                if (!this._locked) this.bindEvents();
+
+                this.addCamera();
+
+                // Set the initial rotation
+                if (this._startRotation) this._graphObject.rotation.y = this._startRotation;
+
+                if (this._camera) this.render();
+            },
+
         	// Calling will create a standard bar chart
         	BarChart: function(container, graphData) {
 				var self = this;
@@ -1268,127 +1407,6 @@
 				if (!this._locked) this.bindEvents();
 
 				this.addCamera();
-
-        		if (this._camera) this.render();
-        	},
-
-        	// Calling will create a standard line graph
-        	ScatterGraph: function(container, graphData) {
-				var self = this;
-
-        		var pointSize = 4; // the size of each point on the graph
-
-        		// Allow the override using the graphData options if they exist
-        		if (graphData !== undefined) {
-        			if (graphData.pointSize !== undefined) pointSize = graphData.pointSize;
-
-        			this.setGlobalOptions(graphData);
-        		}
-
-        		// The method to create the lines
-				var plotScatterGraph = function(data, factoredData, color) {	
-                    for (var i=0; i<factoredData.length; i++) {
-                        var pointObject = new THREE.Object3D();
-
-                        var pointSphere = new THREE.Mesh(new THREE.SphereGeometry(pointSize, 100, 100), new THREE.MeshLambertMaterial({
-                            color: color,
-                            side:THREE.DoubleSide
-                        }));
-
-                        pointObject.add(pointSphere);
-
-                        pointObject.position.x = factoredData[i].x-(self._graphWidth/2)+self._baseEdge;
-                        pointObject.position.y = factoredData[i].y;
-                        pointObject.position.z = factoredData[i].z-(self._graphLength/2)+self._baseEdge;
-
-                        self._graphObject.add(pointObject);
-                    }
-				};
-
-        		this._container = document.getElementById(container);
-
-        		this.createScene();
-
-        		// Give it a name just for simplicity
-        		if ((graphData) && (graphData.name)) this._graphObject.name = graphData.name;
-        		else this._graphObject.name = "ScatterGraph";
-
-				// check that we've have some data passed in
-				if (graphData) {
-                    // add the base to the scene
-                    this.createBase();
-
-                    // Get the min and max data values
-                    var minValues = this.getMinDataValues(graphData.data),
-                        maxValues = this.getMaxDataValues(graphData.data);
-
-                    // Figure out the range step
-                    var rangeStepX = this.getRoundingInteger(minValues.x, maxValues.x),
-                        rangeStepY = this.getRoundingInteger(minValues.y, maxValues.y),
-                        rangeStepZ = this.getRoundingInteger(minValues.z, maxValues.z);
-
-                    var minGraphRangeX = (minValues.x - minValues.x % rangeStepX);
-                    if (minGraphRangeX != 0) minGraphRangeX -= rangeStepX;
-
-                    var maxGraphRangeX = (rangeStepX - maxValues.x % rangeStepX) + maxValues.x;
-
-                    var minGraphRangeY = (minValues.y - minValues.y % rangeStepY);
-                    if (minGraphRangeY != 0) minGraphRangeY -= rangeStepY;
-
-                    var maxGraphRangeY = (rangeStepY - maxValues.y % rangeStepY) + maxValues.y;
-
-                    var minGraphRangeZ = (minValues.z - minValues.z % rangeStepZ);
-                    if (minGraphRangeZ != 0) minGraphRangeZ -= rangeStepZ;
-
-                    var maxGraphRangeZ = (rangeStepZ - maxValues.z % rangeStepZ) + maxValues.z;
-
-                    // Add the measurement lines
-                    if (this._showMeasurementLines) this.createMeasurementsLines(minGraphRangeY, maxGraphRangeY);
-
-                    var pointModifierX = this._graphWidth/(maxGraphRangeX-minGraphRangeX),
-                        pointModifierY = this._graphHeight/(maxGraphRangeY-minGraphRangeY),
-                        pointModifierZ = this._graphLength/(maxGraphRangeZ-minGraphRangeZ);
-
-                    for (var i=0; i<graphData.data.length; i++) {
-                        graphData.data[i].factoredValues = [];
-
-                        for (var j=0; j<graphData.data[i].values.length; j++) {
-                            graphData.data[i].factoredValues.push({
-                                x: (graphData.data[i].values[j].x-minGraphRangeX)*pointModifierX,
-                                y: (graphData.data[i].values[j].y-minGraphRangeY)*pointModifierY,
-                                z: (graphData.data[i].values[j].z-minGraphRangeZ)*pointModifierZ
-                            });
-                        }
-
-                        var pointColor = null;
-
-                        if (graphData.data[i].color !== undefined) pointColor = new THREE.Color(graphData.data[i].color);
-                        else pointColor = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
-
-                        plotScatterGraph(graphData.data[i].values, graphData.data[i].factoredValues, pointColor);
-                    }
-                }
-
-                // position the object so it will view well
-                var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
-                this._graphObject.position.y -= ((graphObjectArea.size().y/2)-(graphObjectArea.size().y/6));
-
-				// Add the graph to the scene
-				this._scene.add(this._graphObject);
-
-        		// If we don't have camera graphData then we'll try and determine the camera position 
-    			if ((!graphData) || (!graphData.camera)) this.calculateCamera();
-
-    			// If we don't have camera graphData then we'll try and determine the cameras lookat 
-    			if ((!graphData) || (!graphData.lookAt)) this.calculateLookAt();
-
-    			// bind all mouse/touch events
-				if (!this._locked) this.bindEvents();
-
-				this.addCamera();
-
-                // Set the initial rotation
-                if (this._startRotation) this._graphObject.rotation.y = this._startRotation;
 
         		if (this._camera) this.render();
         	}
