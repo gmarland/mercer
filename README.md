@@ -14,13 +14,13 @@ Download the basic three.js example font “helvetiker_regular.typeface.js” fr
 
 Download the mercer.js library in this repository.
 
-Once you have this libraries you need to include them on the page is going to use Mercer
+Once you have this libraries you need to include them on the page is going to use Mercer.
 
+```html
 <script src="js/three.min.js"></script>
-
 <script src="js/helvetiker_regular.typeface.js"></script>
-
 <script src="js/mercer.js"></script>
+```
 
 ###Bower
 
@@ -234,6 +234,4 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 
 ##Author
 
-My name is Gareth Marland. I’m a British programmer who currently lives in 
-
-Toronto, Canada with my lovely Canadian wife.
+My name is Gareth Marland. I’m a British programmer who currently lives in Toronto, Canada with my lovely Canadian wife.
