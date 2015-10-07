@@ -228,7 +228,7 @@ barMercer.BarChart("bar-chart-container", barData);
 	<li><b>barLabelSize -</b> the font size for the value of the bar if visible.</li>
 	<li><b>barLabelColor -</b> the color of the value above the bar if visible</li>
 	<li><b>rowSpace -</b> the amount of space between each row on the graph</li>
-	<li><b>rowLabelFont -</b> the font for the row label along the Y axis. Changing this will require including a different .js file than the default 'helvetiker_regular.typeface.js'.</li>
+	<li><b>rowLabelFont -</b> the font for the row label along the Z axis. Changing this will require including a different .js file than the default 'helvetiker_regular.typeface.js'.</li>
 	<li><b>rowLabelSize -</b> the font size for the row label</li>
 	<li><b>rowLabelColor -</b> the default color for the row label</li>
 	<li><b>columnSpace -</b> the space between each column in a row</li>
@@ -311,9 +311,70 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 <ul>
 	<li><b>pointSize -</b> the size of each point on the graph</li>
 	<li><b>pointSpace -</b> the space between each measurement point section along the x, y and z axis</li>
-</li>
+</ul>
 
 ##Global Configuration
+
+###General Display Settings
+
+<ul>
+	<li><b>showMeasurementLines -</b> a boolean settig that dermines if the measurement lines on the Y axis should be shown</li>
+	<li><b>startRotation -</b> the initial rotation of the graph as it when it is initially rendered</li>
+	<li><b>locked -</b> if the graph can be rotated by dragging. Default is false.</li>
+<ul>
+
+### Background Settings
+
+<ul>
+	<li><b>background -</b> this is an optional hex color that can be specified to change the graph background.</li>
+	<li><b>backgroundTransparent -</b> this is how transparent the background of the graph should be.</li>
+<ul>
+
+###Graph Layout Settings
+
+<ul>
+	<li><b>baseColor -</b> the default base color for the graph.</li>
+	<li><b>baseThickness -</b> the thickness of the base of the graph.</li>
+	<li><b>baseEdge -</b> the edge in the base of the graph before the data visualization starts drawing.</li>
+	<li><b>baseWidth -</b> the width of the base. This automatically figures itself out so usually shouldn't be set.</li>
+	<li><b>baseLength -</b> the length of the base. This automatically figures itself out so usually shouldn't be set.</li>
+	<li><b>graphHeight -</b> the height of the graph as it appeat. This automatically figures itself out so usually shouldn't be set.</li>
+<ul>
+
+###Measurement Line Settings
+
+<ul>
+	<li><b>measurementLineColor -</b> the color of the measurement lines if they are visible on the graph.</li>
+	<li><b>measurementLabelFont -</b> the font for the measurement label along the Y axis. Changing this will require including a different .js file than the default 'helvetiker_regular.typeface.js'.</li>
+	<li><b>measurementLabelSize -</b> the size of the label along the measurement line if it is visible.</li>
+	<li><b>measurementLabelColor -</b> the color of the label along the measurement line if it is vible.</li>
+<ul>
+
+###Directional Light Settings
+
+<ul>
+	<li><b>directionalLight.color -</b> the color of the directional light.</li>
+	<li><b>directionalLight.intensity -</b> the intensity of the directional light.</li>
+	<li><b>directionalLight.position.x -</b> the X position of the directional light.</li>
+	<li><b>directionalLight.position.y -</b> the Y position of the directional light.</li>
+	<li><b>directionalLight.position.z -</b> the Z position of the directional light.</li>
+<ul>
+
+###Camera Settings
+
+<ul>
+	<li><b>cameraX -</b> the X position of the camera.</li>
+	<li><b>cameraY -</b> the Y position of the camera.</li>
+	<li><b>cameraZ -</b> the Z position of the camera.</li>
+<ul>
+
+###Look At Settings
+
+<ul>
+	<li><b>lookAtX -</b> the X position that the camera should be looking at.</li>
+	<li><b>lookAtY -</b> the Y position that the camera should be looking at.</li>
+	<li><b>lookAtZ -</b> the Z position that the camera should be looking at.</li>
+<ul>
 
 ##Author
 
