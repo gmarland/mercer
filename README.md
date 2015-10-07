@@ -2,7 +2,7 @@
 
 Mercer is a 3D data visualization library built using three.js. 
 
-It is named after a character in the book “Do Androids Dream of Electric Sheep?” and is a work in progress. Any suggestions on functionality can sent to my twitter @garethmarland and would be greatly appreciated.
+It is named after a character in the book “Do Androids Dream of Electric Sheep?” and is a work in progress. Any suggestions on functionality can sent to my twitter <a href="https://twitter.com/GarethMarland">@garethmarland</a> and would be greatly appreciated.
 
 ##Installation
 
