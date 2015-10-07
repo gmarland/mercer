@@ -208,7 +208,32 @@ var barMercer = new Mercer();
 barMercer.BarChart("bar-chart-container", barData);
 ```
 
-####Elements
+####Configuraion
+
+
+<b>Row</b>
+
+<ul>
+</ul>
+
+<b>Global</b>
+
+<ul>
+	<li><b>barWidth -</b> the width of the bar within the graph.</li>
+	<li><b>barOpacity -</b> the transparency of the bars as they appear within the graph</li>
+	<li><b>showBarLabels -</b> this is the global setting which defines if the bar value should be shown above each bar.</li>
+	<li><b>barLabelFont -</b> the font for the value of the bar if visible. Changing this will require including a different .js file than the default 'helvetiker_regular.typeface.js'.</li>
+	<li><b>barLabelSize -</b> the font size for the value of the bar if visible.</li>
+	<li><b>barLabelColor -</b> the color of the value above the bar if visible</li>
+	<li><b>rowSpace -</b> the amount of space between each row on the graph</li>
+	<li><b>rowLabelFont -</b> the font for the row label along the Y axis. Changing this will require including a different .js file than the default 'helvetiker_regular.typeface.js'.</li>
+	<li><b>rowLabelSize -</b> the font size for the row label</li>
+	<li><b>rowLabelColor -</b> the default color for the row label</li>
+	<li><b>columnSpace -</b> the space between each column in a row</li>
+	<li><b>columnLabelFont -</b> the font for the bar label along the X axis. Changing this will require including a different .js file than the default 'helvetiker_regular.typeface.js'.</li>
+	<li><b>columnLabelSize -</b> the font size for the column label</li>
+	<li><b>columnLabelColor -</b> the default color for the column label</li>
+</ul>
 
 ###Scatter Graph
 
