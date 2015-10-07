@@ -10,13 +10,9 @@ It is named after a character in the book “Do Androids Dream of Electric Sheep
 
 Download the minified three.js library from the GitHub repository https://github.com/mrdoob/three.js
 
-Download the basic three.js example font “helvetiker_regular.typeface.js” 
+Download the basic three.js example font “helvetiker_regular.typeface.js” from the GitHub repository (this is the default mercer font) https://github.com/mrdoob/three.js/tree/master/examples/fonts
 
-from the GitHub repository (this is the default mercer font) 
-
-https://github.com/mrdoob/three.js/tree/master/examples/fonts
-
-Download the mercer.js library in this repository
+Download the mercer.js library in this repository.
 
 Once you have this libraries you need to include them on the page is going to use Mercer
 
