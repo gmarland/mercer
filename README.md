@@ -352,6 +352,8 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 
 ###Directional Light Settings
 
+These are the settings for the directional light and probably don't need to be touched unless you have a specific need.
+
 <ul>
 	<li><b>directionalLight.color -</b> the color of the directional light.</li>
 	<li><b>directionalLight.intensity -</b> the intensity of the directional light.</li>
@@ -362,6 +364,8 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 
 ###Camera Settings
 
+These settings are a little low level and control the positioning of the camera. The camera usually figures itself out but you might want to set this to get the position you need.
+
 <ul>
 	<li><b>cameraX -</b> the X position of the camera.</li>
 	<li><b>cameraY -</b> the Y position of the camera.</li>
@@ -369,6 +373,8 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 </ul>
 
 ###Look At Settings
+
+These, like camera settings, are a little low level and control the position the camera looks at. This is usually automatically determined but just in case you have a specific neeed.
 
 <ul>
 	<li><b>lookAtX -</b> the X position that the camera should be looking at.</li>
