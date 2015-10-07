@@ -906,6 +906,8 @@
                 // Allow the override using the graphData options if they exist
                 if (graphData !== undefined) {
                     if (graphData.pointSize !== undefined) pointSize = graphData.pointSize;
+                    
+                    if (graphData.pointSpace !== undefined) pointSpace = graphData.pointSpace;
 
                     this.setGlobalOptions(graphData);
                 }

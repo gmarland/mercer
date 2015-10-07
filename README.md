@@ -155,7 +155,7 @@ areaMercer.AreaChart("area-chart-container", areaData);
 
 <ul>
 	<li><b>data.title - </b> The title of the data series as it will appear on the graph.</li>
-	<li><b>data.color - </b> The hex color of the graph line for the data series. If this isn't specified then a random color is selected.</li>
+	<li><b>data.color - </b> The hex color of the graph area for the data series. If this isn't specified then a random color is selected.</li>
 </ul>
 
 <b>Global</b>
@@ -208,14 +208,13 @@ var barMercer = new Mercer();
 barMercer.BarChart("bar-chart-container", barData);
 ```
 
-####Configuraion
-
+####Configuration
 
 <b>Row</b>
 
 <ul>
 	<li><b>data.title - </b> The title of the data series as it will appear on the graph.</li>
-	<li><b>data.color - </b> The hex color of the graph line for the data series. If this isn't specified then a random color is selected.</li>
+	<li><b>data.color - </b> The hex color of the bar for the data series. If this isn't specified then a random color is selected.</li>
 	<li><b>data.showBarLabels - </b> this is the individual setting for the bar which determines if the value should be shown above each bar.</li>
 </ul>
 
@@ -299,7 +298,20 @@ var scatterMercer = new Mercer();
 scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 ```
 
-###Elements
+###Configration
+
+<b>Row</b>
+
+<ul>
+	<li><b>data.color - </b> The hex color of the points for the data series. If this isn't specified then a random color is selected.</li>
+</ul>
+
+<b>Global</b>
+
+<ul>
+	<li><b>pointSize -</b> the size of each point on the graph</li>
+	<li><b>pointSpace -</b> the space between each measurement point section along the x, y and z axis</li>
+</li>
 
 ##Global Configuration
 
