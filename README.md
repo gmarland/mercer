@@ -362,11 +362,11 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 
 ###Camera Settings
 
-</ul>
+<ul>
 	<li><b>cameraX -</b> the X position of the camera.</li>
 	<li><b>cameraY -</b> the Y position of the camera.</li>
 	<li><b>cameraZ -</b> the Z position of the camera.</li>
-<ul>
+</ul>
 
 ###Look At Settings
 
