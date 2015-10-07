@@ -85,8 +85,8 @@ lineMercer.LineGraph("line-graph-container", lineData);
 <b>Row</b>
 
 <ul>
-	<li><b>data.title (optional) - </b> The title of the data series as it will appear on the graph.</li>
-	<li><b>data.color (optional) - </b> The hex color of the graph line for the data series. If this isn't specified then a random color is selected.</li>
+	<li><b>data.title - </b> The title of the data series as it will appear on the graph.</li>
+	<li><b>data.color - </b> The hex color of the graph line for the data series. If this isn't specified then a random color is selected.</li>
 </ul>
 
 <b>Global</b>
@@ -154,8 +154,8 @@ areaMercer.AreaChart("area-chart-container", areaData);
 <b>Row</b>
 
 <ul>
-	<li><b>data.title (optional) - </b> The title of the data series as it will appear on the graph.</li>
-	<li><b>data.color (optional) - </b> The hex color of the graph line for the data series. If this isn't specified then a random color is selected.</li>
+	<li><b>data.title - </b> The title of the data series as it will appear on the graph.</li>
+	<li><b>data.color - </b> The hex color of the graph line for the data series. If this isn't specified then a random color is selected.</li>
 </ul>
 
 <b>Global</b>
