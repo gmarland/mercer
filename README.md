@@ -80,15 +80,19 @@ var lineMercer = new Mercer();
 lineMercer.LineGraph("line-graph-container", lineData);
 ```
 
-####Configuration
+####Additional Configuration
+
+<b>Row</b>
+
+<b>Global</b>
 
 <ul>
-	<li>lineWidth - the width of the lines on the graph.</li>
-	<li>rowSpace - the space between each row.</li>
-	<li>rowLabelFont - the font for the row label.</li>
-	<li>rowLabelSize - the font size for the row label.</li>
-	<li>rowLabelColor - the default color for the row label.</li>
-	<li>pointSpace - the space between x point marker on the X axis.</li>
+	<li><b>lineWidth -</b> the width of the lines as they appear on the graph.</li>
+	<li><b>rowSpace -</b> the amount of space between each row on the graph</li>
+	<li><b>rowLabelFont -</b> the font for the row label. Changing this will require including a different .js file than the default 'helvetiker_regular.typeface.js'.</li>
+	<li><b>rowLabelSize -</b> the font size for the row labels.</li>
+	<li><b>rowLabelColor -</b> the default color for the row labels.</li>
+	<li><b>pointSpace -</b> the space between point marker on the X axis.</li>
 </ul>
 
 ###Area Chart
