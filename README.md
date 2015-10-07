@@ -26,7 +26,7 @@ Once you have this libraries you need to include them on the page is going to us
 
 Coming soon
 
-##Configuration
+##Graphs
 
 ###Line Graph
 
