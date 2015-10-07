@@ -214,6 +214,9 @@ barMercer.BarChart("bar-chart-container", barData);
 <b>Row</b>
 
 <ul>
+	<li><b>data.title - </b> The title of the data series as it will appear on the graph.</li>
+	<li><b>data.color - </b> The hex color of the graph line for the data series. If this isn't specified then a random color is selected.</li>
+	<li><b>data.showBarLabels - </b> this is the individual setting for the bar which determines if the value should be shown above each bar.</li>
 </ul>
 
 <b>Global</b>
@@ -221,7 +224,7 @@ barMercer.BarChart("bar-chart-container", barData);
 <ul>
 	<li><b>barWidth -</b> the width of the bar within the graph.</li>
 	<li><b>barOpacity -</b> the transparency of the bars as they appear within the graph</li>
-	<li><b>showBarLabels -</b> this is the global setting which defines if the bar value should be shown above each bar.</li>
+	<li><b>showBarLabels -</b> this is the global setting which defines if the value should be shown above each bar.</li>
 	<li><b>barLabelFont -</b> the font for the value of the bar if visible. Changing this will require including a different .js file than the default 'helvetiker_regular.typeface.js'.</li>
 	<li><b>barLabelSize -</b> the font size for the value of the bar if visible.</li>
 	<li><b>barLabelColor -</b> the color of the value above the bar if visible</li>
