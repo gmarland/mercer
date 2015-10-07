@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #Mercer
 
 Mercer is a 3D data visualization library built using three.js. 
@@ -235,3 +236,7 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 My name is Gareth Marland. I’m a British programmer who currently lives in 
 
 Toronto, Canada with my lovely Canadian wife.
+=======
+# mercer
+Mercer is a 3D data visualization library built using three.js.
+>>>>>>> a1350865c7edd7c9a2cfe1a6a0af6b3638cbc62d
