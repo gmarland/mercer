@@ -36,7 +36,9 @@ Coming soon
 
 Currently, a width and height need to be defined on the container div. This was to make getting the size for rendering on the page easier. This should probably be made better in the future.
 
+```html
 <div id="line-graph-container" style="width:800px;height:600px;"></div>
+```
 
 <b>JavaScript</b>
 
@@ -88,7 +90,9 @@ lineMercer.LineGraph("line-graph-container", lineData);
 
 Currently, a width and height need to be defined on the container div. This was to make getting the size for rendering on the page easier. This should probably be made better in the future.
 
+```html
 <div id="area-chart-container" style="width:800px;height:600px;"></div>
+```
 
 <b>JavaScript</b> 
 
@@ -137,7 +141,9 @@ areaMercer.AreaChart("area-chart-container", areaData);
 
 Currently, a width and height need to be defined on the container div. This was to make getting the size for rendering on the page easier. This should probably be made better in the future.
 
+```html
 <div id="bar-chart-container" style="width:800px;height:600px;"></div>
+```
 
 <b>JavaScript</b> 
 
@@ -177,7 +183,9 @@ barMercer.BarChart("bar-chart-container", barData);
 
 Currently, a width and height need to be defined on the container div. This was to make getting the size for rendering on the page easier. This should probably be made better in the future.
 
+```html
 <div id=" scatter-graph-container" style="width:800px;height:600px;"></div>
+```
 
 <b>JavaScript</b>
 
@@ -228,9 +236,9 @@ var scatterMercer = new Mercer();
 scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 ```
 
-##Elements
+###Elements
 
-###Global Configuration
+##Global Configuration
 
 ##Author
 
