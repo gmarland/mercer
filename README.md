@@ -4,9 +4,9 @@ Mercer is a 3D data visualization library built using three.js.
 
 It is named after a character in the book “Do Androids Dream of Electric Sheep?” and is a work in progress. Any suggestions on functionality can sent to my twitter @garethmarland and would be greatly appreciated.
 
-#Installation
+##Installation
 
-##Manual
+###Manual
 
 Download the minified three.js library from the GitHub repository https://github.com/mrdoob/three.js
 
@@ -26,15 +26,15 @@ Once you have this libraries you need to include them on the page is going to us
 
 <script src="js/mercer.js"></script>
 
-##Bower
+###Bower
 
 Coming soon
 
-#Configuration
+##Configuration
 
-##Line Graph
+###Line Graph
 
-###Getting Started
+####Getting Started
 
 <b>HTML</b>
 
@@ -42,10 +42,11 @@ Currently, a width and height need to be defined on the container div. This was 
 
 <div id="line-graph-container" style="width:800px;height:600px;"></div>
 
-<b>JavaScript</b><
+<b>JavaScript</b>
 
 This is a very basic example that renders a line graph into a container div. Further configuration may be applied to modify the appearance.
 
+```javascript
 var lineData = { 
 	data: [{ 
 		title: "2013", 
@@ -79,12 +80,13 @@ var lineData = {
 
 var lineMercer = new Mercer();
 lineMercer.LineGraph("line-graph-container", lineData);
+```
 
-###Elements
+####Elements
 
-##Area Chart
+###Area Chart
 
-###Getting Started
+####Getting Started
 
 <b>HTML</b>
 
@@ -96,6 +98,7 @@ Currently, a width and height need to be defined on the container div. This was 
 
 This is a very basic example that randers an area chart into a container div. Further configuration may be applied to modify the appearance.
 
+```javascript
 var areaData = { 
 	data: [{ 
 		title: "2013", 
@@ -126,12 +129,13 @@ var areaData = {
 
 var areaMercer = new Mercer();
 areaMercer.AreaChart("area-chart-container", areaData);
+```
 
-###Elements
+####Elements
 
-##Bar Chart
+###Bar Chart
 
-###Getting Started
+####Getting Started
 
 <b>HTML</b> 
 
@@ -143,6 +147,7 @@ Currently, a width and height need to be defined on the container div. This was 
 
 This is a very basic example that renders a bar chart into a container div. Further configuration may be applied to modify the appearance.
 
+```javascript
 var barData = {
 	rowLabels: {
 		values: ["2013", "2014", "2015" ]
@@ -164,12 +169,13 @@ var barData = {
 
 var barMercer = new Mercer();
 barMercer.BarChart("bar-chart-container", barData);
+```
 
-###Elements
+####Elements
 
-##Scatter Graph
+###Scatter Graph
 
-###Getting Started
+####Getting Started
 
 <b>HTML</b>
 
@@ -226,11 +232,11 @@ var scatterMercer = new Mercer();
 scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 ```
 
-#Elements
+##Elements
 
-##Global Configuration
+###Global Configuration
 
-#Author
+##Author
 
 My name is Gareth Marland. I’m a British programmer who currently lives in 
 
