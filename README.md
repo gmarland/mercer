@@ -34,7 +34,7 @@ Coming soon
 
 <b>HTML</b>
 
-Currently, a width and height need to be defined on the container div. This was to make getting the size for rendering on the page easier. This should probably be made better in the future.
+Currently, a width and height need to be defined on the container div. This is done so it is easier to get the div size for rendering the graph on the page. This should probably be made better in the future.
 
 ```html
 <div id="line-graph-container" style="width:800px;height:600px;"></div>
@@ -85,8 +85,8 @@ lineMercer.LineGraph("line-graph-container", lineData);
 <b>Row</b>
 
 <ul>
-	<li><b>data.title - </b> The title of the data series as it will appear on the graph.</li>
-	<li><b>data.color - </b> The hex color of the graph line for the data series. If this isn't specified then a random color is selected.</li>
+	<li><b>data.title - </b> the title of the data series as it will appear on the graph.</li>
+	<li><b>data.color - </b> the hex color of the graph line for the data series. If this isn't specified then a random color is selected.</li>
 </ul>
 
 <b>Global</b>
@@ -106,7 +106,7 @@ lineMercer.LineGraph("line-graph-container", lineData);
 
 <b>HTML</b>
 
-Currently, a width and height need to be defined on the container div. This was to make getting the size for rendering on the page easier. This should probably be made better in the future.
+Currently, a width and height need to be defined on the container div. This is done so it is easier to get the div size for rendering the graph on the page. This should probably be made better in the future.
 
 ```html
 <div id="area-chart-container" style="width:800px;height:600px;"></div>
@@ -154,8 +154,8 @@ areaMercer.AreaChart("area-chart-container", areaData);
 <b>Row</b>
 
 <ul>
-	<li><b>data.title - </b> The title of the data series as it will appear on the graph.</li>
-	<li><b>data.color - </b> The hex color of the graph area for the data series. If this isn't specified then a random color is selected.</li>
+	<li><b>data.title - </b> the title of the data series as it will appear on the graph.</li>
+	<li><b>data.color - </b> the hex color of the graph area for the data series. If this isn't specified then a random color is selected.</li>
 </ul>
 
 <b>Global</b>
@@ -175,7 +175,7 @@ areaMercer.AreaChart("area-chart-container", areaData);
 
 <b>HTML</b> 
 
-Currently, a width and height need to be defined on the container div. This was to make getting the size for rendering on the page easier. This should probably be made better in the future.
+Currently, a width and height need to be defined on the container div. This is done so it is easier to get the div size for rendering the graph on the page. This should probably be made better in the future.
 
 ```html
 <div id="bar-chart-container" style="width:800px;height:600px;"></div>
@@ -213,8 +213,8 @@ barMercer.BarChart("bar-chart-container", barData);
 <b>Row</b>
 
 <ul>
-	<li><b>data.title - </b> The title of the data series as it will appear on the graph.</li>
-	<li><b>data.color - </b> The hex color of the bar for the data series. If this isn't specified then a random color is selected.</li>
+	<li><b>data.title - </b> the title of the data series as it will appear on the graph.</li>
+	<li><b>data.color - </b> the hex color of the bar for the data series. If this isn't specified then a random color is selected.</li>
 	<li><b>data.showBarLabels - </b> this is the individual setting for the bar which determines if the value should be shown above each bar.</li>
 </ul>
 
@@ -222,19 +222,19 @@ barMercer.BarChart("bar-chart-container", barData);
 
 <ul>
 	<li><b>barWidth -</b> the width of the bar within the graph.</li>
-	<li><b>barOpacity -</b> the transparency of the bars as they appear within the graph</li>
+	<li><b>barOpacity -</b> the transparency of the bars as they appear within the graph.</li>
 	<li><b>showBarLabels -</b> this is the global setting which defines if the value should be shown above each bar.</li>
 	<li><b>barLabelFont -</b> the font for the value of the bar if visible. Changing this will require including a different .js file than the default 'helvetiker_regular.typeface.js'.</li>
 	<li><b>barLabelSize -</b> the font size for the value of the bar if visible.</li>
-	<li><b>barLabelColor -</b> the color of the value above the bar if visible</li>
-	<li><b>rowSpace -</b> the amount of space between each row on the graph</li>
+	<li><b>barLabelColor -</b> the color of the value above the bar if visible.</li>
+	<li><b>rowSpace -</b> the amount of space between each row on the graph.</li>
 	<li><b>rowLabelFont -</b> the font for the row label along the Z axis. Changing this will require including a different .js file than the default 'helvetiker_regular.typeface.js'.</li>
-	<li><b>rowLabelSize -</b> the font size for the row label</li>
-	<li><b>rowLabelColor -</b> the default color for the row label</li>
-	<li><b>columnSpace -</b> the space between each column in a row</li>
+	<li><b>rowLabelSize -</b> the font size for the row label.</li>
+	<li><b>rowLabelColor -</b> the default color for the row label.</li>
+	<li><b>columnSpace -</b> the space between each column in a row.</li>
 	<li><b>columnLabelFont -</b> the font for the bar label along the X axis. Changing this will require including a different .js file than the default 'helvetiker_regular.typeface.js'.</li>
-	<li><b>columnLabelSize -</b> the font size for the column label</li>
-	<li><b>columnLabelColor -</b> the default color for the column label</li>
+	<li><b>columnLabelSize -</b> the font size for the column label.</li>
+	<li><b>columnLabelColor -</b> the default color for the column label.</li>
 </ul>
 
 ###Scatter Graph
@@ -243,7 +243,7 @@ barMercer.BarChart("bar-chart-container", barData);
 
 <b>HTML</b>
 
-Currently, a width and height need to be defined on the container div. This was to make getting the size for rendering on the page easier. This should probably be made better in the future.
+Currently, a width and height need to be defined on the container div. This is done so it is easier to get the div size for rendering the graph on the page. This should probably be made better in the future.
 
 ```html
 <div id=" scatter-graph-container" style="width:800px;height:600px;"></div>
@@ -303,14 +303,14 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 <b>Row</b>
 
 <ul>
-	<li><b>data.color - </b> The hex color of the points for the data series. If this isn't specified then a random color is selected.</li>
+	<li><b>data.color - </b> the hex color of the points for the data series. If this isn't specified then a random color is selected.</li>
 </ul>
 
 <b>Global</b>
 
 <ul>
-	<li><b>pointSize -</b> the size of each point on the graph</li>
-	<li><b>pointSpace -</b> the space between each measurement point section along the x, y and z axis</li>
+	<li><b>pointSize -</b> the size of each point on the graph.</li>
+	<li><b>pointSpace -</b> the space between each measurement point section along the x, y and z axis.</li>
 </ul>
 
 ##Global Configuration
@@ -318,9 +318,9 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 ###General Display Settings
 
 <ul>
-	<li><b>showMeasurementLines -</b> a boolean settig that dermines if the measurement lines on the Y axis should be shown</li>
-	<li><b>startRotation -</b> the initial rotation of the graph as it when it is initially rendered</li>
-	<li><b>locked -</b> if the graph can be rotated by dragging. Default is false.</li>
+	<li><b>showMeasurementLines -</b> a boolean setting that determines if the measurement lines on the Y axis should be shown.</li>
+	<li><b>startRotation -</b> the initial rotation of the graph when it is initially rendered.</li>
+	<li><b>locked -</b> if set to true the graph cannot be rotated after rendering. Default is false.</li>
 </ul>
 
 ### Background Settings
@@ -338,7 +338,7 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 	<li><b>baseEdge -</b> the edge in the base of the graph before the data visualization starts drawing.</li>
 	<li><b>baseWidth -</b> the width of the base. This automatically figures itself out so usually shouldn't be set.</li>
 	<li><b>baseLength -</b> the length of the base. This automatically figures itself out so usually shouldn't be set.</li>
-	<li><b>graphHeight -</b> the height of the graph as it appeat. This automatically figures itself out so usually shouldn't be set.</li>
+	<li><b>graphHeight -</b> the height of the graph as it appears. This automatically figures itself out so usually shouldn't be set.</li>
 </ul>
 
 ###Measurement Line Settings
@@ -347,7 +347,7 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 	<li><b>measurementLineColor -</b> the color of the measurement lines if they are visible on the graph.</li>
 	<li><b>measurementLabelFont -</b> the font for the measurement label along the Y axis. Changing this will require including a different .js file than the default 'helvetiker_regular.typeface.js'.</li>
 	<li><b>measurementLabelSize -</b> the size of the label along the measurement line if it is visible.</li>
-	<li><b>measurementLabelColor -</b> the color of the label along the measurement line if it is vible.</li>
+	<li><b>measurementLabelColor -</b> the color of the label along the measurement line if it is visible.</li>
 </ul>
 
 ###Directional Light Settings
@@ -374,7 +374,7 @@ These settings are a little low level and control the positioning of the camera.
 
 ###Look At Settings
 
-These, like camera settings, are a little low level and control the position the camera looks at. This is usually automatically determined but just in case you have a specific neeed.
+These, like camera settings, are a little low level and control the position the camera looks at. This is usually automatically determined but just in case you have a specific need.
 
 <ul>
 	<li><b>lookAtX -</b> the X position that the camera should be looking at.</li>
