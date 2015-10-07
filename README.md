@@ -321,14 +321,14 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 	<li><b>showMeasurementLines -</b> a boolean settig that dermines if the measurement lines on the Y axis should be shown</li>
 	<li><b>startRotation -</b> the initial rotation of the graph as it when it is initially rendered</li>
 	<li><b>locked -</b> if the graph can be rotated by dragging. Default is false.</li>
-<ul>
+</ul>
 
 ### Background Settings
 
 <ul>
 	<li><b>background -</b> this is an optional hex color that can be specified to change the graph background.</li>
 	<li><b>backgroundTransparent -</b> this is how transparent the background of the graph should be.</li>
-<ul>
+</ul>
 
 ###Graph Layout Settings
 
@@ -339,7 +339,7 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 	<li><b>baseWidth -</b> the width of the base. This automatically figures itself out so usually shouldn't be set.</li>
 	<li><b>baseLength -</b> the length of the base. This automatically figures itself out so usually shouldn't be set.</li>
 	<li><b>graphHeight -</b> the height of the graph as it appeat. This automatically figures itself out so usually shouldn't be set.</li>
-<ul>
+</ul>
 
 ###Measurement Line Settings
 
@@ -348,7 +348,7 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 	<li><b>measurementLabelFont -</b> the font for the measurement label along the Y axis. Changing this will require including a different .js file than the default 'helvetiker_regular.typeface.js'.</li>
 	<li><b>measurementLabelSize -</b> the size of the label along the measurement line if it is visible.</li>
 	<li><b>measurementLabelColor -</b> the color of the label along the measurement line if it is vible.</li>
-<ul>
+</ul>
 
 ###Directional Light Settings
 
@@ -358,11 +358,11 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 	<li><b>directionalLight.position.x -</b> the X position of the directional light.</li>
 	<li><b>directionalLight.position.y -</b> the Y position of the directional light.</li>
 	<li><b>directionalLight.position.z -</b> the Z position of the directional light.</li>
-<ul>
+</ul>
 
 ###Camera Settings
 
-<ul>
+</ul>
 	<li><b>cameraX -</b> the X position of the camera.</li>
 	<li><b>cameraY -</b> the Y position of the camera.</li>
 	<li><b>cameraZ -</b> the Z position of the camera.</li>
@@ -374,7 +374,7 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 	<li><b>lookAtX -</b> the X position that the camera should be looking at.</li>
 	<li><b>lookAtY -</b> the Y position that the camera should be looking at.</li>
 	<li><b>lookAtZ -</b> the Z position that the camera should be looking at.</li>
-<ul>
+</ul>
 
 ##Author
 
