@@ -14,7 +14,7 @@ Download the basic three.js example font “helvetiker_regular.typeface.js” fr
 
 Download the mercer.js library in this repository.
 
-Once you have this libraries you need to include them on the page is going to use Mercer.
+Once you have these libraries you need to include them on the page using Mercer.
 
 ```html
 <script src="js/three.min.js"></script>
