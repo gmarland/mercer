@@ -80,7 +80,16 @@ var lineMercer = new Mercer();
 lineMercer.LineGraph("line-graph-container", lineData);
 ```
 
-####Elements
+####Configuration
+
+<ul>
+	<li>lineWidth - the width of the lines on the graph.</li>
+	<li>rowSpace - the space between each row.</li>
+	<li>rowLabelFont - the font for the row label.</li>
+	<li>rowLabelSize - the font size for the row label.</li>
+	<li>rowLabelColor - the default color for the row label.</li>
+	<li>pointSpace - the space between x point marker on the X axis.</li>
+</ul>
 
 ###Area Chart
 
