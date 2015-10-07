@@ -80,7 +80,7 @@ var lineMercer = new Mercer();
 lineMercer.LineGraph("line-graph-container", lineData);
 ```
 
-####Additional Configuration
+####Configuration
 
 <b>Row</b>
 
@@ -149,7 +149,25 @@ var areaMercer = new Mercer();
 areaMercer.AreaChart("area-chart-container", areaData);
 ```
 
-####Elements
+####Configuration
+
+<b>Row</b>
+
+<ul>
+	<li><b>data.title (optional) - </b> The title of the data series as it will appear on the graph.</li>
+	<li><b>data.color (optional) - </b> The hex color of the graph line for the data series. If this isn't specified then a random color is selected.</li>
+</ul>
+
+<b>Global</b>
+
+<ul>
+	<li><b>areaWidth -</b> the width of each area seaction as it appears on the graph.</li>
+	<li><b>rowSpace -</b> the amount of space between each row on the graph</li>
+	<li><b>rowLabelFont -</b> the font for the row label. Changing this will require including a different .js file than the default 'helvetiker_regular.typeface.js'.</li>
+	<li><b>rowLabelSize -</b> the font size for the row labels.</li>
+	<li><b>rowLabelColor -</b> the default color for the row labels.</li>
+	<li><b>pointSpace -</b> the space between point marker on the X axis.</li>
+</ul>
 
 ###Bar Chart
 
