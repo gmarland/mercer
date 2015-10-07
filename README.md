@@ -298,7 +298,7 @@ var scatterMercer = new Mercer();
 scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 ```
 
-###Configration
+###Configuration
 
 <b>Row</b>
 
