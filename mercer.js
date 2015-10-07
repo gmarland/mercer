@@ -600,27 +600,25 @@
 					var pointModifierX = this._graphWidth/(maxGraphRangeX-minGraphRangeX),
                         pointModifierY = this._graphHeight/(maxGraphRangeY-minGraphRangeY);
 
-    				for (var i=0; i<graphData.data.length; i++) {
+					// Add the measurement lines
+					if (this._showMeasurementLines) this.createMeasurementsLines(minGraphRangeY, maxGraphRangeY, rangeStepY);
+
+					for (var i=0; i<graphData.data.length; i++) {
                         // sort byt the x value, we have to do this so they arent crazy placed
                         graphData.data[i].values.sort(function(a,b) {
                             return a.x > b.x ? 1 : a.x < b.x ? -1 : 0;
                         });
 
                         // we have x values ordered so we need to modify them to sit on the graph
-	    				graphData.data[i].factoredValues = [];
+                        graphData.data[i].factoredValues = [];
 
-	    				for (var j=0; j<graphData.data[i].values.length; j++) {
-	    					graphData.data[i].factoredValues.push({
+                        for (var j=0; j<graphData.data[i].values.length; j++) {
+                            graphData.data[i].factoredValues.push({
                                 x: (graphData.data[i].values[j].x-minGraphRangeX)*pointModifierX,
                                 y: (graphData.data[i].values[j].y-minGraphRangeY)*pointModifierY
                             });
-	    				}
-					}
+                        }
 
-					// Add the measurement lines
-					if (this._showMeasurementLines) this.createMeasurementsLines(minGraphRangeY, maxGraphRangeY, rangeStepY);
-
-					for (var i=0; i<graphData.data.length; i++) {
     					// Figure out the color for the bar. Pick a random one is one isn't defined
     					var areaColor = null;
 
@@ -843,6 +841,8 @@
                     // Figure out how we need to modify the points to fit on the graph
                     var pointModifierX = this._graphWidth/(maxGraphRangeX-minGraphRangeX),
                         pointModifierY = this._graphHeight/(maxGraphRangeY-minGraphRangeY);
+                    // Add the measurement lines
+                    if (this._showMeasurementLines) this.createMeasurementsLines(minGraphRangeY, maxGraphRangeY, rangeStepY);
 
                     for (var i=0; i<graphData.data.length; i++) {
                         // sort byt the x value, we have to do this so they arent crazy placed
@@ -859,12 +859,7 @@
                                 y: (graphData.data[i].values[j].y-minGraphRangeY)*pointModifierY
                             });
                         }
-                    }
 
-                    // Add the measurement lines
-                    if (this._showMeasurementLines) this.createMeasurementsLines(minGraphRangeY, maxGraphRangeY, rangeStepY);
-
-                    for (var i=0; i<graphData.data.length; i++) {
                         // Figure out the color for the bar. Pick a random one is one isn't defined
                         var areaColor = null;
 
@@ -1370,12 +1365,8 @@
     					for (var j=0; j<graphData.data[i].values.length; j++) {
 							createBar(i, j, graphData.data[i].factoredValues[j], graphData.data[i].values[j], barColor, makeBarsLabelsVisible);
     					}
-					}
 
-					if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
-						for (var i=0; i<graphData.rowLabels.values.length; i++) {
-							createRowLabel(i, graphData.rowLabels.values[i]);
-						}
+                        if (graphData.data[i].title) createRowLabel(i, graphData.data[i].title);
 					}
 
 					if ((graphData.columnLabels) && (graphData.columnLabels.values)) {

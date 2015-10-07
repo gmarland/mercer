@@ -187,20 +187,19 @@ This is a very basic example that renders a bar chart into a container div. Furt
 
 ```javascript
 var barData = {
-	rowLabels: {
-		values: ["2013", "2014", "2015" ]
-	},
 	columnLabels: {
 		values: [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "July", "Apr", "Sept", "Oct", "Nov", "Dec" ]
 	},
 	data: [{
+		title: "2013",
 		color: "#0000ff",
 		values: [ 100, 200, 400, 400, 300, 200, 200, 400, 400, 300, 200, 100 ]
 	}, {
+		title: "2014",
 		color: "#ff0000",
 		values: [ 300, 200, 200, 800, 100, 300, 200, 200, 800, 100, 300, 100 ]
 	}, {
-		color: "#00ff00",
+		title: "2015",
 		values: [ 170, 200, 150, 140, 140, 130, 120, 180, 110, 130, 120, 190 ]
 	}]
 };
