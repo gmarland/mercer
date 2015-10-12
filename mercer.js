@@ -1,394 +1,502 @@
 (function () {
     var Mercer = function(data) {
         return {
-        	// The div that will contain the visualization
-        	_container: null,
+            createGraph: function(container) {
+                return {
+                    // -----------------------------------------------
+                    // Properties
+                    // -----------------------------------------------
 
-			// The actual graph object
-			_graphObject: new THREE.Object3D(),
+                	// The div that will contain the visualization
+                	_container: document.getElementById(container),
 
+                    _name: null,
+                    _rows: [],
+                    _labels: [],
 
-        	// Switch to dermine if the renderer should keep ticking to allow animations
-        	_keepRenderingScene: false,
+        			// The actual graph object
+        			_graphObject: new THREE.Object3D(),
 
-        	// Used when rotating the graph
-        	_targetRotationX: null,
+                	// Switch to dermine if the renderer should keep ticking to allow animations
+                	_keepRenderingScene: false,
 
-            _fov: 75,
+                	// Used when rotating the graph
+                	_targetRotationX: null,
 
-        	// Camera settings
+                    _fov: 75,
 
-        	_cameraSettings: {
-        		position: {
-        			x: 0,
-        			y: 0,
-        			z: 0
-        		},
-        		lookAt: {
-        			x: 0,
-        			y: 0,
-        			z: 0
-        		}
-        	},
+                	// Camera settings
 
-			// Default setting for rotation
-        	_startRotation: 0,
+                	_cameraSettings: {
+                		position: null,
+                		lookAt: null
+                	},
 
-        	// THREE layout
-        	_scene: null,
-        	_camera: null,
-        	_renderer: null,
+        			// Default setting for rotation
+                	_startRotation: 0,
 
-        	// Lighting
-        	_directionalLight: { // directional lighting
-        		color: 0xffffff,
-        		intensity: 1.0,
-        		position: {
-        			x: 200,
-        			y: 300,
-        			z: 590
-        		}
-        	},
+                	// THREE layout
+                	_scene: null,
+                	_camera: null,
+                	_renderer: null,
 
-        	// Details of the graph
-            _graphHeight: 150,
-            _graphWidth: null, // the base width which will be show if no data is added
-            _graphLength: null, // the base length which will be show if no data is added
+                	// Lighting
+                	_directionalLight: { // directional lighting
+                		color: 0xffffff,
+                		intensity: 1.0,
+                		position: {
+                			x: 200,
+                			y: 300,
+                			z: 590
+                		}
+                	},
 
-			_baseEdge: 10, // the distance around the graphing area for the base
-			_baseThickness: 1, // the thickness of the graph base
-			_baseColor: 0xececec, // the color for the base
+                	// Details of the graph
+                    _graphHeight: 150,
+                    _graphWidth: null, // the base width which will be show if no data is added
+                    _graphLength: null, // the base length which will be show if no data is added
 
-			_locked: false, // whether or not to allow the rotation of the graph
+        			_baseEdge: 10, // the distance around the graphing area for the base
+        			_baseThickness: 1, // the thickness of the graph base
+        			_baseColor: 0xececec, // the color for the base
 
-			_showMeasurementLines: true, // whether or not to show measurement lines
-			_numberOfMeasurementLines: 10,
-			_measurementLineColor: 0x222222, // the default color of the measurement lines
-			_measurementLabelFont: "helvetiker", // the font for the measurement label
-			_measurementLabelSize: 3.5, // the font size for the measurement label
-			_measurementLabelColor: 0x000000, // the default color for the measurement label
+        			_locked: false, // whether or not to allow the rotation of the graph
 
-        	//Skybox
-        	_skyboxColor: 0xffffff,
-        	_skyboxOpacity: 1,
+        			_showMeasurementLines: true, // whether or not to show measurement lines
+        			_numberOfMeasurementLines: 10,
+        			_measurementLineColor: 0x222222, // the default color of the measurement lines
+        			_measurementLabelFont: "helvetiker", // the font for the measurement label
+        			_measurementLabelSize: 3.5, // the font size for the measurement label
+        			_measurementLabelColor: 0x000000, // the default color for the measurement label
 
-        	// ----- Method to overwrite the global options 
+                	//Skybox
+                	_skyboxColor: 0xffffff,
+                	_skyboxOpacity: 1,
 
-        	setGlobalOptions: function(graphData) {
-        		if (graphData !== undefined) {
-        			if (graphData.graphHeight !== undefined) this._graphHeight = graphData.graphHeight;
+                    // -----------------------------------------------
+                    // Setters
+                    // -----------------------------------------------
 
-        			if (graphData.background !== undefined) this._skyboxColor = new THREE.Color(graphData.background);
-        			if (graphData.backgroundTransparent !== undefined) {
-        				if (graphData.backgroundTransparent) this._skyboxOpacity = 0;
-        				else this._skyboxOpacity = 1;
+                	// ----- Method to overwrite the global options 
+                	setOptions: function(graphData) {
+                		if (graphData !== undefined) {
+                			if (graphData.graphHeight !== undefined) this._graphHeight = graphData.graphHeight;
+
+                			if (graphData.background !== undefined) this._skyboxColor = new THREE.Color(graphData.background);
+                			if (graphData.backgroundTransparent !== undefined) {
+                				if (graphData.backgroundTransparent) this._skyboxOpacity = 0;
+                				else this._skyboxOpacity = 1;
+                			}
+
+                            if ((graphData.cameraX != undefined) || (graphData.cameraY != undefined) || (graphData.cameraZ != undefined)) {
+                                this._cameraSettings.position = {
+                                    x: 0,
+                                    y: 0,
+                                    z: 0
+                                };
+
+                    			if (graphData.cameraX != undefined) this._cameraSettings.position.x = graphData.cameraX;
+                    			if (graphData.cameraY != undefined) this._cameraSettings.position.y = graphData.cameraY;
+                    			if (graphData.cameraZ != undefined) this._cameraSettings.position.z = graphData.cameraZ;
+                            }
+
+                            if ((graphData.lookAtX != undefined) || (graphData.lookAtY != undefined) || (graphData.lookAtZ != undefined)) {
+                                this._cameraSettings.lookAt = {
+                                    x: 0,
+                                    y: 0,
+                                    z: 0
+                                };
+
+                    			if (graphData.lookAtX != undefined) this._cameraSettings.lookAt.x = graphData.lookAtX;
+                    			if (graphData.lookAtY != undefined) this._cameraSettings.lookAt.y = graphData.lookAtY;
+                    			if (graphData.lookAtZ != undefined) this._cameraSettings.lookAt.z = graphData.lookAtZ;
+                            }
+
+                			if (graphData.startRotation !== undefined) startRotation = graphData.startRotation;
+
+                			if (graphData.directionalLight !== undefined) {
+        	        			if (graphData.directionalLight.color !== undefined) _directionalLight.color = graphData.directionalLight.color;
+        	        			
+        	        			if (graphData.directionalLight.intensity !== undefined) _directionalLight.intensity = graphData.directionalLight.intensity;
+
+        	        			if (graphData.directionalLight.position !== undefined) {
+        		        			if (graphData.directionalLight.position.x !== undefined) _directionalLight.position.x = graphData.directionalLight.position.x;
+        		        			if (graphData.directionalLight.position.y !== undefined) _directionalLight.position.y = graphData.directionalLight.position.y;
+        		        			if (graphData.directionalLight.position.z !== undefined) _directionalLight.position.z = graphData.directionalLight.position.z;
+        		        		}
+        	        		}
+
+                			if (graphData.baseEdge !== undefined) this._baseEdge = graphData.baseEdge;
+
+                			if (graphData.baseThickness !== undefined) this._baseThickness = graphData.baseThickness;
+
+                			if (graphData.baseWidth !== undefined) this._graphWidth = graphData.baseWidth;
+
+                			if (graphData.baseLength !== undefined) this._graphLength = graphData.baseLength;
+
+                			if (graphData.baseColor !== undefined) this._baseColor = graphData.baseColor;
+
+                			if (graphData.locked !== undefined) this._locked = graphData.locked;
+
+                			if (graphData.showMeasurementLines !== undefined) this._showMeasurementLines = graphData.showMeasurementLines;
+
+                			if (graphData.measurementLineColor !== undefined) this._measurementLineColor = new THREE.Color(graphData.measurementLineColor);
+
+                			if (graphData.measurementLabelFont !== undefined) this._measurementLabelFont = graphData.measurementLabelFont;
+
+                			if (graphData.measurementLabelSize !== undefined) this._measurementLabelSize = graphData.measurementLabelSize;
+
+                			if (graphData.measurementLabelColor !== undefined) this._measurementLabelColor = new THREE.Color(graphData.measurementLabelColor);
+                		}
+                	},
+
+                    setName: function(name) {
+                        this._name = name;
+                    },
+
+                    setGraphWidth: function(width) {
+                        this._graphWidth = width;
+                    },
+
+                    setGraphLength: function(length) {
+                        this._graphLength = length;
+                    },
+
+                    // -----------------------------------------------
+                    // Getters
+                    // -----------------------------------------------
+
+                    getBaseEdge: function() {
+                        return this._baseEdge;
+                    },
+
+                    getGraphHeight: function() {
+                        return this._graphHeight;
+                    },
+
+                    getGraphWidth: function() {
+                        return this._graphWidth;
+                    },
+
+                    getGraphLength: function() {
+                        return this._graphLength;
+                    },
+
+                    getDataAreaXPosition: function() {
+                        return ((this._graphWidth/2)*-1) + this._baseEdge;
+                    },
+
+                    getDataAreaZPosition: function() {
+                        return ((this._graphLength/2)*-1) + this._baseEdge;
+                    },
+
+                    // -----------------------------------------------
+                    // Methods to add graph objects
+                    // -----------------------------------------------
+
+                    addRow: function(row) {
+                        this._rows.push(row);
+                    },
+
+                    addLabel: function(label) {
+                        this._labels.push(label);
+                    },
+
+                    // ----- Draws the base of the graph
+                    addBase: function() {
+                        var baseGeometry = new THREE.BoxGeometry(this._graphWidth, this._baseThickness, this._graphLength),
+                            baseMaterial = new THREE.MeshLambertMaterial({
+                                color: this._baseColor, 
+                                side: THREE.DoubleSide
+                            });
+
+                        var baseMesh = new THREE.Mesh(baseGeometry, baseMaterial);
+                        baseMesh.name = "base";
+
+                        baseMesh.position.y -= (this._baseThickness/2)+0.1;
+
+                        this._graphObject.add(baseMesh);
+                    },
+
+                    // ----- Draws the measurement lines of the graph
+                    addMeasurementsLines: function(minValue, maxValue) {
+                        if (this._showMeasurementLines) {
+                            var stepsEachLine = Math.ceil(this._graphHeight/this._numberOfMeasurementLines);
+
+                            for (var i=1; i<=this._numberOfMeasurementLines; i++) {
+                                var mesurementLineObject = new THREE.Object3D();
+
+                                var measureLineGeometry = new THREE.Geometry();
+                                measureLineGeometry.vertices.push(new THREE.Vector3((this._graphWidth/2)*-1, (stepsEachLine*i), (this._graphLength/2)));
+                                measureLineGeometry.vertices.push(new THREE.Vector3((this._graphWidth/2)*-1, (stepsEachLine*i), (this._graphLength/2)*-1));
+                                measureLineGeometry.vertices.push(new THREE.Vector3((this._graphWidth/2), (stepsEachLine*i), (this._graphLength/2)*-1));
+
+                                var measureLine = new THREE.Line(measureLineGeometry, new THREE.LineBasicMaterial({
+                                    color: this._measurementLineColor,
+                                    side: THREE.DoubleSide
+                                }));
+
+                                mesurementLineObject.add(measureLine);
+
+                                var textGeometry = new THREE.TextGeometry(minValue+Math.round((maxValue-minValue)/this._numberOfMeasurementLines)*i, {
+                                    font: this._measurementLabelFont,
+                                    size: this._measurementLabelSize,
+                                    height: .2
+                                });
+                                
+                                var textMesh = new THREE.Mesh(textGeometry, new THREE.MeshBasicMaterial({
+                                    color: this._measurementLabelColor
+                                }));
+
+                                var textBoxArea = new THREE.Box3().setFromObject(textMesh);
+
+                                textMesh.position.x += ((this._graphWidth/2)+5);
+                                textMesh.position.y += ((stepsEachLine*i)-(textBoxArea.size().y/2));
+                                textMesh.position.z -= (this._graphLength/2);
+
+                                mesurementLineObject.add(textMesh);
+
+                                this._graphObject.add(mesurementLineObject);
+                            }
+                        }
+                    },
+
+                    // -----------------------------------------------
+                    // Function for creating the scene
+                    // -----------------------------------------------
+
+                	// -----  Creates the scene
+                	createScene: function() {
+                		var that = this,
+                            containerWidth = parseInt(this._container.style.width,10), 
+                			containerHeight = parseInt(this._container.style.height,10),
+                            aspect = containerWidth /containerHeight,
+                            graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
+
+                        // ----- Functions for setting up the camera
+                            
+                        // This attempts to find a camera position based on the graph object dimensions
+                        var calculateCamera = function() {
+                            var vFOV = that._fov * Math.PI / 180,
+                                dist = (graphObjectArea.size().x/aspect)/2/Math.tan((vFOV / 2));
+
+                            that._cameraSettings.position = {
+                                x: 0,
+                                y: (graphObjectArea.size().y/2),
+                                z: dist+(graphObjectArea.size().z/2)+(graphObjectArea.size().y/4)
+                            };
+                        };
+
+                        // Attempts to determine where the camera should be looking based on the graph settings
+                        var calculateLookAt = function() {
+                            that._cameraSettings.lookAt = {
+                                x: 0,
+                                y: 0,
+                                z: 0
+                            };
+                        };
+
+                        // Add the camera to the scene
+                        var addCamera = function() {
+                            var directionalLight = new THREE.PointLight(that._directionalLight.color, that._directionalLight.intensity); 
+                            directionalLight.position.set(that._cameraSettings.position.x, that._cameraSettings.position.y, that._cameraSettings.position.z);
+             
+                            that._scene.add(directionalLight);
+
+                            // take the maximum distance from the camera add 100 and double it
+                            var far = ((Math.max(that._cameraSettings.position.x, that._cameraSettings.position.y, that._cameraSettings.position.z)+1000)*2);
+
+                            that._camera = new THREE.PerspectiveCamera(that._fov, aspect, 0.1, that._far);
+
+                            that._camera.position.x = that._cameraSettings.position.x;
+                            that._camera.position.y = that._cameraSettings.position.y;
+                            that._camera.position.z = that._cameraSettings.position.z;
+
+                            that._camera.lookAt(new THREE.Vector3(that._cameraSettings.lookAt.x, that._cameraSettings.lookAt.y, that._cameraSettings.lookAt.z));
+                        };
+
+        				this._scene = new THREE.Scene();
+
+        				this._renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        				this._renderer.setSize(containerWidth, containerHeight);
+        				this._renderer.setClearColor(this._skyboxColor, this._skyboxOpacity);
+
+        				this._container.appendChild(this._renderer.domElement);
+
+                        // add all the row data to the scene
+                        for (var i=0; i<this._rows.length; i++) {
+                            var rowObjects = this._rows[i].draw(this.getDataAreaXPosition(), this.getDataAreaZPosition());
+
+                            for (var j=0; j<rowObjects.length; j++) {
+                                this._graphObject.add(rowObjects[j]);
+                            }
+                        }
+
+                        // add all the row data to the scene
+                        for (var i=0; i<this._labels.length; i++) {
+                            this._graphObject.add(this._labels[i].draw(this._graphWidth, this._graphLength, this._baseEdge));
+                        }
+
+                        // position the object so it will view well
+                        this._graphObject.position.y -= ((graphObjectArea.size().y/2)-(graphObjectArea.size().y/4));
+
+                        // Add the graph to the scene
+                        this._scene.add(this._graphObject);
+
+                        // If we don't have camera graphData then we'll try and determine the camera position 
+                        if (!this._cameraSettings.position) calculateCamera();
+
+                        // If we don't have camera graphData then we'll try and determine the cameras lookat 
+                        if (!this._cameraSettings.lookAt) calculateLookAt();
+
+                        // Set the initial rotation
+                        if (this._startRotation) this._graphObject.rotation.y = this._startRotation;
+
+                        // bind all mouse/touch events
+                        if (!this._locked) this.bindEvents();
+
+                        addCamera();
+
+                        if (this._camera) this.render();
+                	},
+
+        			// ----- Binding mouse events
+                	bindEvents: function() {
+                		var self = this;
+
+        	        	// These variables are required for rotating the graph
+                		var startPositionX = null,
+                			startRotationX = null;
+
+                		// mouse events
+                		this._renderer.domElement.addEventListener("mousedown", function(e) {
+                			e.preventDefault();
+                			e.stopPropagation();
+
+            			 	startPositionX = e.clientX-(window.innerWidth/2);
+                			startRotationX = self._graphObject.rotation.y;
+
+                			self.startRendering();
+                		}, false );
+
+            			this._renderer.domElement.addEventListener( "mousemove", function(e) {
+                			e.preventDefault();
+                			e.stopPropagation();
+
+            				if (startPositionX) {
+              	  				var mouseX = e.clientX-(window.innerWidth/2);
+              	  				self._targetRotationX = startRotationX+(mouseX - startPositionX) * 0.02;
+              	  			}
+        		        }, false );
+
+        		        this._renderer.domElement.addEventListener( "mouseup", function(e) {
+                			e.preventDefault();
+                			e.stopPropagation();
+
+        		        	startPositionX = null;
+                			self._targetRotationX = null;
+
+                			self.stopRendering();
+        		        }, false );
+            			
+            			this._renderer.domElement.addEventListener( "mouseout", function(e) {
+        		        	startPositionX = null;
+                			self._targetRotationX = null;
+
+                			self.stopRendering();
+        		        }, false );
+
+        		        // touch events
+                		this._renderer.domElement.addEventListener("touchstart", function(e) {
+        			        if (e.touches.length == 1) {
+                			 	startPositionX = e.touches[0].pageX-(window.innerWidth/2);
+                				startRotationX = self._graphObject.rotation.y;
+
+                				self.startRendering();
+        	        		}
+                		}, false );
+
+            			this._renderer.domElement.addEventListener( "touchmove", function(e) {
+            				if (startPositionX) {
+        				        if (e.touches.length == 1) {
+        	      	  				var mouseX = e.touches[0].pageX-(window.innerWidth/2);
+        	      	  				self._targetRotationX = (mouseX - startPositionX) * 0.05;
+        	      	  			}
+              	  			}
+        		        }, false );
+
+        		        this._renderer.domElement.addEventListener( "touchend", function(e) {
+        		        	startPositionX = null;
+                			self._targetRotationX = null;
+
+                			self.stopRendering();
+        		        }, false );
+
+        		        this._renderer.domElement.addEventListener( "touchcancel", function(e) {
+        		        	startPositionX = null;
+                			self._targetRotationX = null;
+
+                			self.stopRendering();
+        		        }, false );
+                	},
+
+                    // -----------------------------------------------
+                	// Functions for rendering the graphs
+                    // -----------------------------------------------
+
+                	updateScene: function() {
+                		if ((this._targetRotationX) && (this._graphObject)) {
+                			var newRotation = ( this._targetRotationX - this._graphObject.rotation.y ) * 0.1;
+
+                			this._graphObject.rotation.y += newRotation;
+                		}
+                	},
+
+                	startRendering: function() {
+                		this._keepRenderingScene = true;
+
+                		this.render();
+                	},
+
+                	stopRendering: function() {
+                		this._keepRenderingScene = false;
+                	},
+
+        			render: function () {
+        				var self = this;
+
+        				var renderScene = function () {
+        					if (self._keepRenderingScene) requestAnimationFrame( renderScene );
+
+        					self.updateScene();
+
+        					self._renderer.render(self._scene, self._camera);
+        				};
+
+        				renderScene();
         			}
-
-        			if (graphData.cameraX != undefined) this._cameraSettings.position.x = graphData.cameraX;
-        			if (graphData.cameraY != undefined) this._cameraSettings.position.y = graphData.cameraY;
-        			if (graphData.cameraZ != undefined) this._cameraSettings.position.z = graphData.cameraZ;
-
-        			if (graphData.lookAtX != undefined) this._cameraSettings.lookAt.x = graphData.lookAtX;
-        			if (graphData.lookAtY != undefined) this._cameraSettings.lookAt.y = graphData.lookAtY;
-        			if (graphData.lookAtZ != undefined) this._cameraSettings.lookAt.z = graphData.lookAtZ;
-
-        			if (graphData.startRotation !== undefined) startRotation = graphData.startRotation;
-
-        			if (graphData.directionalLight !== undefined) {
-	        			if (graphData.directionalLight.color !== undefined) _directionalLight.color = graphData.directionalLight.color;
-	        			
-	        			if (graphData.directionalLight.intensity !== undefined) _directionalLight.intensity = graphData.directionalLight.intensity;
-
-	        			if (graphData.directionalLight.position !== undefined) {
-		        			if (graphData.directionalLight.position.x !== undefined) _directionalLight.position.x = graphData.directionalLight.position.x;
-		        			if (graphData.directionalLight.position.y !== undefined) _directionalLight.position.y = graphData.directionalLight.position.y;
-		        			if (graphData.directionalLight.position.z !== undefined) _directionalLight.position.z = graphData.directionalLight.position.z;
-		        		}
-	        		}
-
-        			if (graphData.baseEdge !== undefined) this._baseEdge = graphData.baseEdge;
-
-        			if (graphData.baseThickness !== undefined) this._baseThickness = graphData.baseThickness;
-
-        			if (graphData.baseWidth !== undefined) this._graphWidth = graphData.baseWidth;
-
-        			if (graphData.baseLength !== undefined) this._graphLength = graphData.baseLength;
-
-        			if (graphData.baseColor !== undefined) this._baseColor = graphData.baseColor;
-
-        			if (graphData.locked !== undefined) this._locked = graphData.locked;
-
-        			if (graphData.showMeasurementLines !== undefined) this._showMeasurementLines = graphData.showMeasurementLines;
-
-        			if (graphData.measurementLineColor !== undefined) this._measurementLineColor = new THREE.Color(graphData.measurementLineColor);
-
-        			if (graphData.measurementLabelFont !== undefined) this._measurementLabelFont = graphData.measurementLabelFont;
-
-        			if (graphData.measurementLabelSize !== undefined) this._measurementLabelSize = graphData.measurementLabelSize;
-
-        			if (graphData.measurementLabelColor !== undefined) this._measurementLabelColor = new THREE.Color(graphData.measurementLabelColor);
-        		}
-        	},
-
-        	// -----  Function for creating the scene
-
-        	createScene: function() {
-        		var containerWidth = parseInt(this._container.style.width,10), 
-        			containerHeight = parseInt(this._container.style.height,10);
-
-				this._scene = new THREE.Scene();
-
-				this._renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-				this._renderer.setSize(containerWidth, containerHeight);
-				this._renderer.setClearColor(this._skyboxColor, this._skyboxOpacity);
-
-				this._container.appendChild(this._renderer.domElement);
-        	},
-
-        	// ----- Functions for setting up the camera
-
-        	// Add the camera to the scene
-        	addCamera: function() {
-        		var containerWidth = parseInt(this._container.style.width,10), 
-        			containerHeight = parseInt(this._container.style.height,10),
-                    aspect = containerWidth /containerHeight;
-		      
-				var directionalLight = new THREE.PointLight(this._directionalLight.color, this._directionalLight.intensity); 
-				directionalLight.position.set(this._cameraSettings.position.x, this._cameraSettings.position.y, this._cameraSettings.position.z);
- 
-				this._scene.add(directionalLight);
-
-                // take the maximum distance from the camera add 100 and double it
-                var far = ((Math.max(this._cameraSettings.position.x, this._cameraSettings.position.y, this._cameraSettings.position.z)+1000)*2);
-
-				this._camera = new THREE.PerspectiveCamera(this._fov, aspect, 0.1, this._far);
-
-				this._camera.position.x = this._cameraSettings.position.x;
-				this._camera.position.y = this._cameraSettings.position.y;
-				this._camera.position.z = this._cameraSettings.position.z;
-
-				this._camera.lookAt(new THREE.Vector3(this._cameraSettings.lookAt.x, this._cameraSettings.lookAt.y, this._cameraSettings.lookAt.z));
-        	},
-				
-			// This attempts to find a camera position based on the graph object dimensions
-			calculateCamera: function() {
-                var containerWidth = parseInt(this._container.style.width,10), 
-                    containerHeight = parseInt(this._container.style.height,10),
-                    aspect = containerWidth /containerHeight;
-
-                var containerWidth = parseInt(this._container.style.width,10), 
-                    containerHeight = parseInt(this._container.style.height,10);
-
-				var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
-
-    			this._cameraSettings.position.x = 0;
-    			this._cameraSettings.position.y = (graphObjectArea.size().y/2);
-
-                var vFOV = this._fov * Math.PI / 180; 
-
-                var dist = (graphObjectArea.size().x/aspect)/2/Math.tan((vFOV / 2));
-
-                this._cameraSettings.position.z = dist+(graphObjectArea.size().z/2)+(graphObjectArea.size().y/4);
-        	},
-
-        	// Attempts to determine where the camera should be looking based on the graph settings
-        	calculateLookAt: function() {
-				var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
-
-	        	this._cameraSettings.lookAt.x = 0;
-	        	this._cameraSettings.lookAt.y = 0;
-	        	this._cameraSettings.lookAt.z = 0;
-        	},
-
-        	// ----- Functions for drawing the base
-
-        	createBase: function() {
-        		var baseGeometry = new THREE.BoxGeometry(this._graphWidth, this._baseThickness, this._graphLength),
-					baseMesh = new THREE.Mesh(baseGeometry, new THREE.MeshLambertMaterial({
-						color: this._baseColor, 
-						side: THREE.DoubleSide
-					}));
-
-				baseMesh.position.y -= (this._baseThickness/2);
-
-				this._graphObject.add(baseMesh);
-        	},
-
-        	// ----- Functions for drawing the measurement lines
-
-			createMeasurementsLines: function(minValue, maxValue) {
-				var stepsEachLine = Math.ceil(this._graphHeight/this._numberOfMeasurementLines);
-
-				for (var i=1; i<=this._numberOfMeasurementLines; i++) {
-					var mesurementLineObject = new THREE.Object3D();
-
-					var measureLineGeometry = new THREE.Geometry();
-					measureLineGeometry.vertices.push(new THREE.Vector3((this._graphWidth/2)*-1, (stepsEachLine*i), (this._graphLength/2)));
-					measureLineGeometry.vertices.push(new THREE.Vector3((this._graphWidth/2)*-1, (stepsEachLine*i), (this._graphLength/2)*-1));
-					measureLineGeometry.vertices.push(new THREE.Vector3((this._graphWidth/2), (stepsEachLine*i), (this._graphLength/2)*-1));
-
-					var measureLine = new THREE.Line(measureLineGeometry, new THREE.LineBasicMaterial({
-						color: this._measurementLineColor,
-						side: THREE.DoubleSide
-					}));
-
-					mesurementLineObject.add(measureLine);
-
-					var textGeometry = new THREE.TextGeometry(minValue+Math.round((maxValue-minValue)/this._numberOfMeasurementLines)*i, {
-						font: this._measurementLabelFont,
-    	 				size: this._measurementLabelSize,
-						height: .2
-					});
-					
-					var textMesh = new THREE.Mesh(textGeometry, new THREE.MeshBasicMaterial({
-						color: this._measurementLabelColor
-					}));
-
-					var textBoxArea = new THREE.Box3().setFromObject(textMesh);
-
-					textMesh.position.x += ((this._graphWidth/2)+5);
-					textMesh.position.y += ((stepsEachLine*i)-(textBoxArea.size().y/2));
-					textMesh.position.z -= (this._graphLength/2);
-
-					mesurementLineObject.add(textMesh);
-
-					this._graphObject.add(mesurementLineObject);
-				}
-			},
-
-			// ----- Event binding
-
-			// Binding mouse events
-        	bindEvents: function() {
-        		var self = this;
-
-	        	// These variables are required for rotating the graph
-        		var startPositionX = null,
-        			startRotationX = null;
-
-        		// mouse events
-        		this._renderer.domElement.addEventListener("mousedown", function(e) {
-        			e.preventDefault();
-        			e.stopPropagation();
-
-    			 	startPositionX = e.clientX-(window.innerWidth/2);
-        			startRotationX = self._graphObject.rotation.y;
-
-        			self.startRendering();
-        		}, false );
-
-    			this._renderer.domElement.addEventListener( "mousemove", function(e) {
-        			e.preventDefault();
-        			e.stopPropagation();
-
-    				if (startPositionX) {
-      	  				var mouseX = e.clientX-(window.innerWidth/2);
-      	  				self._targetRotationX = startRotationX+(mouseX - startPositionX) * 0.02;
-      	  			}
-		        }, false );
-
-		        this._renderer.domElement.addEventListener( "mouseup", function(e) {
-        			e.preventDefault();
-        			e.stopPropagation();
-
-		        	startPositionX = null;
-        			self._targetRotationX = null;
-
-        			self.stopRendering();
-		        }, false );
-    			
-    			this._renderer.domElement.addEventListener( "mouseout", function(e) {
-		        	startPositionX = null;
-        			self._targetRotationX = null;
-
-        			self.stopRendering();
-		        }, false );
-
-		        // touch events
-        		this._renderer.domElement.addEventListener("touchstart", function(e) {
-			        if (e.touches.length == 1) {
-        			 	startPositionX = e.touches[0].pageX-(window.innerWidth/2);
-        				startRotationX = self._graphObject.rotation.y;
-
-        				self.startRendering();
-	        		}
-        		}, false );
-
-    			this._renderer.domElement.addEventListener( "touchmove", function(e) {
-    				if (startPositionX) {
-				        if (e.touches.length == 1) {
-	      	  				var mouseX = e.touches[0].pageX-(window.innerWidth/2);
-	      	  				self._targetRotationX = (mouseX - startPositionX) * 0.05;
-	      	  			}
-      	  			}
-		        }, false );
-
-		        this._renderer.domElement.addEventListener( "touchend", function(e) {
-		        	startPositionX = null;
-        			self._targetRotationX = null;
-
-        			self.stopRendering();
-		        }, false );
-
-		        this._renderer.domElement.addEventListener( "touchcancel", function(e) {
-		        	startPositionX = null;
-        			self._targetRotationX = null;
-
-        			self.stopRendering();
-		        }, false );
-        	},
-
-        	// ----- Functions for rendering the graphs
-
-        	updateScene: function() {
-        		if ((this._targetRotationX) && (this._graphObject)) {
-        			var newRotation = ( this._targetRotationX - this._graphObject.rotation.y ) * 0.1;
-
-        			this._graphObject.rotation.y += newRotation;
-        		}
-        	},
-
-        	startRendering: function() {
-        		this._keepRenderingScene = true;
-
-        		this.render();
-        	},
-
-        	stopRendering: function() {
-        		this._keepRenderingScene = false;
-        	},
-
-			render: function () {
-				var self = this;
-
-				var renderScene = function () {
-					if (self._keepRenderingScene) requestAnimationFrame( renderScene );
-
-					self.updateScene();
-
-					self._renderer.render(self._scene, self._camera);
-				};
-
-				renderScene();
-			},
-
-			// ----- Some random functions used through graphs
-
-			// Figures out the closet 10, 100, 100 etc the distance between the min and max meets
-			getRoundingInteger: function(min, max) {
-				var diff = max-min;
-
-				if (diff === 0) return 1;
-				else {
-					var multiplier = 0;
-
-					while (true) {
-						if ((diff >= Math.pow(10, multiplier)) && (diff < Math.pow(10, multiplier+1))) return Math.pow(10, (multiplier));
-
-						multiplier++;
-					}
-				}
-			},
+                }
+            },
+
+            // -----------------------------------------------
+            // Functions for calculating graph data points
+            // -----------------------------------------------
+
+            // Figures out the closet 10, 100, 100 etc the distance between the min and max meets
+            getRoundingInteger: function(min, max) {
+                var diff = max-min;
+
+                if (diff === 0) return 1;
+                else {
+                    var multiplier = 0;
+
+                    while (true) {
+                        if ((diff >= Math.pow(10, multiplier)) && (diff < Math.pow(10, multiplier+1))) return Math.pow(10, (multiplier));
+
+                        multiplier++;
+                    }
+                }
+            },
 
             getMaxValueCount: function(data) {
                 var maxValueCount = 0;
@@ -400,18 +508,18 @@
                 return maxValueCount;
             },
 
-			// Returns the maximum value in a data set
-			getMaxDataValue: function(data) {		
-				var maxDataVal = 0;
+            // Returns the maximum value in a data set
+            getMaxDataValue: function(data) {       
+                var maxDataVal = 0;
 
-				for (var i=0; i<data.length; i++) {
-					for (var j=0; j<data[i].values.length; j++) {
-						if (data[i].values[j] > maxDataVal) maxDataVal = data[i].values[j];
-					}
-				}
+                for (var i=0; i<data.length; i++) {
+                    for (var j=0; j<data[i].values.length; j++) {
+                        if (data[i].values[j] > maxDataVal) maxDataVal = data[i].values[j];
+                    }
+                }
 
-				return maxDataVal;
-			},
+                return maxDataVal;
+            },
 
             // Returns the maximum value in a data set for x, y or z
             getMaxDataValues: function (data) {
@@ -467,7 +575,6 @@
                     z: minZDataVal
                 };
             },
-
 
 			// ----- Functions for drawing the graphs
 
@@ -594,14 +701,14 @@
                     }
 
                     // add it to the scene
-                    this.createBase();
+                    this.addBase();
 
                     // Figure out how we need to modify the points to fit on the graph
 					var pointModifierX = this._graphWidth/(maxGraphRangeX-minGraphRangeX),
                         pointModifierY = this._graphHeight/(maxGraphRangeY-minGraphRangeY);
 
 					// Add the measurement lines
-					if (this._showMeasurementLines) this.createMeasurementsLines(minGraphRangeY, maxGraphRangeY, rangeStepY);
+					if (this._showMeasurementLines) this.addMeasurementsLines(minGraphRangeY, maxGraphRangeY, rangeStepY);
 
 					for (var i=0; i<graphData.data.length; i++) {
                         // sort byt the x value, we have to do this so they arent crazy placed
@@ -836,13 +943,13 @@
                     }
 
                     // add it to the scene
-                    this.createBase();
+                    this.addBase();
 
                     // Figure out how we need to modify the points to fit on the graph
                     var pointModifierX = this._graphWidth/(maxGraphRangeX-minGraphRangeX),
                         pointModifierY = this._graphHeight/(maxGraphRangeY-minGraphRangeY);
                     // Add the measurement lines
-                    if (this._showMeasurementLines) this.createMeasurementsLines(minGraphRangeY, maxGraphRangeY, rangeStepY);
+                    if (this._showMeasurementLines) this.addMeasurementsLines(minGraphRangeY, maxGraphRangeY, rangeStepY);
 
                     for (var i=0; i<graphData.data.length; i++) {
                         // sort byt the x value, we have to do this so they arent crazy placed
@@ -945,7 +1052,7 @@
                 // check that we've have some data passed in
                 if (graphData) {
                     // add the base to the scene
-                    this.createBase();
+                    this.addBase();
 
                     // Get the min and max data values
                     var minValues = this.getMinDataValues(graphData.data),
@@ -986,10 +1093,10 @@
                     }
 
                     // add it to the scene
-                    this.createBase();
+                    this.addBase();
 
                     // Add the measurement lines
-                    if (this._showMeasurementLines) this.createMeasurementsLines(minGraphRangeY, maxGraphRangeY);
+                    if (this._showMeasurementLines) this.addMeasurementsLines(minGraphRangeY, maxGraphRangeY);
 
                     var pointModifierX = this._graphWidth/(maxGraphRangeX-minGraphRangeX),
                         pointModifierY = this._graphHeight/(maxGraphRangeY-minGraphRangeY),
@@ -1041,7 +1148,8 @@
 
         	// Calling will create a standard bar chart
         	BarChart: function(container, graphData) {
-				var self = this;
+                // The graph we will be building
+                var graph = this.createGraph(container);
 
         		// Set up the basic configuration for the bar
         		var barWidth = 15, // the width of the bar
@@ -1093,222 +1201,273 @@
 	        			if (graphData.columnLabels.color !== undefined) columnLabelColor = new THREE.Color(graphData.columnLabels.color);
 	        		}
 
-        			this.setGlobalOptions(graphData);
+                    // Update the options on the graph itself
+        			graph.setOptions(graphData);
         		}
 
-        		// Update label fonts. Do it here just so all things are configured in the same place
-        		if (graphData) {
-        			if (graphData.rowLabels) {
-	        			if (graphData.rowLabels.family) rowLabelFont = graphData.rowLabels.family;
+                // Code for building and manipulating the rows
 
-	        			if (graphData.rowLabels.size) rowLabelSize = graphData.rowLabels.size;
+                var Row = function(barWidth, labelFont, labelSize, labelColor, dataRow) {
+                    this.id = dataRow.id.toString();
+                    this.color = dataRow.color;
+                    this.barLabels = dataRow.showBarLabels;
+                    this.bars = [];
 
-	        			if (graphData.rowLabels.color) rowLabelColor = new THREE.Color(graphData.rowLabels.color);
-        			}
+                    for (var j=0; j<dataRow.values.length; j++) {
+                        this.bars.push(new Bar(i, j, barWidth, dataRow.factoredValues[j], dataRow.values[j], dataRow.color, dataRow.showBarLabels, labelFont, labelSize, labelColor));
+                    }
+                };
 
-        			if (graphData.columnLabels) {
-	        			if (graphData.columnLabels.family) columnLabelFont = graphData.columnLabels.family;
+                Row.prototype.draw = function(startX, startZ) {
+                    var barObjects = [];
 
-	        			if (graphData.columnLabels.size) columnLabelSize = graphData.columnLabels.size;
+                    for (var i=0; i<this.bars.length; i++) {
+                        barObjects.push(this.bars[i].draw(startX, startZ));
+                    }
 
-	        			if (graphData.columnLabels.color) columnLabelColor = new THREE.Color(graphData.columnLabels.color);
-        			}
-        		}
+                    return barObjects;
+                };
 
-        		// The method to create the bar. Actually easier to plot the verticies than use available shapes
-				var createBar = function(row, col, factoredValue, originalValue, color, viewLabels) {		
-	        		var barObject = new THREE.Object3D();
+                // Code for building and manipulating the bars
 
-					// First, calculate the bar geometry
+                var Bar = function(row, column, barWidth, height, dataValue, color, showLabels, labelFont, labelSize, labelColor) {
+                    var that = this;
 
-					var xPos = (((self._graphWidth/2)*-1) + self._baseEdge), // this is our zero
-						zPos = (((self._graphLength/2)*-1) + self._baseEdge);
+                    // Private functions
+                    this.getBarVertices = function(xPos, zPos, height, width) {
+                        var vertices = [];
 
-					xPos += ((col*columnSpace) + (col*barWidth)) + (barWidth/2);
-					zPos += ((row*rowSpace) + (row*barWidth)) + (barWidth/2);
+                        vertices.push(new THREE.Vector3(xPos-(width/2), 0, zPos-(width/2)));
+                        vertices.push(new THREE.Vector3(xPos-(width/2), 0, zPos+(width/2)));
 
-					var barGeometry = new THREE.Geometry();
+                        vertices.push(new THREE.Vector3(xPos+(width/2), 0, zPos-(width/2)));
+                        vertices.push(new THREE.Vector3(xPos+(width/2), 0, zPos+(width/2)));
 
-					// Plot the verticies
-					barGeometry.vertices.push(new THREE.Vector3(xPos-(barWidth/2), 0, zPos-(barWidth/2)));
-					barGeometry.vertices.push(new THREE.Vector3(xPos-(barWidth/2), 0, zPos+(barWidth/2)));
+                        vertices.push(new THREE.Vector3(xPos-(width/2), height, zPos-(width/2)));
+                        vertices.push(new THREE.Vector3(xPos-(width/2), height, zPos+(width/2)));
 
-					barGeometry.vertices.push(new THREE.Vector3(xPos+(barWidth/2), 0, zPos-(barWidth/2)));
-					barGeometry.vertices.push(new THREE.Vector3(xPos+(barWidth/2), 0, zPos+(barWidth/2)));
+                        vertices.push(new THREE.Vector3(xPos+(width/2), height, zPos-(width/2)));
+                        vertices.push(new THREE.Vector3(xPos+(width/2), height, zPos+(width/2)));
 
-					barGeometry.vertices.push(new THREE.Vector3(xPos-(barWidth/2), factoredValue, zPos-(barWidth/2)));
-					barGeometry.vertices.push(new THREE.Vector3(xPos-(barWidth/2), factoredValue, zPos+(barWidth/2)));
+                        return vertices;
+                    };
 
-					barGeometry.vertices.push(new THREE.Vector3(xPos+(barWidth/2), factoredValue, zPos-(barWidth/2)));
-					barGeometry.vertices.push(new THREE.Vector3(xPos+(barWidth/2), factoredValue, zPos+(barWidth/2)));
+                    this.getLineGeometry = function(type, xPos, zPos, height, width) {
+                        var vertices = [];
 
-					// Add the faces
-					barGeometry.faces.push( new THREE.Face3( 0, 1, 4 ) );
-					barGeometry.faces.push( new THREE.Face3( 4, 5, 1 ) );
+                        switch(type) {
+                            case "front":
+                                vertices.push(new THREE.Vector3(xPos-(width/2), 0, zPos+(width/2)));
+                                vertices.push(new THREE.Vector3(xPos-(width/2), height, zPos+(width/2)));
+                                vertices.push(new THREE.Vector3(xPos+(width/2), height, zPos+(width/2)));
+                                vertices.push(new THREE.Vector3(xPos+(width/2), 0, zPos+(width/2)));
+                                break;
+                            case "back":
+                                vertices.push(new THREE.Vector3(xPos-(width/2), 0, zPos-(width/2)));
+                                vertices.push(new THREE.Vector3(xPos-(width/2), height, zPos-(width/2)));
+                                vertices.push(new THREE.Vector3(xPos+(width/2), height, zPos-(width/2)));
+                                vertices.push(new THREE.Vector3(xPos+(width/2), 0, zPos-(width/2)));
+                                break;
+                            case "left":
+                                vertices.push(new THREE.Vector3(xPos+(width/2), 0, zPos+(width/2)));
+                                vertices.push(new THREE.Vector3(xPos+(width/2), height, zPos+(width/2)));
+                                vertices.push(new THREE.Vector3(xPos+(width/2), height, zPos-(width/2)));
+                                vertices.push(new THREE.Vector3(xPos+(width/2), 0, zPos-(width/2)));
+                                break;
+                            case "right":
+                                vertices.push(new THREE.Vector3(xPos-(width/2), 0, zPos+(width/2)));
+                                vertices.push(new THREE.Vector3(xPos-(width/2), height, zPos+(width/2)));
+                                vertices.push(new THREE.Vector3(xPos-(width/2), height, zPos-(width/2)));
+                                vertices.push(new THREE.Vector3(xPos-(width/2), 0, zPos-(width/2)));
+                                break;
+                        }
 
-					barGeometry.faces.push( new THREE.Face3( 3, 2, 7 ) );
-					barGeometry.faces.push( new THREE.Face3( 7, 6, 2 ) );
+                        return vertices;
+                    };
 
-					barGeometry.faces.push( new THREE.Face3( 1, 3, 5 ) );
-					barGeometry.faces.push( new THREE.Face3( 5, 7, 3 ) );
+                    this.getOutlineMesh = function(type, xPos, zPos, height, width, color) {
+                        var outlineGeometry = new THREE.Geometry();
+                        outlineGeometry.vertices = that.getLineGeometry(type, xPos, zPos, height, width);
 
-					barGeometry.faces.push( new THREE.Face3( 0, 2, 4 ) );
-					barGeometry.faces.push( new THREE.Face3( 4, 6, 2 ) );
+                        var outline = new THREE.Line(outlineGeometry, new THREE.LineBasicMaterial({
+                            color: color
+                        }));
+                        outline.name = type;
 
-					barGeometry.faces.push( new THREE.Face3( 4, 5, 7 ) );
-					barGeometry.faces.push( new THREE.Face3( 6, 7, 4 ) );
+                        return outline;
+                    };
 
-					barGeometry.faces.push( new THREE.Face3( 0, 1, 3 ) );
-					barGeometry.faces.push( new THREE.Face3( 0, 2, 3 ) );
+                    this.row = row;
+                    this.column = column;
+                    this.barWidth = barWidth;
+                    this.color = color;
+                    this.height = height;
+                    this.dataValue = dataValue;
+                    this.showLabels = showLabels;
+                    this.labelFont = labelFont;
+                    this.labelSize = labelSize;
+                    this.labelColor = labelColor;
+                }
 
-					barGeometry.computeFaceNormals();
+                Bar.prototype.draw = function(startX, startZ) {
+                    if (this.barObject) return this.barObject;
+                    else {
+                        this.barObject = new THREE.Object3D();
 
-					var barMesh = new THREE.Mesh(barGeometry, new THREE.MeshLambertMaterial({
-						color: color, 
-						side: THREE.DoubleSide,
-						transparent: true,
-						opacity: barOpacity
-					}));
+                        // Calculate the bar geometry
+                        var xPos = startX + ((this.column*columnSpace) + (this.column*this.barWidth)) + (this.barWidth/2),
+                            zPos = startZ + ((this.row*rowSpace) + (this.row*this.barWidth)) + (this.barWidth/2);
 
-					barObject.add(barMesh);
+                        var barGeometry = new THREE.Geometry();
+                        barGeometry.dynamic = true;
 
-					// Generate the outlines
-					var front = new THREE.Geometry();
-					front.vertices.push(new THREE.Vector3(xPos-(barWidth/2), 0, zPos+(barWidth/2)));
-					front.vertices.push(new THREE.Vector3(xPos-(barWidth/2), factoredValue, zPos+(barWidth/2)));
-					front.vertices.push(new THREE.Vector3(xPos+(barWidth/2), factoredValue, zPos+(barWidth/2)));
-					front.vertices.push(new THREE.Vector3(xPos+(barWidth/2), 0, zPos+(barWidth/2)));
+                        // Plot the verticies
+                        barGeometry.vertices = this.getBarVertices(xPos, zPos, this.height, this.barWidth);
 
-					var frontLine = new THREE.Line(front, new THREE.LineBasicMaterial({
-						color: color
-					}));
+                        // Add the faces
+                        barGeometry.faces.push( new THREE.Face3( 0, 1, 4 ) );
+                        barGeometry.faces.push( new THREE.Face3( 4, 5, 1 ) );
 
-					barObject.add(frontLine);
+                        barGeometry.faces.push( new THREE.Face3( 3, 2, 7 ) );
+                        barGeometry.faces.push( new THREE.Face3( 7, 6, 2 ) );
 
-					var back = new THREE.Geometry();
-					back.vertices.push(new THREE.Vector3(xPos-(barWidth/2), 0, zPos-(barWidth/2)));
-					back.vertices.push(new THREE.Vector3(xPos-(barWidth/2), factoredValue, zPos-(barWidth/2)));
-					back.vertices.push(new THREE.Vector3(xPos+(barWidth/2), factoredValue, zPos-(barWidth/2)));
-					back.vertices.push(new THREE.Vector3(xPos+(barWidth/2), 0, zPos-(barWidth/2)));
+                        barGeometry.faces.push( new THREE.Face3( 1, 3, 5 ) );
+                        barGeometry.faces.push( new THREE.Face3( 5, 7, 3 ) );
 
-					var backLine = new THREE.Line(back, new THREE.LineBasicMaterial({
-						color: color
-					}));
+                        barGeometry.faces.push( new THREE.Face3( 0, 2, 4 ) );
+                        barGeometry.faces.push( new THREE.Face3( 4, 6, 2 ) );
 
-					barObject.add(backLine);
+                        barGeometry.faces.push( new THREE.Face3( 4, 5, 7 ) );
+                        barGeometry.faces.push( new THREE.Face3( 6, 7, 4 ) );
 
-					var left = new THREE.Geometry();
-					left.vertices.push(new THREE.Vector3(xPos+(barWidth/2), 0, zPos+(barWidth/2)));
-					left.vertices.push(new THREE.Vector3(xPos+(barWidth/2), factoredValue, zPos+(barWidth/2)));
-					left.vertices.push(new THREE.Vector3(xPos+(barWidth/2), factoredValue, zPos-(barWidth/2)));
-					left.vertices.push(new THREE.Vector3(xPos+(barWidth/2), 0, zPos-(barWidth/2)));
+                        barGeometry.faces.push( new THREE.Face3( 0, 1, 3 ) );
+                        barGeometry.faces.push( new THREE.Face3( 0, 2, 3 ) );
 
-					var leftLine = new THREE.Line(left, new THREE.LineBasicMaterial({
-						color: color
-					}));
+                        barGeometry.computeFaceNormals();
 
-					barObject.add(leftLine);
+                        var barMesh = new THREE.Mesh(barGeometry, new THREE.MeshLambertMaterial({
+                            color: this.color, 
+                            side: THREE.DoubleSide,
+                            transparent: true,
+                            opacity: barOpacity
+                        }));
+                        barMesh.name = "bar";
 
-					var right = new THREE.Geometry();
-					right.vertices.push(new THREE.Vector3(xPos-(barWidth/2), 0, zPos+(barWidth/2)));
-					right.vertices.push(new THREE.Vector3(xPos-(barWidth/2), factoredValue, zPos+(barWidth/2)));
-					right.vertices.push(new THREE.Vector3(xPos-(barWidth/2), factoredValue, zPos-(barWidth/2)));
-					right.vertices.push(new THREE.Vector3(xPos-(barWidth/2), 0, zPos-(barWidth/2)));
+                        this.barObject.add(barMesh);
 
-					var rightLine = new THREE.Line(right, new THREE.LineBasicMaterial({
-						color: color,
-						side: THREE.DoubleSide
-					}));
+                        var barOutline = new THREE.Object3D();
+                        barOutline.name = "outline";
 
-					barObject.add(rightLine);
+                        // Generate the outlines
 
-					if (viewLabels) {
-						var valueGeometry = new THREE.TextGeometry(originalValue, {
-							font: barLabelFont,
-	    	 				size: barLabelSize,
-							height: .2
-						});
-						
-						var valueMesh = new THREE.Mesh(valueGeometry, new THREE.MeshBasicMaterial({
-							color: barLabelColor
-						}));
+                        barOutline.add(this.getOutlineMesh("front", xPos, zPos, this.height, this.barWidth, this.color));
+                        barOutline.add(this.getOutlineMesh("back", xPos, zPos, this.height, this.barWidth, this.color));
+                        barOutline.add(this.getOutlineMesh("left", xPos, zPos, this.height, this.barWidth, this.color));
+                        barOutline.add(this.getOutlineMesh("right", xPos, zPos, this.height, this.barWidth, this.color));
 
-						var valueArea = new THREE.Box3().setFromObject(valueMesh);
+                        this.barObject.add(barOutline);
 
-						valueMesh.position.x = xPos-(valueArea.size().x/2);
-						valueMesh.position.y = factoredValue + 2;
-						valueMesh.position.z = zPos;
+                        if (this.showLabels) {
+                            var valueGeometry = new THREE.TextGeometry(this.dataValue, {
+                                font: this.labelFont,
+                                size: this.labelSize,
+                                height: .2
+                            });
+                            
+                            var valueMesh = new THREE.Mesh(valueGeometry, new THREE.MeshBasicMaterial({
+                                color: this.labelColor
+                            }));
 
-						barObject.add(valueMesh);
-					}
+                            var valueArea = new THREE.Box3().setFromObject(valueMesh);
 
-					self._graphObject.add(barObject);
-				};
+                            valueMesh.position.x = xPos-(valueArea.size().x/2);
+                            valueMesh.position.y = this.height + 2;
+                            valueMesh.position.z = zPos;
 
-				var createColumnLabel = function(col, text) {
+                            this.barObject.add(valueMesh);
+                        }
+
+                        return this.barObject;
+                    }
+                }
+
+                // Code for building and manipulating the column labels
+
+				var ColumnLabel = function(font, size, color, text) {
 					var textGeometry = new THREE.TextGeometry(text, {
-						font: columnLabelFont,
-    	 				size: columnLabelSize,
+						font: font,
+    	 				size: size,
 						height: .2
 					});
+
+                    var textMaterial = new THREE.MeshBasicMaterial({
+                        color: color
+                    });
 					
-					var textMesh = new THREE.Mesh(textGeometry, new THREE.MeshBasicMaterial({
-						color: columnLabelColor
-					}) );
+					this.textMesh = new THREE.Mesh(textGeometry, textMaterial);
 
-					textMesh.rotation.x = (Math.PI/2)*-1;
-					textMesh.rotation.z += (Math.PI/2);
-
-					var textBoxArea = new THREE.Box3().setFromObject(textMesh);
-
-					textMesh.position.z += (self._graphLength/2) + textBoxArea.size().z + 3;
-
-					textMesh.position.x = (self._graphWidth/2)*-1;
-					textMesh.position.x += (self._baseEdge + (barWidth/2) + (textBoxArea.size().x/2)) + (col*columnSpace) + (col*barWidth);
-
-					self._graphObject.add(textMesh);
+					this.textMesh.rotation.x = (Math.PI/2)*-1;
+					this.textMesh.rotation.z += (Math.PI/2);
 				};
 
-				var createRowLabel = function(row, text) {
-					var textGeometry = new THREE.TextGeometry(text, {
-						font: rowLabelFont,
-    	 				size: rowLabelSize,
-						height: .2
-					});
-					
-					var textMesh = new THREE.Mesh( textGeometry, new THREE.MeshBasicMaterial({
-						color: rowLabelColor
-					}) );
+                ColumnLabel.prototype.setPosition = function(graphWidth, graphLength, baseEdge, barWidth, column, columnSpace) {
+                    var textBoxArea = new THREE.Box3().setFromObject(this.textMesh);
 
-					textMesh.rotation.x = (Math.PI/2)*-1;
+                    this.textMesh.position.z += ((graphLength/2) + textBoxArea.size().z + 3);
+                    this.textMesh.position.x = ((graphWidth/2)*-1) + ((baseEdge + (barWidth/2) + (textBoxArea.size().x/2)) + (column*columnSpace) + (col*barWidth));
+                };
 
-					var textBoxArea = new THREE.Box3().setFromObject(textMesh);
+                // Code for building and manipulating the row labels
 
-					textMesh.position.x += (self._graphWidth/2) + 3;
-
-					textMesh.position.z -= (self._graphLength/2);
-					textMesh.position.z += self._baseEdge + (barWidth/2) + (row*rowSpace) + (row*barWidth) + (textBoxArea.size().z/2);
-
-					self._graphObject.add(textMesh);
+				var RowLabel = function(row, rowSpace, barWidth, font, size, color, text) {
+                    this.row = row; 
+                    this.rowSpace = rowSpace; 
+                    this.barWidth = barWidth; 
+                    this.font = font; 
+                    this.size = size; 
+                    this.color = color; 
+                    this.text = text;
 				};
 
-        		this._container = document.getElementById(container);
+                RowLabel.prototype.draw = function(graphWidth, graphLength, baseEdge) {
+                    if (this.textMesh) return this.textMesh;
+                    else  {
+                        var textGeometry = new THREE.TextGeometry(this.text, {
+                            font: this.font,
+                            size: this.size,
+                            height: .2
+                        });
+                        
+                        var textMaterial = new THREE.MeshBasicMaterial({
+                            color: this.color
+                        });
 
-        		this.createScene();
+                        this.textMesh = new THREE.Mesh(textGeometry, textMaterial);
+
+                        this.textMesh.rotation.x = (Math.PI/2)*-1;
+                        
+                        var textBoxArea = new THREE.Box3().setFromObject(this.textMesh);
+
+                        this.textMesh.position.x += (graphWidth/2) + 3;
+                        this.textMesh.position.z = ((baseEdge + (this.barWidth/2) + (this.row*this.rowSpace) + (this.row*this.barWidth) + (textBoxArea.size().z/2)))-(graphLength/2);
+
+                        return this.textMesh;
+                    }  
+                }
 
         		// Give it a name just for simplicity
-        		if ((graphData) && (graphData.name)) this._graphObject.name = graphData.name;
-        		else this._graphObject.name = "barGraph";
+        		if ((graphData) && (graphData.name)) graph.setName(graphData.name);
+        		else graph.setName("barGraph");
 
 				// check that we've have some data passed in
 				if (graphData) {
-	        		// Setting up the base plane for the bar chart
+	        		// Setting up the base for the bar chart
 					// Get the length (the z axis)
 					if ((graphData.rowLabels) && (graphData.rowLabels.values)) {
-						if (graphData.data.length > graphData.rowLabels.values.length) this._graphLength = (barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
-						else this._graphLength = (barWidth*graphData.rowLabels.values.length) + (rowSpace*graphData.rowLabels.values.length) - rowSpace + (this._baseEdge*2);
+						if (graphData.data.length > graphData.rowLabels.values.length) graph.setGraphLength((barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (graph.getBaseEdge()*2));
+						else graph.setGraphLength((barWidth*graphData.rowLabels.values.length) + (rowSpace*graphData.rowLabels.values.length) - rowSpace + (graph.getBaseEdge()*2));
 					}
-					else if (graphData.data) this._graphLength = (barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (this._baseEdge*2);
+					else if (graphData.data) graph.setGraphLength((barWidth*graphData.data.length) + (rowSpace*graphData.data.length) - rowSpace + (graph.getBaseEdge()*2));
 
 					// Figure out what the base width should be (the x axis)
 					var maxData = 0;
@@ -1319,15 +1478,15 @@
 
 					if ((graphData.columnLabels) && (graphData.columnLabels.values)) {
 						if (maxData) {
-							if (maxData > graphData.columnLabels.values.length) this._graphWidth = (barWidth*maxData) + (columnSpace*maxData) - columnSpace + (this._baseEdge*2);
-							else this._graphWidth = (barWidth*graphData.columnLabels.values.length) + (columnSpace*graphData.columnLabels.values.length) - columnSpace + (this._baseEdge*2);
+							if (maxData > graphData.columnLabels.values.length) graph.setGraphWidth((barWidth*maxData) + (columnSpace*maxData) - columnSpace + (graph.getBaseEdge()*2));
+							else graph.setGraphWidth((barWidth*graphData.columnLabels.values.length) + (columnSpace*graphData.columnLabels.values.length) - columnSpace + (graph.getBaseEdge()*2));
 						}
-						else this._graphWidth = (barWidth*graphData.columnLabels.values.length) + (columnSpace*graphData.columnLabels.values.length) - columnSpace + (this._baseEdge*2);
+						else graph.setGraphWidth((barWidth*graphData.columnLabels.values.length) + (columnSpace*graphData.columnLabels.values.length) - columnSpace + (graph.getBaseEdge()*2));
 					}
-					else if (maxData) this._graphWidth = (barWidth*maxData) + (columnSpace*maxData) - columnSpace + (this._baseEdge*2);
+					else if (maxData) graph.setGraphWidth((barWidth*maxData) + (columnSpace*maxData) - columnSpace + (graph.getBaseEdge()*2));
 
 					// add it to the scene
-					this.createBase();
+					graph.addBase();
 
 					// Get the max value so we can factor values
 					var minDataValue = this.getMinDataValue(graphData.data),
@@ -1340,7 +1499,7 @@
 
 					var maxGraphRange = (rangeStep - maxDataValue % rangeStep) + maxDataValue;
 
-					var pointModifier = this._graphHeight/(maxGraphRange-minGraphRange);
+					var pointModifier = graph.getGraphHeight()/(maxGraphRange-minGraphRange);
 
     				for (var i=0; i<graphData.data.length; i++) {
 	    				graphData.data[i].factoredValues = [];
@@ -1350,56 +1509,36 @@
 	    				}
 					}
 
-					// Add the measurement lines
-					if (this._showMeasurementLines) this.createMeasurementsLines(minGraphRange, maxGraphRange);
+                    graph.addMeasurementsLines(minGraphRange, maxGraphRange);
 
     				for (var i=0; i<graphData.data.length; i++) {
-    					// Figure out the color for the bar. Pick a random one is one isn't defined
-    					var barColor = null;
+                        if (graphData.data[i].id == undefined) graphData.data[i].id = i.toString();
 
-    					if (graphData.data[i].color !== undefined) barColor = new THREE.Color(graphData.data[i].color);
-    					else barColor = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
+                        if (graphData.data[i].color !== undefined) graphData.data[i].color = new THREE.Color(graphData.data[i].color);
+                        else graphData.data[i].color = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
 
-    					// Local bar settings for labels overwrite global ones
-    					var makeBarsLabelsVisible = showBarLabels;
-    					if (graphData.data[i].showBarLabels !== undefined) makeBarsLabelsVisible = graphData.data[i].showBarLabels;
+                        // Local bar settings for labels overwrite global one
+                        if (graphData.data[i].showBarLabels == undefined) graphData.data[i].showBarLabels = showBarLabels;
 
-    					for (var j=0; j<graphData.data[i].values.length; j++) {
-							createBar(i, j, graphData.data[i].factoredValues[j], graphData.data[i].values[j], barColor, makeBarsLabelsVisible);
-    					}
+                        graph.addRow(new Row(barWidth, barLabelFont, barLabelSize, barLabelColor, graphData.data[i]));
 
-                        if (graphData.data[i].title) createRowLabel(i, graphData.data[i].title);
+                        if (graphData.data[i].title) {
+                            var rowLabel = new RowLabel(i, rowSpace, barWidth, rowLabelFont, rowLabelSize, rowLabelColor, graphData.data[i].title);
+
+                            graph.addLabel(rowLabel);
+                        }
 					}
 
-					if ((graphData.columnLabels) && (graphData.columnLabels.values)) {
+					/*if ((graphData.columnLabels) && (graphData.columnLabels.values)) {
 	    				for (var i=0; i<graphData.columnLabels.values.length; i++) {
 	    					createColumnLabel(i, graphData.columnLabels.values[i]);
 						}
-					}
+					}*/
 				}
 
-                // position the object so it will view well
-                var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
-                this._graphObject.position.y -= ((graphObjectArea.size().y/2)-(graphObjectArea.size().y/4));
+                graph.createScene();
 
-				// Add the graph to the scene
-				this._scene.add(this._graphObject);
-
-        		// If we don't have camera graphData then we'll try and determine the camera position 
-    			if ((!graphData) || (!graphData.camera)) this.calculateCamera();
-
-    			// If we don't have camera graphData then we'll try and determine the cameras lookat 
-    			if ((!graphData) || (!graphData.lookAt)) this.calculateLookAt();
-
-				// Set the initial rotation
-				if (this._startRotation) this._graphObject.rotation.y = this._startRotation;
-
-    			// bind all mouse/touch events
-				if (!this._locked) this.bindEvents();
-
-				this.addCamera();
-
-        		if (this._camera) this.render();
+                return graph;
         	}
         }
     };
