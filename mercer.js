@@ -74,7 +74,7 @@
                 
             // This attempts to find a camera position based on the graph object dimensions
             var calculateCamera = function(cameraSettings, graphObjectArea) {
-                var maxDimension = Math.max(graphObjectArea.size().x, graphObjectArea.size().y, graphObjectArea.size().z);
+                var maxDimension = Math.max(graphObjectArea.size().x, graphObjectArea.size().y);
 
                 var vFOV = cameraSettings.fov * Math.PI / 180,
                     dist = (maxDimension/aspect)/2/Math.tan((vFOV / 2));
@@ -82,7 +82,7 @@
                 that._cameraSettings.position = {
                     x: 0,
                     y: 0,
-                    z: dist*2
+                    z: (dist*2)+(graphObjectArea.size().z/2)
                 };
             };
 
