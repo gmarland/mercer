@@ -741,13 +741,14 @@
 
                     // Calculate the bar geometry
                     var xPos = ((this.column*columnSpace) + (this.column*this.barWidth)) + (this.barWidth/2),
-                        zPos = ((this.row*rowSpace) + (this.row*this.barWidth)) + (this.barWidth/2);
+                        zPos = ((this.row*rowSpace) + (this.row*this.barWidth)) + (this.barWidth/2),
+                        height = (this.dataValue-yOffset);
 
                     var barGeometry = new THREE.Geometry();
                     barGeometry.dynamic = true;
 
                     // Plot the verticies
-                    barGeometry.vertices = this.getBarVertices(xPos, zPos, this.dataValue-yOffset, this.barWidth);
+                    barGeometry.vertices = this.getBarVertices(xPos, zPos, height, this.barWidth);
 
                     // Add the faces
                     barGeometry.faces.push( new THREE.Face3( 0, 1, 4 ) );
@@ -785,10 +786,10 @@
 
                     // Generate the outlines
 
-                    barOutline.add(this.getOutlineMesh("front", xPos, zPos, this.height, this.barWidth, this.color));
-                    barOutline.add(this.getOutlineMesh("back", xPos, zPos, this.height, this.barWidth, this.color));
-                    barOutline.add(this.getOutlineMesh("left", xPos, zPos, this.height, this.barWidth, this.color));
-                    barOutline.add(this.getOutlineMesh("right", xPos, zPos, this.height, this.barWidth, this.color));
+                    barOutline.add(this.getOutlineMesh("front", xPos, zPos, height, this.barWidth, this.color));
+                    barOutline.add(this.getOutlineMesh("back", xPos, zPos, height, this.barWidth, this.color));
+                    barOutline.add(this.getOutlineMesh("left", xPos, zPos, height, this.barWidth, this.color));
+                    barOutline.add(this.getOutlineMesh("right", xPos, zPos, height, this.barWidth, this.color));
 
                     this.barObject.add(barOutline);
 
