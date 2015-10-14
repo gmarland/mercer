@@ -1121,42 +1121,42 @@
                         return outline;
                     };
 
-                    this.column = column;
-                    this.barWidth = barWidth;
-                    this.color = color;
-                    this.dataValue = dataValue;
-                    this.showLabels = showLabels;
-                    this.labelFont = labelFont;
-                    this.labelSize = labelSize;
-                    this.labelColor = labelColor;
+                    this._column = column;
+                    this._barWidth = barWidth;
+                    this._color = color;
+                    this._dataValue = dataValue;
+                    this._showLabels = showLabels;
+                    this._labelFont = labelFont;
+                    this._labelSize = labelSize;
+                    this._labelColor = labelColor;
                 }
 
                 // ----- Getters
 
                 Bar.prototype.getDataValue = function() {
-                    return this.dataValue;
+                    return this._dataValue;
                 };
 
                 Bar.prototype.getHeight = function() {
-                    return this.height;
+                    return this._height;
                 };
 
                 Bar.prototype.getBarWidth = function() {
-                    return this.barWidth;
+                    return this._barWidth;
                 };
 
                 Bar.prototype.getBarObject = function() {
-                    return this.barObject;
+                    return this._barObject;
                 }
 
                 // ----- Public Methods
 
                 Bar.prototype.draw = function(yOffset, barWidth) {
-                    this.barObject = new THREE.Object3D();
+                    this._barObject = new THREE.Object3D();
 
                     // Calculate the bar geometry
-                    var xPos = ((this.column*columnSpace) + (this.column*barWidth)) + (barWidth/2),
-                        height = (this.dataValue-yOffset);
+                    var xPos = ((this._column*columnSpace) + (this._column*barWidth)) + (barWidth/2),
+                        height = (this._dataValue-yOffset);
 
                     var barGeometry = new THREE.Geometry();
                     barGeometry.dynamic = true;
@@ -1186,48 +1186,48 @@
                     barGeometry.computeFaceNormals();
 
                     var barMesh = new THREE.Mesh(barGeometry, new THREE.MeshLambertMaterial({
-                        color: this.color, 
+                        color: this._color, 
                         side: THREE.DoubleSide,
                         transparent: true,
                         opacity: barOpacity
                     }));
                     barMesh.name = "bar";
 
-                    this.barObject.add(barMesh);
+                    this._barObject.add(barMesh);
 
                     var barOutline = new THREE.Object3D();
                     barOutline.name = "outline";
 
                     // Generate the outlines
 
-                    barOutline.add(this.getOutlineMesh("front", xPos, 0, height, barWidth, this.color));
-                    barOutline.add(this.getOutlineMesh("back", xPos, 0, height, barWidth, this.color));
-                    barOutline.add(this.getOutlineMesh("left", xPos, 0, height, barWidth, this.color));
-                    barOutline.add(this.getOutlineMesh("right", xPos, 0, height, barWidth, this.color));
+                    barOutline.add(this.getOutlineMesh("front", xPos, 0, height, barWidth, this._color));
+                    barOutline.add(this.getOutlineMesh("back", xPos, 0, height, barWidth, this._color));
+                    barOutline.add(this.getOutlineMesh("left", xPos, 0, height, barWidth, this._color));
+                    barOutline.add(this.getOutlineMesh("right", xPos, 0, height, barWidth, this._color));
 
-                    this.barObject.add(barOutline);
+                    this._barObject.add(barOutline);
 
-                    if (this.showLabels) {
-                        var valueGeometry = new THREE.TextGeometry(this.dataValue, {
-                            font: this.labelFont,
-                            size: this.labelSize,
+                    if (this._showLabels) {
+                        var valueGeometry = new THREE.TextGeometry(this._dataValue, {
+                            font: this._labelFont,
+                            size: this._labelSize,
                             height: .2
                         });
                         
                         var valueMesh = new THREE.Mesh(valueGeometry, new THREE.MeshBasicMaterial({
-                            color: this.labelColor
+                            color: this._labelColor
                         }));
 
                         var valueArea = new THREE.Box3().setFromObject(valueMesh);
 
                         valueMesh.position.x = xPos-(valueArea.size().x/2);
-                        valueMesh.position.y = this.height + 2;
+                        valueMesh.position.y = this._height + 2;
                         valueMesh.position.z = zPos;
 
-                        this.barObject.add(valueMesh);
+                        this._barObject.add(valueMesh);
                     }
 
-                    return this.barObject;
+                    return this._barObject;
                 };
 
         		// Set up the basic configuration for the bar
