@@ -368,9 +368,11 @@
 
             this._graphObject.add(rowLabelsCollectionObject);
 
-            //var columnLabelsCollectionObject = this._rowCollection.drawColumnLabels();
+            var columnLabelsCollectionObject = this._rowCollection.drawColumnLabels();
+            columnLabelsCollectionObject.position.z += (graphLength+(this._baseEdge*2));
+            columnLabelsCollectionObject.position.x += this._baseEdge;
 
-            //this._graphObject.add(columnLabelsCollectionObject);
+            this._graphObject.add(columnLabelsCollectionObject);
 
             var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
 
@@ -630,25 +632,25 @@
         };
 
         ColumnLabel.prototype.draw = function() {
-            var textBoxArea = new THREE.Box3().setFromObject(this.textMesh);
-
-            this.textMesh.position.z += ((graphLength/2) + textBoxArea.size().z + 3);
-            this.textMesh.position.x = ((graphWidth/2)*-1) + ((baseEdge + (barWidth/2) + (textBoxArea.size().x/2)) + (column*columnSpace) + (col*barWidth));
-
-            var textGeometry = new THREE.TextGeometry(text, {
-                font: font,
-                size: size,
+            var textGeometry = new THREE.TextGeometry(this._text, {
+                font: this._font,
+                size: this._size,
                 height: .2
             });
 
             var textMaterial = new THREE.MeshBasicMaterial({
-                color: color
+                color: this._color
             });
             
             this.textMesh = new THREE.Mesh(textGeometry, textMaterial);
 
             this.textMesh.rotation.x = (Math.PI/2)*-1;
             this.textMesh.rotation.z += (Math.PI/2);
+
+            var textBoxArea = new THREE.Box3().setFromObject(this.textMesh);
+
+            this.textMesh.position.z = (3 + textBoxArea.size().z);
+            this.textMesh.position.x = ((this._column*this._columnSpace) + (this._column*this._columnWidth) + (this._columnWidth/2) + (textBoxArea.size().x/2));
 
             return this.textMesh;
         };
