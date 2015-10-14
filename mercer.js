@@ -480,6 +480,30 @@
 
         // ----- Getters
 
+        RowCollection.prototype.getMinX = function() {
+            var min = null;
+
+            for (var i=0; i<this._rows.length; i++) {
+                var minValue = this._rows[i].getMinX();
+
+                if ((min === null) || (minValue < min)) min = minValue;
+            }
+
+            return min;
+        }
+
+        RowCollection.prototype.getMaxX = function() {
+            var max = null;
+
+            for (var i=0; i<this._rows.length; i++) {
+                var maxValue = this._rows[i].getMaxX();
+
+                if ((max === null) || (maxValue > max)) max = maxValue;
+            }
+
+            return max;
+        }
+
         RowCollection.prototype.getMinY = function() {
             var min = null;
 
@@ -550,11 +574,11 @@
             var collectionObjects = new THREE.Object3D();
 
             for (var i=0; i<this._rows.length; i++) {
-                var rowObjects = this._rows[i].draw(this.getMinY()); 
+                var row = this._rows[i].draw(this.getMinX(), this.getMinY());
 
-                for (var j=0; j<rowObjects.length; j++) {
-                    collectionObjects.add(rowObjects[j]);
-                }
+                row.position.z += ((this._rows[i].getRow()*this._rowSpace) + (this._rows[i].getRow()*this._rows[i].getLength())) + (this._rows[i].getLength()/2),
+
+                collectionObjects.add(row);
             }
 
             return collectionObjects;
@@ -656,6 +680,263 @@
         };
 
         return {
+            // Calling will create a standard area chart
+            AreaChart: function(container, graphData) {
+                // -----------------------------------------------
+                // Area chart object definitions
+                // -----------------------------------------------
+
+                // ***** Code for building and manipulating the rows *****
+                var Row = function(row, dataRow, pointSpace, width) {
+                    this._id = dataRow.id.toString();
+                    this._row = row;
+
+                    this._areaPoints = [];
+
+                    this._pointSpace = pointSpace;
+                    this._color = graphData.data[i].color;
+                    this._areaWidth = width;
+                };
+
+                // ----- Getters
+
+                Row.prototype.getRow = function() {
+                    return this._row;
+                };
+
+                Row.prototype.getWidth = function() {
+                    return this._areaWidth;
+                };
+
+                Row.prototype.getMinX = function() {
+                    var min = null;
+
+                    for (var i=0; i<this._areaPoints.length; i++) {
+                        var dataValue = this._areaPoints[i].getX();
+
+                        if ((min === null) || (dataValue < min)) min = dataValue;
+                    }
+
+                    return min;
+                };
+
+                Row.prototype.getMaxX = function() {
+                    var max = null;
+
+                    for (var i=0; i<this._areaPoints.length; i++) {
+                        var dataValue = this._areaPoints[i].getX();
+
+                        if ((max === null) || (dataValue > max)) max = dataValue;
+                    }
+
+                    return max;
+                };
+
+                Row.prototype.getMinY = function() {
+                    var min = null;
+
+                    for (var i=0; i<this._areaPoints.length; i++) {
+                        var dataValue = this._areaPoints[i].getY();
+
+                        if ((min === null) || (dataValue < min)) min = dataValue;
+                    }
+
+                    return min;
+                };
+
+                Row.prototype.getMaxY = function() {
+                    var max = null;
+
+                    for (var i=0; i<this._areaPoints.length; i++) {
+                        var dataValue = this._areaPoints[i].getY();
+
+                        if ((max === null) || (dataValue > max)) max = dataValue;
+                    }
+
+                    return max;
+                };
+
+                Row.prototype.getWidth = function() {
+                    return this.getMaxX()-this.getMinX();
+                };
+
+                Row.prototype.getLength = function() {
+                    return this._areaWidth;
+                };
+
+                // ----- Public Methods
+
+                Row.prototype.addAreaPoint = function(areaPoint) {
+                    this._areaPoints.push(areaPoint);
+                }
+
+                Row.prototype.draw = function(xOffset, yOffset) {    
+                    var areaObject = new THREE.Object3D();
+
+                    var frontVertices = [],
+                        backVertices = [];
+
+                    var areaGeometry = new THREE.Geometry();
+
+                    // create the front verticies
+
+                    for (var i=0; i<this._areaPoints.length; i++) {
+                        frontVertices.push(new THREE.Vector3(this._areaPoints[i].getX(), 0, (this._areaWidth/2)));
+                        frontVertices.push(new THREE.Vector3(this._areaPoints[i].getX(), this._areaPoints[i].getY()-yOffset, (this._areaWidth/2)));
+                        backVertices.push(new THREE.Vector3(this._areaPoints[i].getX(), 0, (this._areaWidth/2)*-1));
+                        backVertices.push(new THREE.Vector3(this._areaPoints[i].getX(), this._areaPoints[i].getY()-yOffset, (this._areaWidth/2)*-1));
+                    }
+
+                    for (var i=0; i<frontVertices.length; i++) {
+                        areaGeometry.vertices.push(frontVertices[i]);
+                    }
+
+                    for (var i=0; i<backVertices.length; i++) {
+                        areaGeometry.vertices.push(backVertices[i]);
+                    }
+
+                    // Add the front face
+                    for (var i=0; i<frontVertices.length-2; i+=2) {
+                        areaGeometry.faces.push( new THREE.Face3( i, (i+1), (i+3) ) );
+                        areaGeometry.faces.push( new THREE.Face3( i, (i+2), (i+3) ) );
+                    }
+
+                    // Add the back face
+                    for (var i=frontVertices.length; i<(frontVertices.length+backVertices.length)-2; i+=2) {
+                        areaGeometry.faces.push( new THREE.Face3( i, (i+1), (i+3) ) );
+                        areaGeometry.faces.push( new THREE.Face3( i, (i+2), (i+3) ) );
+                    }
+                        
+                    // add the opening face
+                    areaGeometry.faces.push( new THREE.Face3( 0, (frontVertices.length), (frontVertices.length+1) ) );
+                    areaGeometry.faces.push( new THREE.Face3( 0, 1, (frontVertices.length+1) ) );
+
+                    // Add the joining face
+                    for (var i=0; i<frontVertices.length-2; i+=2) {
+                        areaGeometry.faces.push( new THREE.Face3( (i+1), (i+3), (i+(frontVertices.length+3)) ) );
+                        areaGeometry.faces.push( new THREE.Face3( (i+1), (i+(frontVertices.length+1)), (i+(frontVertices.length+3)) ) );
+                    }
+
+                    // add the end face
+                    areaGeometry.faces.push( new THREE.Face3( (frontVertices.length-2), (frontVertices.length-1), (frontVertices.length+backVertices.length-2) ) );
+                    areaGeometry.faces.push( new THREE.Face3( (frontVertices.length-1), (frontVertices.length+backVertices.length-1), (frontVertices.length+backVertices.length-2) ) );
+
+                    areaGeometry.computeFaceNormals();
+
+                    var areaMesh = new THREE.Mesh(areaGeometry, new THREE.MeshLambertMaterial({
+                        color: this._color, 
+                        side: THREE.DoubleSide,
+                        transparent: true,
+                        opacity: 0.65
+                    }));
+
+                    areaObject.add(areaMesh);
+
+                    // Generate the outline
+                    var areaLineGeometry = new THREE.Geometry();
+                    for (var i=0; i<this._areaPoints.length; i++) {
+                        areaLineGeometry.vertices.push(new THREE.Vector3(this._areaPoints[i].getX(), this._areaPoints[i].getY()-yOffset, (this._areaWidth/2)));
+                    }
+
+                    var areaLine = new THREE.Line(areaLineGeometry, new THREE.LineBasicMaterial({
+                        color: this._color
+                    }));
+
+                    areaObject.add(areaLine);
+
+                    areaObject.position.x -= xOffset;
+
+                    return areaObject;
+                };
+
+                // ***** Code for building and manipulating the rows *****
+                var AreaPoint = function(x, y) {
+                    this._x = x;
+                    this._y = y;
+                };
+
+                AreaPoint.prototype.getX = function() {
+                    return this._x;
+                };
+
+                AreaPoint.prototype.getY = function() {
+                    return this._y;
+                };
+
+                AreaPoint.prototype.getWidth = function() {
+                    return this._width;
+                };
+
+                var areaWidth = 4, // the width of the area graph
+                    rowSpace = 30, // the space between each row
+                    rowLabelFont = "helvetiker", // the font for the row label
+                    rowLabelSize = 4, // the font size for the row label
+                    rowLabelColor = 0x000000, // the default color for the row label
+                    pointSpace = 5; // the space between each column in a row
+
+                // Allow the override using the graphData options if they exist
+                if (graphData !== undefined) {
+                    if (graphData.areaWidth !== undefined) areaWidth = graphData.areaWidth;
+                    
+                    if (graphData.rowSpace !== undefined) rowSpace = graphData.rowSpace;
+
+                    if (graphData.rowLabels !== undefined) {
+                        if (graphData.rowLabels.fontFamily !== undefined) rowLabelFont = graphData.rowLabels.fontFamily;
+
+                        if (graphData.rowLabels.size !== undefined) rowLabelSize = graphData.rowLabels.size;
+
+                        if (graphData.rowLabels.color !== undefined) rowLabelColor = new THREE.Color(graphData.rowLabels.color);
+                    }
+
+                    if (graphData.pointSpace !== undefined) pointSpace = graphData.pointSpace;
+                }
+
+                var containerElement = document.getElementById(container),
+                    containerWidth = parseInt(containerElement.style.width,10), 
+                    containerHeight = parseInt(containerElement.style.height,10);
+
+                var rowCollection = new RowCollection(rowSpace);
+
+                // check that we've have some data passed in
+                if (graphData) {
+                    for (var i=0; i<graphData.data.length; i++) {
+                        if (graphData.data[i].id == undefined) graphData.data[i].id = i.toString();
+
+                        if (graphData.data[i].color !== undefined) graphData.data[i].color = new THREE.Color(graphData.data[i].color);
+                        else graphData.data[i].color = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
+
+                        var row = new Row(i, graphData.data[i], pointSpace, areaWidth);
+
+                        graphData.data[i].values.sort(function(a,b) {
+                            return a.x > b.x ? 1 : a.x < b.x ? -1 : 0;
+                        });
+
+                        for (var j=0; j<graphData.data[i].values.length; j++) {
+                            var areaPoint = new AreaPoint(graphData.data[i].values[j].x, graphData.data[i].values[j].y);
+
+                            row.addAreaPoint(areaPoint);
+                        }
+
+                        rowCollection.addRow(row);
+
+                        if (graphData.data[i].title) {
+                            var rowLabel = new RowLabel(i, rowSpace, areaWidth, rowLabelFont, rowLabelSize, rowLabelColor, graphData.data[i].title);
+
+                            rowCollection.addRowLabel(rowLabel);
+                        }
+                    }
+                }
+
+                // Give it a name just for simplicity
+                var graphName = "barGraph";
+                if ((graphData) && (graphData.name)) graphName = graphData.name;
+                
+                // The graph we will be building
+                var graph = new Graph(containerElement, graphName, graphData, rowCollection);
+
+                return graph;
+            },
+
         	// Calling will create a standard bar chart
         	BarChart: function(container, graphData) {
                 // -----------------------------------------------
@@ -663,10 +944,13 @@
                 // -----------------------------------------------
 
                 // ***** Code for building and manipulating the rows *****
-                var Row = function(dataRow) {
+                var Row = function(row, dataRow, columnSpace, width) {
                     this._id = dataRow.id.toString();
+                    this._row = row;
 
                     this._bars = [];
+
+                    this._barWidth = width;
 
                     this._columnSpace = columnSpace;
 
@@ -674,6 +958,22 @@
                 };
 
                 // ----- Getters
+
+                Row.prototype.getRow = function() {
+                    return this._row;
+                };
+
+                Row.prototype.getWidth = function() {
+                    return this._areaWidth;
+                };
+
+                Row.prototype.getMinX = function() {
+                    return 0;
+                };
+
+                Row.prototype.getMaxX = function() {
+                    return 0;
+                };
 
                 Row.prototype.getMinY = function() {
                     var min = null;
@@ -685,7 +985,7 @@
                     }
 
                     return min;
-                }
+                };
 
                 Row.prototype.getMaxY = function() {
                     var max = null;
@@ -697,13 +997,13 @@
                     }
 
                     return max;
-                }
+                };
 
                 Row.prototype.getWidth = function() {
                     var totalWidth = 0;
 
                     for (var i=0; i<this._bars.length; i++) {
-                        totalWidth += this._bars[i].getBarWidth();
+                        totalWidth += this._barWidth;
 
                         if (i != (this._bars.length-1)) totalWidth += this._columnSpace;
                     }
@@ -715,7 +1015,7 @@
                     var maxLength = 0;
 
                     for (var i=0; i<this._bars.length; i++) {
-                        var barWidth = this._bars[i].getBarWidth();
+                        var barWidth = this._barWidth;
 
                         if (barWidth > maxLength) maxLength = barWidth;
                     }
@@ -741,11 +1041,11 @@
                     this._bars.push(bar);
                 }
 
-                Row.prototype.draw = function(yOffset) {
-                    var barObjects = [];
+                Row.prototype.draw = function(xOffset, yOffset) {
+                    var barObjects = new THREE.Object3D();
 
                     for (var i=0; i<this._bars.length; i++) {
-                        barObjects.push(this._bars[i].draw(yOffset));
+                        barObjects.add(this._bars[i].draw(yOffset, this._barWidth));
                     }
 
                     return barObjects;
@@ -753,7 +1053,7 @@
 
                 // ***** Code for building and manipulating the bars *****
 
-                var Bar = function(row, column, barWidth, dataValue, color, showLabels, labelFont, labelSize, labelColor) {
+                var Bar = function(column, barWidth, dataValue, color, showLabels, labelFont, labelSize, labelColor) {
                     var that = this;
 
                     // ----- Private Methods
@@ -821,7 +1121,6 @@
                         return outline;
                     };
 
-                    this.row = row;
                     this.column = column;
                     this.barWidth = barWidth;
                     this.color = color;
@@ -852,19 +1151,18 @@
 
                 // ----- Public Methods
 
-                Bar.prototype.draw = function(yOffset) {
+                Bar.prototype.draw = function(yOffset, barWidth) {
                     this.barObject = new THREE.Object3D();
 
                     // Calculate the bar geometry
-                    var xPos = ((this.column*columnSpace) + (this.column*this.barWidth)) + (this.barWidth/2),
-                        zPos = ((this.row*rowSpace) + (this.row*this.barWidth)) + (this.barWidth/2),
+                    var xPos = ((this.column*columnSpace) + (this.column*barWidth)) + (barWidth/2),
                         height = (this.dataValue-yOffset);
 
                     var barGeometry = new THREE.Geometry();
                     barGeometry.dynamic = true;
 
                     // Plot the verticies
-                    barGeometry.vertices = this.getBarVertices(xPos, zPos, height, this.barWidth);
+                    barGeometry.vertices = this.getBarVertices(xPos, 0, height, barWidth);
 
                     // Add the faces
                     barGeometry.faces.push( new THREE.Face3( 0, 1, 4 ) );
@@ -902,10 +1200,10 @@
 
                     // Generate the outlines
 
-                    barOutline.add(this.getOutlineMesh("front", xPos, zPos, height, this.barWidth, this.color));
-                    barOutline.add(this.getOutlineMesh("back", xPos, zPos, height, this.barWidth, this.color));
-                    barOutline.add(this.getOutlineMesh("left", xPos, zPos, height, this.barWidth, this.color));
-                    barOutline.add(this.getOutlineMesh("right", xPos, zPos, height, this.barWidth, this.color));
+                    barOutline.add(this.getOutlineMesh("front", xPos, 0, height, barWidth, this.color));
+                    barOutline.add(this.getOutlineMesh("back", xPos, 0, height, barWidth, this.color));
+                    barOutline.add(this.getOutlineMesh("left", xPos, 0, height, barWidth, this.color));
+                    barOutline.add(this.getOutlineMesh("right", xPos, 0, height, barWidth, this.color));
 
                     this.barObject.add(barOutline);
 
@@ -1000,10 +1298,10 @@
                         // Local bar settings for labels overwrite global one
                         if (graphData.data[i].showBarLabels == undefined) graphData.data[i].showBarLabels = showBarLabels;
 
-                        var row = new Row(graphData.data[i]);
+                        var row = new Row(i, graphData.data[i], columnSpace, barWidth);
 
                         for (var j=0; j<graphData.data[i].values.length; j++) {
-                            var bar = new Bar(i, j, barWidth, graphData.data[i].values[j], graphData.data[i].color, graphData.data[i].showBarLabels, barLabelFont, barLabelSize, barLabelColor);
+                            var bar = new Bar(j, barWidth, graphData.data[i].values[j], graphData.data[i].color, graphData.data[i].showBarLabels, barLabelFont, barLabelSize, barLabelColor);
 
                             row.addBar(bar);
                         }
