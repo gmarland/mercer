@@ -356,11 +356,21 @@
             this._graphObject.add(this._baseMesh);
             if (this._measurementLines) this._graphObject.add(this._measurementLines);
 
-            var rowCollectionObject = this._rowCollection.draw();
+            var rowCollectionObject = this._rowCollection.drawRows();
             rowCollectionObject.position.x += this._baseEdge;
             rowCollectionObject.position.z += this._baseEdge;
 
             this._graphObject.add(rowCollectionObject);
+
+            var rowLabelsCollectionObject = this._rowCollection.drawRowLabels();
+            rowLabelsCollectionObject.position.z += this._baseEdge;
+            rowLabelsCollectionObject.position.x += (graphWidth+(this._baseEdge*2));
+
+            this._graphObject.add(rowLabelsCollectionObject);
+
+            //var columnLabelsCollectionObject = this._rowCollection.drawColumnLabels();
+
+            //this._graphObject.add(columnLabelsCollectionObject);
 
             var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
 
@@ -462,6 +472,8 @@
             this._rowSpace = rowSpace;
 
             this._rows = [];
+            this._rowLabels = [];
+            this._columnLabels = [];
         };
 
         // ----- Getters
@@ -524,7 +536,15 @@
             this._rows.push(row);
         };
 
-        RowCollection.prototype.draw = function() {
+        RowCollection.prototype.addRowLabel = function(rowLabel) {
+            this._rowLabels.push(rowLabel);
+        };
+
+        RowCollection.prototype.addColumnLabel = function(columnLabel) {
+            this._columnLabels.push(columnLabel);
+        };
+
+        RowCollection.prototype.drawRows = function() {
             var collectionObjects = new THREE.Object3D();
 
             for (var i=0; i<this._rows.length; i++) {
@@ -537,7 +557,101 @@
 
             return collectionObjects;
         };
+
+        RowCollection.prototype.drawRowLabels = function() {
+            var rowLabelObjects = new THREE.Object3D();
+
+            for (var i=0; i<this._rowLabels.length; i++) {
+                rowLabelObjects.add(this._rowLabels[i].draw());
+            }
+
+            return rowLabelObjects;
+        };
+
+        RowCollection.prototype.drawColumnLabels = function() {
+            var columnLabelObjects = new THREE.Object3D();
+
+            for (var i=0; i<this._columnLabels.length; i++) {
+                columnLabelObjects.add(this._columnLabels[i].draw());
+            }
+
+            return columnLabelObjects;
+        };
+
+        // -----------------------------------------------
+        // Row labels that are attached to the graph
+        // -----------------------------------------------
+
+        var RowLabel = function(row, rowSpace, rowWidth, font, size, color, text) {
+            this._row = row; 
+            this._rowSpace = rowSpace; 
+            this._rowWidth = rowWidth; 
+            this._font = font; 
+            this._size = size; 
+            this._color = color; 
+            this._text = text;
+        };
+
+        RowLabel.prototype.draw = function() {
+            var textGeometry = new THREE.TextGeometry(this._text, {
+                font: this._font,
+                size: this._size,
+                height: .2
+            });
+            
+            var textMaterial = new THREE.MeshBasicMaterial({
+                color: this._color
+            });
+
+            this.textMesh = new THREE.Mesh(textGeometry, textMaterial);
+
+            this.textMesh.rotation.x = (Math.PI/2)*-1;
+
+            var textBoxArea = new THREE.Box3().setFromObject(this.textMesh);
+
+            this.textMesh.position.x = 3;
+            this.textMesh.position.z = ((this._row*this._rowSpace) + (this._row*this._rowWidth) + (this._rowWidth/2) + (textBoxArea.size().z/2));
+
+            return this.textMesh;
+        };
         
+        // -----------------------------------------------
+        // Column labels that are attached to the graph
+        // -----------------------------------------------
+
+        var ColumnLabel = function(column, columnSpace, columnWidth, font, size, color, text) {
+            this._column = column; 
+            this._columnSpace = columnSpace; 
+            this._columnWidth = columnWidth; 
+            this._font = font; 
+            this._size = size; 
+            this._color = color; 
+            this._text = text;
+        };
+
+        ColumnLabel.prototype.draw = function() {
+            var textBoxArea = new THREE.Box3().setFromObject(this.textMesh);
+
+            this.textMesh.position.z += ((graphLength/2) + textBoxArea.size().z + 3);
+            this.textMesh.position.x = ((graphWidth/2)*-1) + ((baseEdge + (barWidth/2) + (textBoxArea.size().x/2)) + (column*columnSpace) + (col*barWidth));
+
+            var textGeometry = new THREE.TextGeometry(text, {
+                font: font,
+                size: size,
+                height: .2
+            });
+
+            var textMaterial = new THREE.MeshBasicMaterial({
+                color: color
+            });
+            
+            this.textMesh = new THREE.Mesh(textGeometry, textMaterial);
+
+            this.textMesh.rotation.x = (Math.PI/2)*-1;
+            this.textMesh.rotation.z += (Math.PI/2);
+
+            return this.textMesh;
+        };
 
         return {
         	// Calling will create a standard bar chart
@@ -816,70 +930,6 @@
                     return this.barObject;
                 };
 
-                // ***** Code for building and manipulating the column labels *****
-
-                var ColumnLabel = function(font, size, color, text) {
-                    var textGeometry = new THREE.TextGeometry(text, {
-                        font: font,
-                        size: size,
-                        height: .2
-                    });
-
-                    var textMaterial = new THREE.MeshBasicMaterial({
-                        color: color
-                    });
-                    
-                    this.textMesh = new THREE.Mesh(textGeometry, textMaterial);
-
-                    this.textMesh.rotation.x = (Math.PI/2)*-1;
-                    this.textMesh.rotation.z += (Math.PI/2);
-                };
-
-                ColumnLabel.prototype.setPosition = function(graphWidth, graphLength, baseEdge, barWidth, column, columnSpace) {
-                    var textBoxArea = new THREE.Box3().setFromObject(this.textMesh);
-
-                    this.textMesh.position.z += ((graphLength/2) + textBoxArea.size().z + 3);
-                    this.textMesh.position.x = ((graphWidth/2)*-1) + ((baseEdge + (barWidth/2) + (textBoxArea.size().x/2)) + (column*columnSpace) + (col*barWidth));
-                };
-
-                // ***** Code for building and manipulating the row labels *****
-
-                var RowLabel = function(row, rowSpace, barWidth, font, size, color, text) {
-                    this.row = row; 
-                    this.rowSpace = rowSpace; 
-                    this.barWidth = barWidth; 
-                    this.font = font; 
-                    this.size = size; 
-                    this.color = color; 
-                    this.text = text;
-                };
-
-                RowLabel.prototype.draw = function(graphWidth, graphLength, baseEdge) {
-                    if (this.textMesh) return this.textMesh;
-                    else  {
-                        var textGeometry = new THREE.TextGeometry(this.text, {
-                            font: this.font,
-                            size: this.size,
-                            height: .2
-                        });
-                        
-                        var textMaterial = new THREE.MeshBasicMaterial({
-                            color: this.color
-                        });
-
-                        this.textMesh = new THREE.Mesh(textGeometry, textMaterial);
-
-                        this.textMesh.rotation.x = (Math.PI/2)*-1;
-
-                        var textBoxArea = new THREE.Box3().setFromObject(this.textMesh);
-
-                        this.textMesh.position.x += (graphWidth/2) + 3;
-                        this.textMesh.position.z = ((baseEdge + (this.barWidth/2) + (this.row*this.rowSpace) + (this.row*this.barWidth) + (textBoxArea.size().z/2)))-(graphLength/2);
-
-                        return this.textMesh;
-                    }  
-                }
-
         		// Set up the basic configuration for the bar
         		var barWidth = 15, // the width of the bar
         			barOpacity = 0.65, // how opaque the bars are
@@ -957,6 +1007,18 @@
                         }
 
                         rowCollection.addRow(row);
+
+                        if (graphData.data[i].title) {
+                            var rowLabel = new RowLabel(i, rowSpace, barWidth, rowLabelFont, rowLabelSize, rowLabelColor, graphData.data[i].title);
+
+                            rowCollection.addRowLabel(rowLabel);
+                        }
+                    }
+
+                    for (var i=0; i<graphData.columnLabels.values.length; i++) {
+                        var columnLabel = new ColumnLabel(i, columnSpace, barWidth, columnLabelFont, columnLabelSize, columnLabelColor, graphData.columnLabels.values[i]);
+
+                        rowCollection.addColumnLabel(columnLabel);
                     }
 				}
 
