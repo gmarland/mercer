@@ -70,6 +70,22 @@
                 return measurementLineObject;
             };
 
+            // Figures out the closet 10, 100, 100 etc the distance between the min and max meets
+            var getRoundingInteger = function(min, max) {
+                var diff = max-min;
+
+                if (diff === 0) return 1;
+                else {
+                    var multiplier = 0;
+
+                    while (true) {
+                        if ((diff >= Math.pow(10, multiplier)) && (diff < Math.pow(10, multiplier+1))) return Math.pow(10, (multiplier));
+
+                        multiplier++;
+                    }
+                }
+            };
+
             // ----- Functions for setting up the camera
                 
             // This attempts to find a camera position based on the graph object dimensions
@@ -240,7 +256,6 @@
             };
 
             // Details of the graph
-            this._graphHeight = 150;
             this._graphWidth = null; // the base width which will be show if no data is added
             this._graphLength = null; // the base length which will be show if no data is added
 
@@ -263,8 +278,6 @@
 
             // Determine if there are any global options set
             if (graphData !== undefined) {
-                if (graphData.graphHeight !== undefined) this._graphHeight = graphData.graphHeight;
-
                 if (graphData.background !== undefined) this._skyboxColor = new THREE.Color(graphData.background);
                 if (graphData.backgroundTransparent !== undefined) {
                     if (graphData.backgroundTransparent) this._skyboxOpacity = 0;
@@ -336,27 +349,32 @@
 
             this._scene = new THREE.Scene();
 
-            var minValue = this._rowCollection.getMinY(),
-                maxValue = this._rowCollection.getMaxY();
+            var minValueY = this._rowCollection.getMinY(),
+                maxValueY = this._rowCollection.getMaxY(),
+                rangeStepY = getRoundingInteger(minValueY, maxValueY);
+
+            var minGraphRangeY = (minValueY - minValueY %  rangeStepY);
+            if (minGraphRangeY != 0) minGraphRangeY -= rangeStepY;
+
+            var maxGraphRangeY = (rangeStepY - maxValueY % rangeStepY) + maxValueY;
 
             var containerWidth = parseInt(this._container.style.width,10), 
                 containerHeight = parseInt(this._container.style.height,10),
                 aspect = containerWidth /containerHeight,
                 graphWidth = this._rowCollection.getWidth(),
-                graphLength = this._rowCollection.getLength(),
-                graphHeight = this._rowCollection.getHeight();
+                graphLength = this._rowCollection.getLength();
 
             // Create the base and measurement lines
 
             this._baseMesh = createBase(graphWidth, graphLength, this._baseEdge, this._baseThickness, this._baseColor);
         
             this._measurementLines = null;
-            if (this._showMeasurementLines) this._measurementLines = createMeasurementsLines(graphWidth+(this._baseEdge*2), graphLength+(this._baseEdge*2), graphHeight, this._numberOfMeasurementLines, this._measurementLineColor, this._measurementLabelFont, this._measurementLabelSize, this._measurementLabelColor, minValue, maxValue)
+            if (this._showMeasurementLines) this._measurementLines = createMeasurementsLines(graphWidth+(this._baseEdge*2), graphLength+(this._baseEdge*2), maxGraphRangeY, this._numberOfMeasurementLines, this._measurementLineColor, this._measurementLabelFont, this._measurementLabelSize, this._measurementLabelColor, minGraphRangeY, maxGraphRangeY);
 
             this._graphObject.add(this._baseMesh);
             if (this._measurementLines) this._graphObject.add(this._measurementLines);
 
-            var rowCollectionObject = this._rowCollection.drawRows();
+            var rowCollectionObject = this._rowCollection.drawRows(minGraphRangeY, maxGraphRangeY);
             rowCollectionObject.position.x += this._baseEdge;
             rowCollectionObject.position.z += this._baseEdge;
 
@@ -412,24 +430,6 @@
             if (!this._locked) bindEvents();
 
             if (this._camera) this.render();
-        };
-
-        // ----- Getters
-
-        Graph.prototype.getBaseEdge = function() {
-            return this._baseEdge;
-        };
-
-        Graph.prototype.getGraphHeight = function() {
-            return this._graphHeight;
-        };
-
-        Graph.prototype.getGraphWidth = function() {
-            return this._graphWidth;
-        };
-
-        Graph.prototype.getGraphLength = function() {
-            return this._graphLength;
         };
 
         // ----- Public Methods
@@ -552,10 +552,6 @@
             return totalWidth;
         };
 
-        RowCollection.prototype.getHeight = function() {
-            return this.getMaxY()-this.getMinY();
-        };
-
         // ----- Public Methods
 
         RowCollection.prototype.addRow = function(row) {
@@ -570,11 +566,11 @@
             this._columnLabels.push(columnLabel);
         };
 
-        RowCollection.prototype.drawRows = function() {
+        RowCollection.prototype.drawRows = function(graphMinY, graphMaxY) {
             var collectionObjects = new THREE.Object3D();
 
             for (var i=0; i<this._rows.length; i++) {
-                var row = this._rows[i].draw(this.getMinX(), this.getMinY());
+                var row = this._rows[i].draw(this.getMinX(), graphMinY);
 
                 row.position.z += ((this._rows[i].getRow()*this._rowSpace) + (this._rows[i].getRow()*this._rows[i].getLength())) + (this._rows[i].getLength()/2),
 
@@ -770,13 +766,13 @@
                     this._linePoints.push(linePoint);
                 }
 
-                Row.prototype.draw = function(xOffset, yOffset) {    
+                Row.prototype.draw = function(graphMinX, graphMinY, graphMaxY) {    
                     var lineObject = new THREE.Object3D();
 
                     // Generate the outline
                     var lineGeometry = new THREE.Geometry();
                     for (var i=0; i<this._linePoints.length; i++) {
-                        lineGeometry.vertices.push(new THREE.Vector3(this._linePoints[i].getX(), this._linePoints[i].getY()-yOffset, (this._lineWidth/2)));
+                        lineGeometry.vertices.push(new THREE.Vector3(this._linePoints[i].getX(), this._linePoints[i].getY()-graphMinY, (this._lineWidth/2)));
                     }
 
                     var areaLine = new THREE.Line(lineGeometry, new THREE.LineBasicMaterial({
@@ -785,7 +781,7 @@
 
                     lineObject.add(areaLine);
 
-                    lineObject.position.x -= xOffset;
+                    lineObject.position.x -= graphMinX;
 
                     return lineObject;
                 };
@@ -964,7 +960,7 @@
                     this._areaPoints.push(areaPoint);
                 }
 
-                Row.prototype.draw = function(xOffset, yOffset) {    
+                Row.prototype.draw = function(graphMinX, graphMinY, graphMaxY) {    
                     var areaObject = new THREE.Object3D();
 
                     var frontVertices = [],
@@ -976,9 +972,9 @@
 
                     for (var i=0; i<this._areaPoints.length; i++) {
                         frontVertices.push(new THREE.Vector3(this._areaPoints[i].getX(), 0, (this._areaWidth/2)));
-                        frontVertices.push(new THREE.Vector3(this._areaPoints[i].getX(), this._areaPoints[i].getY()-yOffset, (this._areaWidth/2)));
+                        frontVertices.push(new THREE.Vector3(this._areaPoints[i].getX(), this._areaPoints[i].getY()-graphMinY, (this._areaWidth/2)));
                         backVertices.push(new THREE.Vector3(this._areaPoints[i].getX(), 0, (this._areaWidth/2)*-1));
-                        backVertices.push(new THREE.Vector3(this._areaPoints[i].getX(), this._areaPoints[i].getY()-yOffset, (this._areaWidth/2)*-1));
+                        backVertices.push(new THREE.Vector3(this._areaPoints[i].getX(), this._areaPoints[i].getY()-graphMinY, (this._areaWidth/2)*-1));
                     }
 
                     for (var i=0; i<frontVertices.length; i++) {
@@ -1029,7 +1025,7 @@
                     // Generate the outline
                     var areaLineGeometry = new THREE.Geometry();
                     for (var i=0; i<this._areaPoints.length; i++) {
-                        areaLineGeometry.vertices.push(new THREE.Vector3(this._areaPoints[i].getX(), this._areaPoints[i].getY()-yOffset, (this._areaWidth/2)));
+                        areaLineGeometry.vertices.push(new THREE.Vector3(this._areaPoints[i].getX(), this._areaPoints[i].getY()-graphMinY, (this._areaWidth/2)));
                     }
 
                     var areaLine = new THREE.Line(areaLineGeometry, new THREE.LineBasicMaterial({
@@ -1038,7 +1034,7 @@
 
                     areaObject.add(areaLine);
 
-                    areaObject.position.x -= xOffset;
+                    areaObject.position.x -= graphMinX;
 
                     return areaObject;
                 };
@@ -1231,11 +1227,11 @@
                     this._bars.push(bar);
                 }
 
-                Row.prototype.draw = function(xOffset, yOffset) {
+                Row.prototype.draw = function(graphMinX, graphMinY, graphMaxY) {
                     var barObjects = new THREE.Object3D();
 
                     for (var i=0; i<this._bars.length; i++) {
-                        barObjects.add(this._bars[i].draw(yOffset, this._barWidth));
+                        barObjects.add(this._bars[i].draw(graphMinY, graphMaxY, this._barWidth));
                     }
 
                     return barObjects;
@@ -1341,12 +1337,12 @@
 
                 // ----- Public Methods
 
-                Bar.prototype.draw = function(yOffset, barWidth) {
+                Bar.prototype.draw = function(graphMinY, graphMaxY, barWidth) {
                     this._barObject = new THREE.Object3D();
 
                     // Calculate the bar geometry
                     var xPos = ((this._column*columnSpace) + (this._column*barWidth)) + (barWidth/2),
-                        height = (this._dataValue-yOffset);
+                        height = (this._dataValue-graphMinY);
 
                     var barGeometry = new THREE.Geometry();
                     barGeometry.dynamic = true;
