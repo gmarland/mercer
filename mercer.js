@@ -681,6 +681,200 @@
 
         return {
             // Calling will create a standard area chart
+            LineGraph: function(container, graphData) {
+                // -----------------------------------------------
+                // Area chart object definitions
+                // -----------------------------------------------
+
+                // ***** Code for building and manipulating the rows *****
+                var Row = function(row, dataRow, pointSpace, width) {
+                    this._id = dataRow.id.toString();
+                    this._row = row;
+
+                    this._linePoints = [];
+
+                    this._pointSpace = pointSpace;
+                    this._color = graphData.data[i].color;
+                    this._lineWidth = width;
+                };
+
+                // ----- Getters
+
+                Row.prototype.getRow = function() {
+                    return this._row;
+                };
+
+                Row.prototype.getWidth = function() {
+                    return this._lineWidth;
+                };
+
+                Row.prototype.getMinX = function() {
+                    var min = null;
+
+                    for (var i=0; i<this._linePoints.length; i++) {
+                        var dataValue = this._linePoints[i].getX();
+
+                        if ((min === null) || (dataValue < min)) min = dataValue;
+                    }
+
+                    return min;
+                };
+
+                Row.prototype.getMaxX = function() {
+                    var max = null;
+
+                    for (var i=0; i<this._linePoints.length; i++) {
+                        var dataValue = this._linePoints[i].getX();
+
+                        if ((max === null) || (dataValue > max)) max = dataValue;
+                    }
+
+                    return max;
+                };
+
+                Row.prototype.getMinY = function() {
+                    var min = null;
+
+                    for (var i=0; i<this._linePoints.length; i++) {
+                        var dataValue = this._linePoints[i].getY();
+
+                        if ((min === null) || (dataValue < min)) min = dataValue;
+                    }
+
+                    return min;
+                };
+
+                Row.prototype.getMaxY = function() {
+                    var max = null;
+
+                    for (var i=0; i<this._linePoints.length; i++) {
+                        var dataValue = this._linePoints[i].getY();
+
+                        if ((max === null) || (dataValue > max)) max = dataValue;
+                    }
+
+                    return max;
+                };
+
+                Row.prototype.getWidth = function() {
+                    return this.getMaxX()-this.getMinX();
+                };
+
+                Row.prototype.getLength = function() {
+                    return this._lineWidth;
+                };
+
+                // ----- Public Methods
+
+                Row.prototype.addLinePoint = function(linePoint) {
+                    this._linePoints.push(linePoint);
+                }
+
+                Row.prototype.draw = function(xOffset, yOffset) {    
+                    var lineObject = new THREE.Object3D();
+
+                    // Generate the outline
+                    var lineGeometry = new THREE.Geometry();
+                    for (var i=0; i<this._linePoints.length; i++) {
+                        lineGeometry.vertices.push(new THREE.Vector3(this._linePoints[i].getX(), this._linePoints[i].getY()-yOffset, (this._lineWidth/2)));
+                    }
+
+                    var areaLine = new THREE.Line(lineGeometry, new THREE.LineBasicMaterial({
+                        color: this._color
+                    }));
+
+                    lineObject.add(areaLine);
+
+                    lineObject.position.x -= xOffset;
+
+                    return lineObject;
+                };
+
+                // ***** Code for building and manipulating the rows *****
+                var LinePoint = function(x, y) {
+                    this._x = x;
+                    this._y = y;
+                };
+
+                LinePoint.prototype.getX = function() {
+                    return this._x;
+                };
+
+                LinePoint.prototype.getY = function() {
+                    return this._y;
+                };
+
+                var lineWidth = 2.5, // the width of the lines on the graph
+                    rowSpace = 30, // the space between each row
+                    rowLabelFont = "helvetiker", // the font for the row label
+                    rowLabelSize = 4, // the font size for the row label
+                    rowLabelColor = 0x000000, // the default color for the row label
+                    pointSpace = 5; // the space between each column in a row
+
+                // Allow the override using the graphData options if they exist
+                if (graphData !== undefined) {
+                    if (graphData.lineWidth !== undefined) lineWidth = graphData.lineWidth;
+                    
+                    if (graphData.rowSpace !== undefined) rowSpace = graphData.rowSpace;
+
+                    if (graphData.rowLabels !== undefined) {
+                        if (graphData.rowLabels.fontFamily !== undefined) rowLabelFont = graphData.rowLabels.fontFamily;
+
+                        if (graphData.rowLabels.size !== undefined) rowLabelSize = graphData.rowLabels.size;
+
+                        if (graphData.rowLabels.color !== undefined) rowLabelColor = new THREE.Color(graphData.rowLabels.color);
+                    }
+
+                    if (graphData.pointSpace !== undefined) pointSpace = graphData.pointSpace;
+                }
+
+                var containerElement = document.getElementById(container),
+                    containerWidth = parseInt(containerElement.style.width,10), 
+                    containerHeight = parseInt(containerElement.style.height,10);
+
+                var rowCollection = new RowCollection(rowSpace);
+
+                // check that we've have some data passed in
+                if (graphData) {
+                    for (var i=0; i<graphData.data.length; i++) {
+                        if (graphData.data[i].id == undefined) graphData.data[i].id = i.toString();
+
+                        if (graphData.data[i].color !== undefined) graphData.data[i].color = new THREE.Color(graphData.data[i].color);
+                        else graphData.data[i].color = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
+
+                        var row = new Row(i, graphData.data[i], pointSpace, lineWidth);
+
+                        graphData.data[i].values.sort(function(a,b) {
+                            return a.x > b.x ? 1 : a.x < b.x ? -1 : 0;
+                        });
+
+                        for (var j=0; j<graphData.data[i].values.length; j++) {
+                            var linePoint = new LinePoint(graphData.data[i].values[j].x, graphData.data[i].values[j].y);
+
+                            row.addLinePoint(linePoint);
+                        }
+
+                        rowCollection.addRow(row);
+
+                        if (graphData.data[i].title) {
+                            var rowLabel = new RowLabel(i, rowSpace, lineWidth, rowLabelFont, rowLabelSize, rowLabelColor, graphData.data[i].title);
+
+                            rowCollection.addRowLabel(rowLabel);
+                        }
+                    }
+                }
+
+                // Give it a name just for simplicity
+                var graphName = "barGraph";
+                if ((graphData) && (graphData.name)) graphName = graphData.name;
+                
+                // The graph we will be building
+                var graph = new Graph(containerElement, graphName, graphData, rowCollection);
+
+                return graph;
+            },
+
+            // Calling will create a standard area chart
             AreaChart: function(container, graphData) {
                 // -----------------------------------------------
                 // Area chart object definitions
@@ -861,10 +1055,6 @@
 
                 AreaPoint.prototype.getY = function() {
                     return this._y;
-                };
-
-                AreaPoint.prototype.getWidth = function() {
-                    return this._width;
                 };
 
                 var areaWidth = 4, // the width of the area graph
