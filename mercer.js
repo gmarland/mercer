@@ -364,8 +364,6 @@
                 graphWidth = this._rowCollection.getWidth(),
                 graphLength = this._rowCollection.getLength();
 
-            // Create the base and measurement lines
-
             this._baseMesh = createBase(graphWidth, graphLength, this._baseEdge, this._baseThickness, this._baseColor);
         
             this._measurementLines = null;
@@ -490,7 +488,7 @@
             }
 
             return min;
-        }
+        };
 
         RowCollection.prototype.getMaxX = function() {
             var max = null;
@@ -502,7 +500,7 @@
             }
 
             return max;
-        }
+        };
 
         RowCollection.prototype.getMinY = function() {
             var min = null;
@@ -514,7 +512,7 @@
             }
 
             return min;
-        }
+        };
 
         RowCollection.prototype.getMaxY = function() {
             var max = null;
@@ -526,7 +524,31 @@
             }
 
             return max;
-        }
+        };
+
+        RowCollection.prototype.getMinZ = function() {
+            var min = null;
+
+            for (var i=0; i<this._rows.length; i++) {
+                var minValue = this._rows[i].getMinZ();
+
+                if ((min === null) || (minValue < min)) min = minValue;
+            }
+
+            return min;
+        };
+
+        RowCollection.prototype.getMaxZ = function() {
+            var max = null;
+
+            for (var i=0; i<this._rows.length; i++) {
+                var maxValue = this._rows[i].getMaxZ();
+
+                if ((max === null) || (maxValue > max)) max = maxValue;
+            }
+
+            return max;
+        };
 
         RowCollection.prototype.getWidth = function() {
             var maxWidth = 0;
@@ -541,15 +563,28 @@
         };
 
         RowCollection.prototype.getLength = function() {
-            var totalWidth = 0;
+            if (this._rowSpace) {
+                var totalLength = 0;
 
-            for (var i=0; i<this._rows.length; i++) {
-                totalWidth += this._rows[i].getLength();
+                for (var i=0; i<this._rows.length; i++) {
+                    totalLength += this._rows[i].getLength();
 
-                if (i != (this._rows.length-1)) totalWidth += this._rowSpace;
+                    if (i != (this._rows.length-1)) totalLength += this._rowSpace;
+                }
+
+                return totalLength;
             }
+            else {
+                var maxLength = 0;
 
-            return totalWidth;
+                for (var i=0; i<this._rows.length; i++) {
+                    var rowLength = this._rows[i].getLength();
+
+                    if (rowLength > maxLength) maxLength = rowLength;
+                }
+
+                return maxLength;
+            }
         };
 
         // ----- Public Methods
@@ -570,9 +605,9 @@
             var collectionObjects = new THREE.Object3D();
 
             for (var i=0; i<this._rows.length; i++) {
-                var row = this._rows[i].draw(this.getMinX(), graphMinY);
+                var row = this._rows[i].draw(this.getMinX(), graphMinY, this.getMinZ());
 
-                row.position.z += ((this._rows[i].getRow()*this._rowSpace) + (this._rows[i].getRow()*this._rows[i].getLength())) + (this._rows[i].getLength()/2),
+                if (this._rowSpace) row.position.z += ((this._rows[i].getRow()*this._rowSpace) + (this._rows[i].getRow()*this._rows[i].getLength())) + (this._rows[i].getLength()/2);
 
                 collectionObjects.add(row);
             }
@@ -676,7 +711,7 @@
         };
 
         return {
-            // Calling will create a standard area chart
+            // Calling will create a standard line graph
             LineGraph: function(container, graphData) {
                 // -----------------------------------------------
                 // Area chart object definitions
@@ -698,10 +733,6 @@
 
                 Row.prototype.getRow = function() {
                     return this._row;
-                };
-
-                Row.prototype.getWidth = function() {
-                    return this._lineWidth;
                 };
 
                 Row.prototype.getMinX = function() {
@@ -752,6 +783,14 @@
                     return max;
                 };
 
+                Row.prototype.getMinZ = function() {
+                    return 0;
+                };
+
+                Row.prototype.getMaxZ = function() {
+                    return 0;
+                };
+
                 Row.prototype.getWidth = function() {
                     return this.getMaxX()-this.getMinX();
                 };
@@ -766,7 +805,7 @@
                     this._linePoints.push(linePoint);
                 }
 
-                Row.prototype.draw = function(graphMinX, graphMinY, graphMaxY) {    
+                Row.prototype.draw = function(graphMinX, graphMinY, graphMinZ) {    
                     var lineObject = new THREE.Object3D();
 
                     // Generate the outline
@@ -861,7 +900,7 @@
                 }
 
                 // Give it a name just for simplicity
-                var graphName = "barGraph";
+                var graphName = "lineGraph";
                 if ((graphData) && (graphData.name)) graphName = graphData.name;
                 
                 // The graph we will be building
@@ -892,10 +931,6 @@
 
                 Row.prototype.getRow = function() {
                     return this._row;
-                };
-
-                Row.prototype.getWidth = function() {
-                    return this._areaWidth;
                 };
 
                 Row.prototype.getMinX = function() {
@@ -946,6 +981,14 @@
                     return max;
                 };
 
+                Row.prototype.getMinZ = function() {
+                    return 0;
+                };
+
+                Row.prototype.getMaxZ = function() {
+                    return 0;
+                };
+
                 Row.prototype.getWidth = function() {
                     return this.getMaxX()-this.getMinX();
                 };
@@ -960,7 +1003,7 @@
                     this._areaPoints.push(areaPoint);
                 }
 
-                Row.prototype.draw = function(graphMinX, graphMinY, graphMaxY) {    
+                Row.prototype.draw = function(graphMinX, graphMinY, graphMinZ) {    
                     var areaObject = new THREE.Object3D();
 
                     var frontVertices = [],
@@ -1114,7 +1157,213 @@
                 }
 
                 // Give it a name just for simplicity
-                var graphName = "barGraph";
+                var graphName = "areaGraph";
+                if ((graphData) && (graphData.name)) graphName = graphData.name;
+                
+                // The graph we will be building
+                var graph = new Graph(containerElement, graphName, graphData, rowCollection);
+
+                return graph;
+            },
+
+            // Calling will create a standard line graph
+            ScatterGraph: function(container, graphData) {
+                // -----------------------------------------------
+                // Area chart object definitions
+                // -----------------------------------------------
+
+                // ***** Code for building and manipulating the rows *****
+                var Row = function(row, dataRow) {
+                    this._id = dataRow.id.toString();
+                    this._row = row;
+
+                    this._scatterPoints = [];
+
+                    this._color = graphData.data[i].color;
+                };
+
+                // ----- Getters
+
+                Row.prototype.getRow = function() {
+                    return this._row;
+                };
+
+                Row.prototype.getMinX = function() {
+                    var min = null;
+
+                    for (var i=0; i<this._scatterPoints.length; i++) {
+                        var dataValue = this._scatterPoints[i].getX();
+
+                        if ((min === null) || (dataValue < min)) min = dataValue;
+                    }
+
+                    return min;
+                };
+
+                Row.prototype.getMaxX = function() {
+                    var max = null;
+
+                    for (var i=0; i<this._scatterPoints.length; i++) {
+                        var dataValue = this._scatterPoints[i].getX();
+
+                        if ((max === null) || (dataValue > max)) max = dataValue;
+                    }
+
+                    return max;
+                };
+
+                Row.prototype.getMinY = function() {
+                    var min = null;
+
+                    for (var i=0; i<this._scatterPoints.length; i++) {
+                        var dataValue = this._scatterPoints[i].getY();
+
+                        if ((min === null) || (dataValue < min)) min = dataValue;
+                    }
+
+                    return min;
+                };
+
+                Row.prototype.getMaxY = function() {
+                    var max = null;
+
+                    for (var i=0; i<this._scatterPoints.length; i++) {
+                        var dataValue = this._scatterPoints[i].getY();
+
+                        if ((max === null) || (dataValue > max)) max = dataValue;
+                    }
+
+                    return max;
+                };
+
+                Row.prototype.getMinZ = function() {
+                    var min = null;
+
+                    for (var i=0; i<this._scatterPoints.length; i++) {
+                        var dataValue = this._scatterPoints[i].getZ();
+
+                        if ((min === null) || (dataValue < min)) min = dataValue;
+                    }
+
+                    return min;
+                };
+
+                Row.prototype.getMaxZ = function() {
+                    var max = null;
+
+                    for (var i=0; i<this._scatterPoints.length; i++) {
+                        var dataValue = this._scatterPoints[i].getZ();
+
+                        if ((max === null) || (dataValue > max)) max = dataValue;
+                    }
+
+                    return max;
+                };
+
+                Row.prototype.getWidth = function() {
+                    return this.getMaxX()-this.getMinX();
+                };
+
+                Row.prototype.getLength = function() {
+                    return this.getMaxZ()-this.getMinZ();
+                };
+
+                // ----- Public Methods
+
+                Row.prototype.addScatterPoint = function(linePoint) {
+                    this._scatterPoints.push(linePoint);
+                }
+
+                Row.prototype.draw = function(graphMinX, graphMinY, graphMinZ) {    
+                    var rowObject = new THREE.Object3D();
+
+                    for (var i=0; i<this._scatterPoints.length; i++) {
+                        rowObject.add(this._scatterPoints[i].draw(this._color));
+                    }
+
+                    rowObject.position.x -= graphMinX;
+                    rowObject.position.z -= graphMinZ;
+
+                    return rowObject;
+                };
+
+                // ***** Code for building and manipulating the rows *****
+                var ScatterPoint = function(x, y, z, pointSize) {
+                    this._x = x;
+                    this._y = y;
+                    this._z = z;
+                    this._pointSize = pointSize;
+                };
+
+                ScatterPoint.prototype.getX = function() {
+                    return this._x;
+                };
+
+                ScatterPoint.prototype.getY = function() {
+                    return this._y;
+                };
+
+                ScatterPoint.prototype.getZ = function() {
+                    return this._z;
+                };
+
+                ScatterPoint.prototype.draw = function(color) {
+                    var pointGeometry = new THREE.SphereGeometry(this._pointSize, 100, 100),
+                        pointMaterial = new THREE.MeshLambertMaterial({
+                            color: color,
+                            side:THREE.DoubleSide, 
+                            transparent: true,
+                            opacity: 0.8
+                        });
+
+                    var pointMesh = new THREE.Mesh(pointGeometry, pointMaterial)
+
+                    pointMesh.position.x = this._x;
+                    pointMesh.position.y = this._y;
+                    pointMesh.position.z = this._z;
+
+                    return pointMesh;
+                };
+
+                var pointSize = 6; // the space between each column in a row
+
+                // Allow the ovesride using the graphData options if they exist
+                if (graphData !== undefined) {
+                    if (graphData.pointSize !== undefined) pointSize = graphData.pointSize;
+                }
+
+                var containerElement = document.getElementById(container),
+                    containerWidth = parseInt(containerElement.style.width,10), 
+                    containerHeight = parseInt(containerElement.style.height,10);
+
+                var rowCollection = new RowCollection(null);
+
+                // check that we've have some data passed in
+                if (graphData) {
+                    for (var i=0; i<graphData.data.length; i++) {
+                        if (graphData.data[i].id == undefined) graphData.data[i].id = i.toString();
+
+                        if (graphData.data[i].color !== undefined) graphData.data[i].color = new THREE.Color(graphData.data[i].color);
+                        else graphData.data[i].color = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
+
+                        var row = new Row(i, graphData.data[i]);
+
+                        graphData.data[i].values.sort(function(a,b) {
+                            return a.x > b.x ? 1 : a.x < b.x ? -1 : 0;
+                        });
+
+                        for (var j=0; j<graphData.data[i].values.length; j++) {
+                            var scatterPoint = new ScatterPoint(graphData.data[i].values[j].x, graphData.data[i].values[j].y, graphData.data[i].values[j].z, pointSize);
+
+                            row.addScatterPoint(scatterPoint);
+                        }
+
+                        rowCollection.addRow(row);
+                    }
+                }
+
+                // Give it a name just for simplicity
+                var graphName = "scatterGraph";
                 if ((graphData) && (graphData.name)) graphName = graphData.name;
                 
                 // The graph we will be building
@@ -1149,10 +1398,6 @@
                     return this._row;
                 };
 
-                Row.prototype.getWidth = function() {
-                    return this._areaWidth;
-                };
-
                 Row.prototype.getMinX = function() {
                     return 0;
                 };
@@ -1183,6 +1428,14 @@
                     }
 
                     return max;
+                };
+
+                Row.prototype.getMinZ = function() {
+                    return 0;
+                };
+
+                Row.prototype.getMaxZ = function() {
+                    return 0;
                 };
 
                 Row.prototype.getWidth = function() {
@@ -1227,11 +1480,11 @@
                     this._bars.push(bar);
                 }
 
-                Row.prototype.draw = function(graphMinX, graphMinY, graphMaxY) {
+                Row.prototype.draw = function(graphMinX, graphMinY, graphMinZ) {
                     var barObjects = new THREE.Object3D();
 
                     for (var i=0; i<this._bars.length; i++) {
-                        barObjects.add(this._bars[i].draw(graphMinY, graphMaxY, this._barWidth));
+                        barObjects.add(this._bars[i].draw(graphMinY, this._barWidth));
                     }
 
                     return barObjects;
@@ -1337,7 +1590,7 @@
 
                 // ----- Public Methods
 
-                Bar.prototype.draw = function(graphMinY, graphMaxY, barWidth) {
+                Bar.prototype.draw = function(graphMinY, barWidth) {
                     this._barObject = new THREE.Object3D();
 
                     // Calculate the bar geometry
