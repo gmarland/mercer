@@ -9,13 +9,13 @@
 
             // ----- Functions for setting up the scene
 
-            var loadFont = function() {
+            var loadFont = function(callback) {
                 var loader = new THREE.FontLoader();
                 
-                loader.load(that._fontLocation, function ( response ) {
+                loader.load(that._fontLocation, function (response) {
                     that._font = response;
 
-                    console.log(response)
+                    callback();
                 } );
             }
 
@@ -359,93 +359,95 @@
                 if (graphData.measurementLabelColor !== undefined) this._measurementLabelColor = new THREE.Color(graphData.measurementLabelColor);
             }
 
-            // Now we have everything is defined, set up the scene
-
-            this._scene = new THREE.Scene();
+            var local = this;
 
             // Load the font as early as possible
 
-            loadFont();
+            loadFont(function() {
+                // Now we have everything is defined, set up the scene
 
-            var minValueY = this._rowCollection.getMinY(),
-                maxValueY = this._rowCollection.getMaxY(),
-                rangeStepY = getRoundingInteger(minValueY, maxValueY);
+                local._scene = new THREE.Scene();
 
-            var minGraphRangeY = (minValueY - minValueY %  rangeStepY);
-            if (minGraphRangeY != 0) minGraphRangeY -= rangeStepY;
+                var minValueY = local._rowCollection.getMinY(),
+                    maxValueY = local._rowCollection.getMaxY(),
+                    rangeStepY = getRoundingInteger(minValueY, maxValueY);
 
-            var maxGraphRangeY = (rangeStepY - maxValueY % rangeStepY) + maxValueY;
+                var minGraphRangeY = (minValueY - minValueY %  rangeStepY);
+                if (minGraphRangeY != 0) minGraphRangeY -= rangeStepY;
 
-            var containerWidth = parseInt(this._container.style.width,10), 
-                containerHeight = parseInt(this._container.style.height,10),
-                aspect = containerWidth /containerHeight,
-                graphWidth = this._rowCollection.getWidth(),
-                graphLength = this._rowCollection.getLength();
+                var maxGraphRangeY = (rangeStepY - maxValueY % rangeStepY) + maxValueY;
 
-            this._baseMesh = createBase(graphWidth, graphLength, this._baseEdge, this._baseThickness, this._baseColor);
-        
-            this._measurementLines = null;
-            if (this._showMeasurementLines) this._measurementLines = createMeasurementsLines(graphWidth+(this._baseEdge*2), graphLength+(this._baseEdge*2), maxGraphRangeY, this._numberOfMeasurementLines, this._measurementLineColor, this._measurementLabelSize, this._measurementLabelColor, minGraphRangeY, maxGraphRangeY);
+                var containerWidth = parseInt(local._container.style.width,10), 
+                    containerHeight = parseInt(local._container.style.height,10),
+                    aspect = containerWidth /containerHeight,
+                    graphWidth = local._rowCollection.getWidth(),
+                    graphLength = local._rowCollection.getLength();
 
-            this._graphObject.add(this._baseMesh);
-            if (this._measurementLines) this._graphObject.add(this._measurementLines);
+                local._baseMesh = createBase(graphWidth, graphLength, local._baseEdge, local._baseThickness, local._baseColor);
+            
+                local._measurementLines = null;
+                if (local._showMeasurementLines) local._measurementLines = createMeasurementsLines(graphWidth+(local._baseEdge*2), graphLength+(local._baseEdge*2), maxGraphRangeY, local._numberOfMeasurementLines, local._measurementLineColor, local._measurementLabelSize, local._measurementLabelColor, minGraphRangeY, maxGraphRangeY);
 
-            var rowCollectionObject = this._rowCollection.drawRows(minGraphRangeY, maxGraphRangeY);
-            rowCollectionObject.position.x += this._baseEdge;
-            rowCollectionObject.position.z += this._baseEdge;
+                local._graphObject.add(local._baseMesh);
+                if (local._measurementLines) local._graphObject.add(local._measurementLines);
 
-            this._graphObject.add(rowCollectionObject);
+                var rowCollectionObject = local._rowCollection.drawRows(minGraphRangeY, maxGraphRangeY);
+                rowCollectionObject.position.x += local._baseEdge;
+                rowCollectionObject.position.z += local._baseEdge;
 
-            var rowLabelsCollectionObject = this._rowCollection.drawRowLabels();
-            rowLabelsCollectionObject.position.z += this._baseEdge;
-            rowLabelsCollectionObject.position.x += (graphWidth+(this._baseEdge*2));
+                local._graphObject.add(rowCollectionObject);
 
-            this._graphObject.add(rowLabelsCollectionObject);
+                var rowLabelsCollectionObject = local._rowCollection.drawRowLabels();
+                rowLabelsCollectionObject.position.z += local._baseEdge;
+                rowLabelsCollectionObject.position.x += (graphWidth+(local._baseEdge*2));
 
-            var columnLabelsCollectionObject = this._rowCollection.drawColumnLabels();
-            columnLabelsCollectionObject.position.z += (graphLength+(this._baseEdge*2));
-            columnLabelsCollectionObject.position.x += this._baseEdge;
+                local._graphObject.add(rowLabelsCollectionObject);
 
-            this._graphObject.add(columnLabelsCollectionObject);
+                var columnLabelsCollectionObject = local._rowCollection.drawColumnLabels();
+                columnLabelsCollectionObject.position.z += (graphLength+(local._baseEdge*2));
+                columnLabelsCollectionObject.position.x += local._baseEdge;
 
-            var graphObjectArea = new THREE.Box3().setFromObject(this._graphObject);
+                local._graphObject.add(columnLabelsCollectionObject);
 
-            // position the object so it will view well
-            this._graphObject.position.x = ((graphObjectArea.size().x/2)*-1);
-            this._graphObject.position.y = ((graphObjectArea.size().y/2)*-1);
-            this._graphObject.position.z = ((graphObjectArea.size().z/2)*-1);
+                var graphObjectArea = new THREE.Box3().setFromObject(local._graphObject);
 
-            this._sceneObject = new THREE.Object3D();
-            this._sceneObject.add(this._graphObject);
+                // position the object so it will view well
+                local._graphObject.position.x = ((graphObjectArea.size().x/2)*-1);
+                local._graphObject.position.y = ((graphObjectArea.size().y/2)*-1);
+                local._graphObject.position.z = ((graphObjectArea.size().z/2)*-1);
 
-            // Add the graph to the scene
-            this._scene.add(this._sceneObject);
+                local._sceneObject = new THREE.Object3D();
+                local._sceneObject.add(local._graphObject);
 
-            this._renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            this._renderer.setSize(containerWidth, containerHeight);
-            this._renderer.setClearColor(this._skyboxColor, this._skyboxOpacity);
+                // Add the graph to the scene
+                local._scene.add(local._sceneObject);
 
-            this._container.appendChild(this._renderer.domElement);
+                local._renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                local._renderer.setSize(containerWidth, containerHeight);
+                local._renderer.setClearColor(local._skyboxColor, local._skyboxOpacity);
 
-            // If we don't have camera graphData then we'll try and determine the camera position 
-            if (!this._cameraSettings.position) calculateCamera(this._cameraSettings, graphObjectArea);
+                local._container.appendChild(local._renderer.domElement);
 
-            // If we don't have camera graphData then we'll try and determine the cameras lookat 
-            if (!this._cameraSettings.lookAt) calculateLookAt(this._cameraSettings, this._directionalLight);
+                // If we don't have camera graphData then we'll try and determine the camera position 
+                if (!local._cameraSettings.position) calculateCamera(local._cameraSettings, graphObjectArea);
 
-            this._directionalLight = getDirectionalLight(this._cameraSettings, this._directionalLightSettings);
-            this._camera = getCamera(this._cameraSettings);
+                // If we don't have camera graphData then we'll try and determine the cameras lookat 
+                if (!local._cameraSettings.lookAt) calculateLookAt(local._cameraSettings, local._directionalLight);
 
-            this._scene.add(this._directionalLight);
-            this._scene.add(this._camera);
+                local._directionalLight = getDirectionalLight(local._cameraSettings, local._directionalLightSettings);
+                local._camera = getCamera(local._cameraSettings);
 
-            // Set the initial rotation
-            if (this._startRotation) this._graphObject.rotation.y = this._startRotation;
+                local._scene.add(local._directionalLight);
+                local._scene.add(local._camera);
 
-            // bind all mouse/touch events
-            if (!this._locked) bindEvents();
+                // Set the initial rotation
+                if (local._startRotation) local._graphObject.rotation.y = local._startRotation;
 
-            if (this._camera) this.render();
+                // bind all mouse/touch events
+                if (!local._locked) bindEvents();
+
+                if (local._camera) local.render();
+            });
         };
 
         // ----- Public Methods
