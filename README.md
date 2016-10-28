@@ -6,25 +6,7 @@ It is named after a character in the book “Do Androids Dream of Electric Sheep
 
 ##Installation
 
-###Manual
-
-Download the minified three.js library from the GitHub repository https://github.com/mrdoob/three.js
-
-Download the basic three.js example font “helvetiker_regular.typeface.js” from the GitHub repository (this is the default mercer font) https://github.com/mrdoob/three.js/tree/master/examples/fonts
-
-Download the mercer.js library in this repository.
-
-Once you have these libraries you need to include them on the page using Mercer.
-
-```html
-<script src="js/three.min.js"></script>
-<script src="js/helvetiker_regular.typeface.js"></script>
-<script src="js/mercer.js"></script>
-```
-
-###Bower
-
-Coming soon
+Doing a view source on the <a href="http://gmarland.github.io/mercer/">http://gmarland.github.io/mercer/</a> shows all that is needed to get going.
 
 ##Graphs
 
