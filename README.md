@@ -207,7 +207,6 @@ barMercer.BarChart("bar-chart-container", barData);
 	<li><b>barLabelSize -</b> the font size for the value of the bar if visible.</li>
 	<li><b>barLabelColor -</b> the color of the value above the bar if visible.</li>
 	<li><b>rowSpace -</b> the amount of space between each row on the graph.</li>
-	<li><b>rowLabelFont -</b> the font for the row label along the Z axis. Changing this will require including a different .js file than the default 'helvetiker_regular.typeface.js'.</li>
 	<li><b>rowLabelSize -</b> the font size for the row label.</li>
 	<li><b>rowLabelColor -</b> the default color for the row label.</li>
 	<li><b>columnSpace -</b> the space between each column in a row.</li>
