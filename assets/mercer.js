@@ -734,7 +734,7 @@
                     this._linePoints = [];
 
                     this._pointSpace = pointSpace;
-                    this._color = graphData.data[i].color;
+                    this._color = dataRow.color;
                     this._lineWidth = width;
                 };
 
@@ -934,7 +934,7 @@
                     this._areaPoints = [];
 
                     this._pointSpace = pointSpace;
-                    this._color = graphData.data[i].color;
+                    this._color = dataRow.color;
                     this._areaWidth = width;
                 };
 
@@ -1192,7 +1192,7 @@
 
                     this._scatterPoints = [];
 
-                    this._color = graphData.data[i].color;
+                    this._color = dataRow.color;
                 };
 
                 // ----- Getters
