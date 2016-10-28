@@ -12,8 +12,8 @@
             var loadFont = function() {
                 var loader = new THREE.FontLoader();
                 
-                loader.load(this._fontLocation, function ( response ) {
-                    this._font = response;
+                loader.load(that._fontLocation, function ( response ) {
+                    that._font = response;
                 } );
             }
 
@@ -53,10 +53,8 @@
 
                     measurementLineObject.add(measureLine);
 
-                    console.log(this._font)
-
                     var textGeometry = new THREE.TextGeometry((minValue+Math.round((maxValue-minValue)/numberOfMeasurementLines)*i).toString(), {
-                        font: this._font,
+                        font: that._font,
                         size: labelSize,
                         height: .2
                     });
@@ -666,7 +664,7 @@
 
         RowLabel.prototype.draw = function() {
             var textGeometry = new THREE.TextGeometry(this._text, {
-                font: this._font,
+                font: that._font,
                 size: this._size,
                 height: .2
             });
@@ -702,7 +700,7 @@
 
         ColumnLabel.prototype.draw = function() {
             var textGeometry = new THREE.TextGeometry(this._text, {
-                font: this._font,
+                font: that._font,
                 size: this._size,
                 height: .2
             });
@@ -1655,7 +1653,7 @@
 
                     if (this._showLabels) {
                         var valueGeometry = new THREE.TextGeometry(this._dataValue, {
-                            font: this._font,
+                            font: that._font,
                             size: this._labelSize,
                             height: .2
                         });
