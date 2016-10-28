@@ -53,6 +53,8 @@
 
                     measurementLineObject.add(measureLine);
 
+                    console.log(this._font)
+
                     var textGeometry = new THREE.TextGeometry((minValue+Math.round((maxValue-minValue)/numberOfMeasurementLines)*i).toString(), {
                         font: this._font,
                         size: labelSize,
