@@ -9,6 +9,14 @@
 
             // ----- Functions for setting up the scene
 
+            var loadFont = function() {
+                var loader = new THREE.FontLoader();
+                
+                loader.load(this._fontLocation, function ( response ) {
+                    this._font = response;
+                } );
+            }
+
             var createBase = function(graphWidth, graphLength, baseEdge, baseThickness, baseColor) {
                 var baseWidth = graphWidth+(baseEdge*2),
                     baseLength = graphLength+(baseEdge*2);
@@ -46,7 +54,7 @@
                     measurementLineObject.add(measureLine);
 
                     var textGeometry = new THREE.TextGeometry((minValue+Math.round((maxValue-minValue)/numberOfMeasurementLines)*i).toString(), {
-                        font: labelFont,
+                        font: this_font,
                         size: labelSize,
                         height: .2
                     });
@@ -244,6 +252,9 @@
             this._camera = null;
             this._renderer = null;
 
+            this._fontLocation = "fonts/helvetiker_regular.typeface.json";
+            this._font = null;
+
             // Lighting
             this._directionalLightSettings = { // directional lighting
                 color: 0xffffff,
@@ -268,7 +279,6 @@
             this._showMeasurementLines = true; // whether or not to show measurement lines
             this._numberOfMeasurementLines = 10;
             this._measurementLineColor = 0x222222; // the default color of the measurement lines
-            this._measurementLabelFont = "helvetiker"; // the font for the measurement label
             this._measurementLabelSize = 5; // the font size for the measurement label
             this._measurementLabelColor = 0x000000; // the default color for the measurement label
 
@@ -334,6 +344,8 @@
 
                 if (graphData.locked !== undefined) this._locked = graphData.locked;
 
+                if (graphData.font !== undefined) this._fontLocation = graphData.font;
+
                 if (graphData.showMeasurementLines !== undefined) this._showMeasurementLines = graphData.showMeasurementLines;
 
                 if (graphData.measurementLineColor !== undefined) this._measurementLineColor = new THREE.Color(graphData.measurementLineColor);
@@ -348,6 +360,10 @@
             // Now we have everything is defined, set up the scene
 
             this._scene = new THREE.Scene();
+
+            // Load the font as early as possible
+
+            loadFont();
 
             var minValueY = this._rowCollection.getMinY(),
                 maxValueY = this._rowCollection.getMaxY(),
@@ -639,11 +655,10 @@
         // Row labels that are attached to the graph
         // -----------------------------------------------
 
-        var RowLabel = function(row, rowSpace, rowWidth, font, size, color, text) {
+        var RowLabel = function(row, rowSpace, rowWidth, size, color, text) {
             this._row = row; 
             this._rowSpace = rowSpace; 
             this._rowWidth = rowWidth; 
-            this._font = font; 
             this._size = size; 
             this._color = color; 
             this._text = text;
@@ -676,11 +691,10 @@
         // Column labels that are attached to the graph
         // -----------------------------------------------
 
-        var ColumnLabel = function(column, columnSpace, columnWidth, font, size, color, text) {
+        var ColumnLabel = function(column, columnSpace, columnWidth, size, color, text) {
             this._column = column; 
             this._columnSpace = columnSpace; 
             this._columnWidth = columnWidth; 
-            this._font = font; 
             this._size = size; 
             this._color = color; 
             this._text = text;
@@ -841,7 +855,6 @@
 
                 var lineWidth = 2.5, // the width of the lines on the graph
                     rowSpace = 30, // the space between each row
-                    rowLabelFont = "helvetiker", // the font for the row label
                     rowLabelSize = 4, // the font size for the row label
                     rowLabelColor = 0x000000, // the default color for the row label
                     pointSpace = 5; // the space between each column in a row
@@ -853,8 +866,6 @@
                     if (graphData.rowSpace !== undefined) rowSpace = graphData.rowSpace;
 
                     if (graphData.rowLabels !== undefined) {
-                        if (graphData.rowLabels.fontFamily !== undefined) rowLabelFont = graphData.rowLabels.fontFamily;
-
                         if (graphData.rowLabels.size !== undefined) rowLabelSize = graphData.rowLabels.size;
 
                         if (graphData.rowLabels.color !== undefined) rowLabelColor = new THREE.Color(graphData.rowLabels.color);
@@ -1098,7 +1109,6 @@
 
                 var areaWidth = 4, // the width of the area graph
                     rowSpace = 30, // the space between each row
-                    rowLabelFont = "helvetiker", // the font for the row label
                     rowLabelSize = 4, // the font size for the row label
                     rowLabelColor = 0x000000, // the default color for the row label
                     pointSpace = 5; // the space between each column in a row
@@ -1110,8 +1120,6 @@
                     if (graphData.rowSpace !== undefined) rowSpace = graphData.rowSpace;
 
                     if (graphData.rowLabels !== undefined) {
-                        if (graphData.rowLabels.fontFamily !== undefined) rowLabelFont = graphData.rowLabels.fontFamily;
-
                         if (graphData.rowLabels.size !== undefined) rowLabelSize = graphData.rowLabels.size;
 
                         if (graphData.rowLabels.color !== undefined) rowLabelColor = new THREE.Color(graphData.rowLabels.color);
@@ -1648,7 +1656,7 @@
 
                     if (this._showLabels) {
                         var valueGeometry = new THREE.TextGeometry(this._dataValue, {
-                            font: this._labelFont,
+                            font: this._font,
                             size: this._labelSize,
                             height: .2
                         });
@@ -1673,15 +1681,12 @@
         		var barWidth = 15, // the width of the bar
         			barOpacity = 0.65, // how opaque the bars are
         			showBarLabels = false, // global setting, should bar labels be visible
-        			barLabelFont = "helvetiker", // the font for the row label
         			barLabelSize = 6, // the font size for the row label
         			barLabelColor = 0x000000, // the default color for the row label
         			rowSpace = 30, // the space between each row
-        			rowLabelFont = "helvetiker", // the font for the row label
         			rowLabelSize = 4, // the font size for the row label
         			rowLabelColor = 0x000000, // the default color for the row label
         			columnSpace = 10, // the space between each column in a row
-        			columnLabelFont = "helvetiker", // the font for the col label
         			columnLabelSize = 4, // the font size for the col label
         			columnLabelColor = 0x000000; // the default color for the col label
 
@@ -1693,8 +1698,6 @@
 
         			if (graphData.showBarLabels !== undefined) showBarLabels = graphData.showBarLabels;
 
-        			if (graphData.barLabelFont !== undefined) barLabelFont = graphData.barLabelFont;
-
         			if (graphData.barLabelSize !== undefined) barLabelSize = graphData.barLabelSize;
 
         			if (graphData.barLabelColor !== undefined) barLabelColor = new THREE.Color(graphData.barLabelColor);
@@ -1702,8 +1705,6 @@
         			if (graphData.rowSpace !== undefined) rowSpace = graphData.rowSpace;
 
         			if (graphData.rowLabels !== undefined) {
-	        			if (graphData.rowLabels.fontFamily !== undefined) rowLabelFont = graphData.rowLabels.fontFamily;
-
 	        			if (graphData.rowLabels.size !== undefined) rowLabelSize = graphData.rowLabels.size;
 
 	        			if (graphData.rowLabels.color !== undefined) rowLabelColor = new THREE.Color(graphData.rowLabels.color);
@@ -1712,8 +1713,6 @@
         			if (graphData.columnSpace !== undefined) columnSpace = graphData.columnSpace;
 
         			if (graphData.columnLabels !== undefined) {
-	        			if (graphData.columnLabels.fontFamily !== undefined) columnLabelFont = graphData.columnLabels.fontFamily;
-
 	        			if (graphData.columnLabels.size !== undefined) columnLabelSize = graphData.columnLabels.size;
 
 	        			if (graphData.columnLabels.color !== undefined) columnLabelColor = new THREE.Color(graphData.columnLabels.color);
