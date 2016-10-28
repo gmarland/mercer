@@ -9,14 +9,6 @@
 
             // ----- Functions for setting up the scene
 
-            var loadFont = function() {
-                var loader = new THREE.FontLoader();
-                
-                loader.load(this._fontLocation, function ( response ) {
-                    this._font = response;
-                } );
-            }
-
             var createBase = function(graphWidth, graphLength, baseEdge, baseThickness, baseColor) {
                 var baseWidth = graphWidth+(baseEdge*2),
                     baseLength = graphLength+(baseEdge*2);
@@ -54,7 +46,7 @@
                     measurementLineObject.add(measureLine);
 
                     var textGeometry = new THREE.TextGeometry((minValue+Math.round((maxValue-minValue)/numberOfMeasurementLines)*i).toString(), {
-                        font: this_font,
+                        font: _font,
                         size: labelSize,
                         height: .2
                     });
@@ -252,9 +244,6 @@
             this._camera = null;
             this._renderer = null;
 
-            this._fontLocation = "fonts/helvetiker_regular.typeface.json";
-            this._font = null;
-
             // Lighting
             this._directionalLightSettings = { // directional lighting
                 color: 0xffffff,
@@ -344,8 +333,6 @@
 
                 if (graphData.locked !== undefined) this._locked = graphData.locked;
 
-                if (graphData.font !== undefined) this._fontLocation = graphData.font;
-
                 if (graphData.showMeasurementLines !== undefined) this._showMeasurementLines = graphData.showMeasurementLines;
 
                 if (graphData.measurementLineColor !== undefined) this._measurementLineColor = new THREE.Color(graphData.measurementLineColor);
@@ -359,9 +346,6 @@
 
             this._scene = new THREE.Scene();
 
-            // Load the font as early as possible
-
-            loadFont();
 
             var minValueY = this._rowCollection.getMinY(),
                 maxValueY = this._rowCollection.getMaxY(),
@@ -442,6 +426,16 @@
             if (!this._locked) bindEvents();
 
             if (this._camera) this.render();
+        };
+
+        var loadFont = function(callback) {
+            var loader = new THREE.FontLoader();
+            
+            loader.load(_fontLocation, function (response) {
+                _font = response;
+
+                callback();
+            });
         };
 
         // ----- Public Methods
@@ -664,7 +658,7 @@
 
         RowLabel.prototype.draw = function() {
             var textGeometry = new THREE.TextGeometry(this._text, {
-                font: this._font,
+                font: _font,
                 size: this._size,
                 height: .2
             });
@@ -700,7 +694,7 @@
 
         ColumnLabel.prototype.draw = function() {
             var textGeometry = new THREE.TextGeometry(this._text, {
-                font: this._font,
+                font: _font,
                 size: this._size,
                 height: .2
             });
@@ -722,9 +716,12 @@
             return this.textMesh;
         };
 
+        var _fontLocation = "fonts/helvetiker_regular.typeface.json";
+        var _font = null;
+
         return {
             // Calling will create a standard line graph
-            LineGraph: function(container, graphData) {
+            LineGraph: function(container, graphData, loaded) {
                 // -----------------------------------------------
                 // Area chart object definitions
                 // -----------------------------------------------
@@ -737,7 +734,7 @@
                     this._linePoints = [];
 
                     this._pointSpace = pointSpace;
-                    this._color = graphData.data[i].color;
+                    this._color = dataRow.color;
                     this._lineWidth = width;
                 };
 
@@ -859,6 +856,8 @@
 
                 // Allow the override using the graphData options if they exist
                 if (graphData !== undefined) {
+                    if (graphData.font !== undefined) _fontLocation = graphData.font;
+
                     if (graphData.lineWidth !== undefined) lineWidth = graphData.lineWidth;
                     
                     if (graphData.rowSpace !== undefined) rowSpace = graphData.rowSpace;
@@ -872,54 +871,57 @@
                     if (graphData.pointSpace !== undefined) pointSpace = graphData.pointSpace;
                 }
 
-                var containerElement = document.getElementById(container),
-                    containerWidth = parseInt(containerElement.style.width,10), 
-                    containerHeight = parseInt(containerElement.style.height,10);
+                // Load the font first, we need it
+                loadFont(function() {
+                    var containerElement = document.getElementById(container),
+                        containerWidth = parseInt(containerElement.style.width,10), 
+                        containerHeight = parseInt(containerElement.style.height,10);
 
-                var rowCollection = new RowCollection(rowSpace);
+                    var rowCollection = new RowCollection(rowSpace);
 
-                // check that we've have some data passed in
-                if (graphData) {
-                    for (var i=0; i<graphData.data.length; i++) {
-                        if (graphData.data[i].id == undefined) graphData.data[i].id = i.toString();
+                    // check that we've have some data passed in
+                    if (graphData) {
+                        for (var i=0; i<graphData.data.length; i++) {
+                            if (graphData.data[i].id == undefined) graphData.data[i].id = i.toString();
 
-                        if (graphData.data[i].color !== undefined) graphData.data[i].color = new THREE.Color(graphData.data[i].color);
-                        else graphData.data[i].color = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
+                            if (graphData.data[i].color !== undefined) graphData.data[i].color = new THREE.Color(graphData.data[i].color);
+                            else graphData.data[i].color = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
 
-                        var row = new Row(i, graphData.data[i], pointSpace, lineWidth);
+                            var row = new Row(i, graphData.data[i], pointSpace, lineWidth);
 
-                        graphData.data[i].values.sort(function(a,b) {
-                            return a.x > b.x ? 1 : a.x < b.x ? -1 : 0;
-                        });
+                            graphData.data[i].values.sort(function(a,b) {
+                                return a.x > b.x ? 1 : a.x < b.x ? -1 : 0;
+                            });
 
-                        for (var j=0; j<graphData.data[i].values.length; j++) {
-                            var linePoint = new LinePoint(graphData.data[i].values[j].x, graphData.data[i].values[j].y);
+                            for (var j=0; j<graphData.data[i].values.length; j++) {
+                                var linePoint = new LinePoint(graphData.data[i].values[j].x, graphData.data[i].values[j].y);
 
-                            row.addLinePoint(linePoint);
-                        }
+                                row.addLinePoint(linePoint);
+                            }
 
-                        rowCollection.addRow(row);
+                            rowCollection.addRow(row);
 
-                        if (graphData.data[i].title) {
-                            var rowLabel = new RowLabel(i, rowSpace, lineWidth, rowLabelSize, rowLabelColor, graphData.data[i].title);
+                            if (graphData.data[i].title) {
+                                var rowLabel = new RowLabel(i, rowSpace, lineWidth, rowLabelSize, rowLabelColor, graphData.data[i].title);
 
-                            rowCollection.addRowLabel(rowLabel);
+                                rowCollection.addRowLabel(rowLabel);
+                            }
                         }
                     }
-                }
 
-                // Give it a name just for simplicity
-                var graphName = "lineGraph";
-                if ((graphData) && (graphData.name)) graphName = graphData.name;
-                
-                // The graph we will be building
-                var graph = new Graph(containerElement, graphName, graphData, rowCollection);
+                    // Give it a name just for simplicity
+                    var graphName = "lineGraph";
+                    if ((graphData) && (graphData.name)) graphName = graphData.name;
+                    
+                    // The graph we will be building
+                    var graph = new Graph(containerElement, graphName, graphData, rowCollection);
 
-                return graph;
+                    return graph;
+                });
             },
 
             // Calling will create a standard area chart
-            AreaChart: function(container, graphData) {
+            AreaChart: function(container, graphData, loaded) {
                 // -----------------------------------------------
                 // Area chart object definitions
                 // -----------------------------------------------
@@ -932,7 +934,7 @@
                     this._areaPoints = [];
 
                     this._pointSpace = pointSpace;
-                    this._color = graphData.data[i].color;
+                    this._color = dataRow.color;
                     this._areaWidth = width;
                 };
 
@@ -1113,6 +1115,8 @@
 
                 // Allow the override using the graphData options if they exist
                 if (graphData !== undefined) {
+                    if (graphData.font !== undefined) _fontLocation = graphData.font;
+
                     if (graphData.areaWidth !== undefined) areaWidth = graphData.areaWidth;
                     
                     if (graphData.rowSpace !== undefined) rowSpace = graphData.rowSpace;
@@ -1126,54 +1130,57 @@
                     if (graphData.pointSpace !== undefined) pointSpace = graphData.pointSpace;
                 }
 
-                var containerElement = document.getElementById(container),
-                    containerWidth = parseInt(containerElement.style.width,10), 
-                    containerHeight = parseInt(containerElement.style.height,10);
+                // Load the font first, we need it
+                loadFont(function() {
+                    var containerElement = document.getElementById(container),
+                        containerWidth = parseInt(containerElement.style.width,10), 
+                        containerHeight = parseInt(containerElement.style.height,10);
 
-                var rowCollection = new RowCollection(rowSpace);
+                    var rowCollection = new RowCollection(rowSpace);
 
-                // check that we've have some data passed in
-                if (graphData) {
-                    for (var i=0; i<graphData.data.length; i++) {
-                        if (graphData.data[i].id == undefined) graphData.data[i].id = i.toString();
+                    // check that we've have some data passed in
+                    if (graphData) {
+                        for (var i=0; i<graphData.data.length; i++) {
+                            if (graphData.data[i].id == undefined) graphData.data[i].id = i.toString();
 
-                        if (graphData.data[i].color !== undefined) graphData.data[i].color = new THREE.Color(graphData.data[i].color);
-                        else graphData.data[i].color = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
+                            if (graphData.data[i].color !== undefined) graphData.data[i].color = new THREE.Color(graphData.data[i].color);
+                            else graphData.data[i].color = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
 
-                        var row = new Row(i, graphData.data[i], pointSpace, areaWidth);
+                            var row = new Row(i, graphData.data[i], pointSpace, areaWidth);
 
-                        graphData.data[i].values.sort(function(a,b) {
-                            return a.x > b.x ? 1 : a.x < b.x ? -1 : 0;
-                        });
+                            graphData.data[i].values.sort(function(a,b) {
+                                return a.x > b.x ? 1 : a.x < b.x ? -1 : 0;
+                            });
 
-                        for (var j=0; j<graphData.data[i].values.length; j++) {
-                            var areaPoint = new AreaPoint(graphData.data[i].values[j].x, graphData.data[i].values[j].y);
+                            for (var j=0; j<graphData.data[i].values.length; j++) {
+                                var areaPoint = new AreaPoint(graphData.data[i].values[j].x, graphData.data[i].values[j].y);
 
-                            row.addAreaPoint(areaPoint);
-                        }
+                                row.addAreaPoint(areaPoint);
+                            }
 
-                        rowCollection.addRow(row);
+                            rowCollection.addRow(row);
 
-                        if (graphData.data[i].title) {
-                            var rowLabel = new RowLabel(i, rowSpace, areaWidth, rowLabelSize, rowLabelColor, graphData.data[i].title);
+                            if (graphData.data[i].title) {
+                                var rowLabel = new RowLabel(i, rowSpace, areaWidth, rowLabelSize, rowLabelColor, graphData.data[i].title);
 
-                            rowCollection.addRowLabel(rowLabel);
+                                rowCollection.addRowLabel(rowLabel);
+                            }
                         }
                     }
-                }
 
-                // Give it a name just for simplicity
-                var graphName = "areaGraph";
-                if ((graphData) && (graphData.name)) graphName = graphData.name;
-                
-                // The graph we will be building
-                var graph = new Graph(containerElement, graphName, graphData, rowCollection);
+                    // Give it a name just for simplicity
+                    var graphName = "areaGraph";
+                    if ((graphData) && (graphData.name)) graphName = graphData.name;
+                    
+                    // The graph we will be building
+                    var graph = new Graph(containerElement, graphName, graphData, rowCollection);
 
-                return graph;
+                    return graph;
+                });
             },
 
             // Calling will create a standard line graph
-            ScatterGraph: function(container, graphData) {
+            ScatterGraph: function(container, graphData, loaded) {
                 // -----------------------------------------------
                 // Area chart object definitions
                 // -----------------------------------------------
@@ -1185,7 +1192,7 @@
 
                     this._scatterPoints = [];
 
-                    this._color = graphData.data[i].color;
+                    this._color = dataRow.color;
                 };
 
                 // ----- Getters
@@ -1335,51 +1342,56 @@
 
                 // Allow the ovesride using the graphData options if they exist
                 if (graphData !== undefined) {
+                    if (graphData.font !== undefined) _fontLocation = graphData.font;
+
                     if (graphData.pointSize !== undefined) pointSize = graphData.pointSize;
                 }
 
-                var containerElement = document.getElementById(container),
-                    containerWidth = parseInt(containerElement.style.width,10), 
-                    containerHeight = parseInt(containerElement.style.height,10);
+                // Load the font first, we need it
+                loadFont(function() {
+                    var containerElement = document.getElementById(container),
+                        containerWidth = parseInt(containerElement.style.width,10), 
+                        containerHeight = parseInt(containerElement.style.height,10);
 
-                var rowCollection = new RowCollection(null);
+                    var rowCollection = new RowCollection(null);
 
-                // check that we've have some data passed in
-                if (graphData) {
-                    for (var i=0; i<graphData.data.length; i++) {
-                        if (graphData.data[i].id == undefined) graphData.data[i].id = i.toString();
+                    // check that we've have some data passed in
+                    if (graphData) {
+                        for (var i=0; i<graphData.data.length; i++) {
+                            if (graphData.data[i].id == undefined) graphData.data[i].id = i.toString();
 
-                        if (graphData.data[i].color !== undefined) graphData.data[i].color = new THREE.Color(graphData.data[i].color);
-                        else graphData.data[i].color = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
+                            if (graphData.data[i].color !== undefined) graphData.data[i].color = new THREE.Color(graphData.data[i].color);
+                            else graphData.data[i].color = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
 
-                        var row = new Row(i, graphData.data[i]);
+                            var row = new Row(i, graphData.data[i]);
 
-                        graphData.data[i].values.sort(function(a,b) {
-                            return a.x > b.x ? 1 : a.x < b.x ? -1 : 0;
-                        });
+                            graphData.data[i].values.sort(function(a,b) {
+                                return a.x > b.x ? 1 : a.x < b.x ? -1 : 0;
+                            });
 
-                        for (var j=0; j<graphData.data[i].values.length; j++) {
-                            var scatterPoint = new ScatterPoint(graphData.data[i].values[j].x, graphData.data[i].values[j].y, graphData.data[i].values[j].z, pointSize);
+                            for (var j=0; j<graphData.data[i].values.length; j++) {
+                                var scatterPoint = new ScatterPoint(graphData.data[i].values[j].x, graphData.data[i].values[j].y, graphData.data[i].values[j].z, pointSize);
 
-                            row.addScatterPoint(scatterPoint);
+                                row.addScatterPoint(scatterPoint);
+                            }
+
+                            rowCollection.addRow(row);
                         }
-
-                        rowCollection.addRow(row);
                     }
-                }
 
-                // Give it a name just for simplicity
-                var graphName = "scatterGraph";
-                if ((graphData) && (graphData.name)) graphName = graphData.name;
-                
-                // The graph we will be building
-                var graph = new Graph(containerElement, graphName, graphData, rowCollection);
+                    // Give it a name just for simplicity
+                    var graphName = "scatterGraph";
+                    if ((graphData) && (graphData.name)) graphName = graphData.name;
+                    
+                    // The graph we will be building
+                    var graph = new Graph(containerElement, graphName, graphData, rowCollection);
 
-                return graph;
+                    return graph;
+                });
             },
 
-        	// Calling will create a standard bar chart
-        	BarChart: function(container, graphData) {
+            // Calling will create a standard bar chart
+            BarChart: function(container, graphData, loaded) {
                 // -----------------------------------------------
                 // Bar chart object definitions
                 // -----------------------------------------------
@@ -1653,7 +1665,7 @@
 
                     if (this._showLabels) {
                         var valueGeometry = new THREE.TextGeometry(this._dataValue, {
-                            font: this._font,
+                            font: _font,
                             size: this._labelSize,
                             height: .2
                         });
@@ -1674,98 +1686,103 @@
                     return this._barObject;
                 };
 
-        		// Set up the basic configuration for the bar
-        		var barWidth = 15, // the width of the bar
-        			barOpacity = 0.65, // how opaque the bars are
-        			showBarLabels = false, // global setting, should bar labels be visible
-        			barLabelSize = 6, // the font size for the row label
-        			barLabelColor = 0x000000, // the default color for the row label
-        			rowSpace = 30, // the space between each row
-        			rowLabelSize = 4, // the font size for the row label
-        			rowLabelColor = 0x000000, // the default color for the row label
-        			columnSpace = 10, // the space between each column in a row
-        			columnLabelSize = 4, // the font size for the col label
-        			columnLabelColor = 0x000000; // the default color for the col label
+                // Set up the basic configuration for the bar
+                var barWidth = 15, // the width of the bar
+                    barOpacity = 0.65, // how opaque the bars are
+                    showBarLabels = false, // global setting, should bar labels be visible
+                    barLabelSize = 6, // the font size for the row label
+                    barLabelColor = 0x000000, // the default color for the row label
+                    rowSpace = 30, // the space between each row
+                    rowLabelSize = 4, // the font size for the row label
+                    rowLabelColor = 0x000000, // the default color for the row label
+                    columnSpace = 10, // the space between each column in a row
+                    columnLabelSize = 4, // the font size for the col label
+                    columnLabelColor = 0x000000; // the default color for the col label
 
-        		// Allow the override using the graphData options if they exist
-        		if (graphData !== undefined) {
-        			if (graphData.barWidth !== undefined) barWidth = graphData.barWidth;
+                // Allow the override using the graphData options if they exist
+                if (graphData !== undefined) {
+                    if (graphData.font !== undefined) _fontLocation = graphData.font;
 
-        			if (graphData.barOpacity !== undefined) barOpacity = graphData.barOpacity;
+                    if (graphData.barWidth !== undefined) barWidth = graphData.barWidth;
 
-        			if (graphData.showBarLabels !== undefined) showBarLabels = graphData.showBarLabels;
+                    if (graphData.barOpacity !== undefined) barOpacity = graphData.barOpacity;
 
-        			if (graphData.barLabelSize !== undefined) barLabelSize = graphData.barLabelSize;
+                    if (graphData.showBarLabels !== undefined) showBarLabels = graphData.showBarLabels;
 
-        			if (graphData.barLabelColor !== undefined) barLabelColor = new THREE.Color(graphData.barLabelColor);
-        			
-        			if (graphData.rowSpace !== undefined) rowSpace = graphData.rowSpace;
+                    if (graphData.barLabelSize !== undefined) barLabelSize = graphData.barLabelSize;
 
-        			if (graphData.rowLabels !== undefined) {
-	        			if (graphData.rowLabels.size !== undefined) rowLabelSize = graphData.rowLabels.size;
+                    if (graphData.barLabelColor !== undefined) barLabelColor = new THREE.Color(graphData.barLabelColor);
+                    
+                    if (graphData.rowSpace !== undefined) rowSpace = graphData.rowSpace;
 
-	        			if (graphData.rowLabels.color !== undefined) rowLabelColor = new THREE.Color(graphData.rowLabels.color);
-	        		}
+                    if (graphData.rowLabels !== undefined) {
+                        if (graphData.rowLabels.size !== undefined) rowLabelSize = graphData.rowLabels.size;
 
-        			if (graphData.columnSpace !== undefined) columnSpace = graphData.columnSpace;
+                        if (graphData.rowLabels.color !== undefined) rowLabelColor = new THREE.Color(graphData.rowLabels.color);
+                    }
 
-        			if (graphData.columnLabels !== undefined) {
-	        			if (graphData.columnLabels.size !== undefined) columnLabelSize = graphData.columnLabels.size;
+                    if (graphData.columnSpace !== undefined) columnSpace = graphData.columnSpace;
 
-	        			if (graphData.columnLabels.color !== undefined) columnLabelColor = new THREE.Color(graphData.columnLabels.color);
-	        		}
-        		}
+                    if (graphData.columnLabels !== undefined) {
+                        if (graphData.columnLabels.size !== undefined) columnLabelSize = graphData.columnLabels.size;
 
-                var containerElement = document.getElementById(container),
-                    containerWidth = parseInt(containerElement.style.width,10), 
-                    containerHeight = parseInt(containerElement.style.height,10);
+                        if (graphData.columnLabels.color !== undefined) columnLabelColor = new THREE.Color(graphData.columnLabels.color);
+                    }
+                }
 
-                var rowCollection = new RowCollection(rowSpace);
+                // Load the font first, we need it
+                loadFont(function() {
+                    var containerElement = document.getElementById(container),
+                        containerWidth = parseInt(containerElement.style.width,10), 
+                        containerHeight = parseInt(containerElement.style.height,10);
 
-				// check that we've have some data passed in
-				if (graphData) {
-                    for (var i=0; i<graphData.data.length; i++) {
-                        if (graphData.data[i].id == undefined) graphData.data[i].id = i.toString();
+                    var rowCollection = new RowCollection(rowSpace);
 
-                        if (graphData.data[i].color !== undefined) graphData.data[i].color = new THREE.Color(graphData.data[i].color);
-                        else graphData.data[i].color = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
+                    // check that we've have some data passed in
+                    if (graphData) {
+                        for (var i=0; i<graphData.data.length; i++) {
+                            if (graphData.data[i].id == undefined) graphData.data[i].id = i.toString();
 
-                        // Local bar settings for labels overwrite global one
-                        if (graphData.data[i].showBarLabels == undefined) graphData.data[i].showBarLabels = showBarLabels;
+                            if (graphData.data[i].color !== undefined) graphData.data[i].color = new THREE.Color(graphData.data[i].color);
+                            else graphData.data[i].color = new THREE.Color("#"+Math.floor(Math.random()*16777215).toString(16));
 
-                        var row = new Row(i, graphData.data[i], columnSpace, barWidth);
+                            // Local bar settings for labels overwrite global one
+                            if (graphData.data[i].showBarLabels == undefined) graphData.data[i].showBarLabels = showBarLabels;
 
-                        for (var j=0; j<graphData.data[i].values.length; j++) {
-                            var bar = new Bar(j, barWidth, graphData.data[i].values[j], graphData.data[i].color, graphData.data[i].showBarLabels, barLabelSize, barLabelColor);
+                            var row = new Row(i, graphData.data[i], columnSpace, barWidth);
 
-                            row.addBar(bar);
+                            for (var j=0; j<graphData.data[i].values.length; j++) {
+                                var bar = new Bar(j, barWidth, graphData.data[i].values[j], graphData.data[i].color, graphData.data[i].showBarLabels, barLabelSize, barLabelColor);
+
+                                row.addBar(bar);
+                            }
+
+                            rowCollection.addRow(row);
+
+                            if (graphData.data[i].title) {
+                                var rowLabel = new RowLabel(i, rowSpace, barWidth, rowLabelSize, rowLabelColor, graphData.data[i].title);
+
+                                rowCollection.addRowLabel(rowLabel);
+                            }
                         }
 
-                        rowCollection.addRow(row);
+                        for (var i=0; i<graphData.columnLabels.values.length; i++) {
+                            var columnLabel = new ColumnLabel(i, columnSpace, barWidth, columnLabelSize, columnLabelColor, graphData.columnLabels.values[i]);
 
-                        if (graphData.data[i].title) {
-                            var rowLabel = new RowLabel(i, rowSpace, barWidth, rowLabelSize, rowLabelColor, graphData.data[i].title);
-
-                            rowCollection.addRowLabel(rowLabel);
+                            rowCollection.addColumnLabel(columnLabel);
                         }
                     }
 
-                    for (var i=0; i<graphData.columnLabels.values.length; i++) {
-                        var columnLabel = new ColumnLabel(i, columnSpace, barWidth, columnLabelSize, columnLabelColor, graphData.columnLabels.values[i]);
+                    // Give it a name just for simplicity
+                    var graphName = "barGraph";
+                    if ((graphData) && (graphData.name)) graphName = graphData.name;
+                    
+                    // The graph we will be building
+                    var graph = new Graph(containerElement, graphName, graphData, rowCollection);
 
-                        rowCollection.addColumnLabel(columnLabel);
-                    }
-				}
-
-                // Give it a name just for simplicity
-                var graphName = "barGraph";
-                if ((graphData) && (graphData.name)) graphName = graphData.name;
-                
-                // The graph we will be building
-                var graph = new Graph(containerElement, graphName, graphData, rowCollection);
-
-                return graph;
-        	}
+                    return graph;
+                });
+            }
         }
     };
 
