@@ -14,6 +14,8 @@
                 
                 loader.load(that._fontLocation, function ( response ) {
                     that._font = response;
+
+                    console.log(response)
                 } );
             }
 
