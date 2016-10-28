@@ -35,7 +35,7 @@
                 return baseMesh
             };
 
-            var createMeasurementsLines = function(graphWidth, graphLength, graphHeight, numberOfMeasurementLines, lineColor, labelFont, labelSize, labelColor, minValue, maxValue) {
+            var createMeasurementsLines = function(graphWidth, graphLength, graphHeight, numberOfMeasurementLines, lineColor, labelSize, labelColor, minValue, maxValue) {
                 var measurementLineObject = new THREE.Object3D();
 
                 var stepsEachLine = Math.ceil(graphHeight/numberOfMeasurementLines);
@@ -350,8 +350,6 @@
 
                 if (graphData.measurementLineColor !== undefined) this._measurementLineColor = new THREE.Color(graphData.measurementLineColor);
 
-                if (graphData.measurementLabelFont !== undefined) this._measurementLabelFont = graphData.measurementLabelFont;
-
                 if (graphData.measurementLabelSize !== undefined) this._measurementLabelSize = graphData.measurementLabelSize;
 
                 if (graphData.measurementLabelColor !== undefined) this._measurementLabelColor = new THREE.Color(graphData.measurementLabelColor);
@@ -383,7 +381,7 @@
             this._baseMesh = createBase(graphWidth, graphLength, this._baseEdge, this._baseThickness, this._baseColor);
         
             this._measurementLines = null;
-            if (this._showMeasurementLines) this._measurementLines = createMeasurementsLines(graphWidth+(this._baseEdge*2), graphLength+(this._baseEdge*2), maxGraphRangeY, this._numberOfMeasurementLines, this._measurementLineColor, this._measurementLabelFont, this._measurementLabelSize, this._measurementLabelColor, minGraphRangeY, maxGraphRangeY);
+            if (this._showMeasurementLines) this._measurementLines = createMeasurementsLines(graphWidth+(this._baseEdge*2), graphLength+(this._baseEdge*2), maxGraphRangeY, this._numberOfMeasurementLines, this._measurementLineColor, this._measurementLabelSize, this._measurementLabelColor, minGraphRangeY, maxGraphRangeY);
 
             this._graphObject.add(this._baseMesh);
             if (this._measurementLines) this._graphObject.add(this._measurementLines);
@@ -903,7 +901,7 @@
                         rowCollection.addRow(row);
 
                         if (graphData.data[i].title) {
-                            var rowLabel = new RowLabel(i, rowSpace, lineWidth, rowLabelFont, rowLabelSize, rowLabelColor, graphData.data[i].title);
+                            var rowLabel = new RowLabel(i, rowSpace, lineWidth, rowLabelSize, rowLabelColor, graphData.data[i].title);
 
                             rowCollection.addRowLabel(rowLabel);
                         }
@@ -1157,7 +1155,7 @@
                         rowCollection.addRow(row);
 
                         if (graphData.data[i].title) {
-                            var rowLabel = new RowLabel(i, rowSpace, areaWidth, rowLabelFont, rowLabelSize, rowLabelColor, graphData.data[i].title);
+                            var rowLabel = new RowLabel(i, rowSpace, areaWidth, rowLabelSize, rowLabelColor, graphData.data[i].title);
 
                             rowCollection.addRowLabel(rowLabel);
                         }
@@ -1500,7 +1498,7 @@
 
                 // ***** Code for building and manipulating the bars *****
 
-                var Bar = function(column, barWidth, dataValue, color, showLabels, labelFont, labelSize, labelColor) {
+                var Bar = function(column, barWidth, dataValue, color, showLabels, labelSize, labelColor) {
                     var that = this;
 
                     // ----- Private Methods
@@ -1573,7 +1571,6 @@
                     this._color = color;
                     this._dataValue = dataValue;
                     this._showLabels = showLabels;
-                    this._labelFont = labelFont;
                     this._labelSize = labelSize;
                     this._labelColor = labelColor;
                 }
@@ -1739,7 +1736,7 @@
                         var row = new Row(i, graphData.data[i], columnSpace, barWidth);
 
                         for (var j=0; j<graphData.data[i].values.length; j++) {
-                            var bar = new Bar(j, barWidth, graphData.data[i].values[j], graphData.data[i].color, graphData.data[i].showBarLabels, barLabelFont, barLabelSize, barLabelColor);
+                            var bar = new Bar(j, barWidth, graphData.data[i].values[j], graphData.data[i].color, graphData.data[i].showBarLabels, barLabelSize, barLabelColor);
 
                             row.addBar(bar);
                         }
@@ -1747,14 +1744,14 @@
                         rowCollection.addRow(row);
 
                         if (graphData.data[i].title) {
-                            var rowLabel = new RowLabel(i, rowSpace, barWidth, rowLabelFont, rowLabelSize, rowLabelColor, graphData.data[i].title);
+                            var rowLabel = new RowLabel(i, rowSpace, barWidth, rowLabelSize, rowLabelColor, graphData.data[i].title);
 
                             rowCollection.addRowLabel(rowLabel);
                         }
                     }
 
                     for (var i=0; i<graphData.columnLabels.values.length; i++) {
-                        var columnLabel = new ColumnLabel(i, columnSpace, barWidth, columnLabelFont, columnLabelSize, columnLabelColor, graphData.columnLabels.values[i]);
+                        var columnLabel = new ColumnLabel(i, columnSpace, barWidth, columnLabelSize, columnLabelColor, graphData.columnLabels.values[i]);
 
                         rowCollection.addColumnLabel(columnLabel);
                     }
