@@ -6,7 +6,7 @@ It is named after a character in the book “Do Androids Dream of Electric Sheep
 
 ##Installation
 
-Doing a view source on the <a href="http://gmarland.github.io/mercer/">http://gmarland.github.io/mercer/</a> shows all that is needed to get going.
+Doing a view source on <a href="http://gmarland.github.io/mercer/">http://gmarland.github.io/mercer/</a> will show all you need to get going.
 
 ##Graphs
 
