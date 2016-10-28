@@ -76,7 +76,6 @@ lineMercer.LineGraph("line-graph-container", lineData);
 <ul>
 	<li><b>lineWidth -</b> the width of the lines as they appear on the graph.</li>
 	<li><b>rowSpace -</b> the amount of space between each row on the graph</li>
-	<li><b>rowLabelFont -</b> the font for the row label. Changing this will require including a different .js file than the default 'helvetiker_regular.typeface.js'.</li>
 	<li><b>rowLabelSize -</b> the font size for the row labels.</li>
 	<li><b>rowLabelColor -</b> the default color for the row labels.</li>
 	<li><b>pointSpace -</b> the space between point marker on the X axis.</li>
@@ -145,7 +144,6 @@ areaMercer.AreaChart("area-chart-container", areaData);
 <ul>
 	<li><b>areaWidth -</b> the width of each area seaction as it appears on the graph.</li>
 	<li><b>rowSpace -</b> the amount of space between each row on the graph</li>
-	<li><b>rowLabelFont -</b> the font for the row label. Changing this will require including a different .js file than the default 'helvetiker_regular.typeface.js'.</li>
 	<li><b>rowLabelSize -</b> the font size for the row labels.</li>
 	<li><b>rowLabelColor -</b> the default color for the row labels.</li>
 	<li><b>pointSpace -</b> the space between point marker on the X axis.</li>
@@ -206,7 +204,6 @@ barMercer.BarChart("bar-chart-container", barData);
 	<li><b>barWidth -</b> the width of the bar within the graph.</li>
 	<li><b>barOpacity -</b> the transparency of the bars as they appear within the graph.</li>
 	<li><b>showBarLabels -</b> this is the global setting which defines if the value should be shown above each bar.</li>
-	<li><b>barLabelFont -</b> the font for the value of the bar if visible. Changing this will require including a different .js file than the default 'helvetiker_regular.typeface.js'.</li>
 	<li><b>barLabelSize -</b> the font size for the value of the bar if visible.</li>
 	<li><b>barLabelColor -</b> the color of the value above the bar if visible.</li>
 	<li><b>rowSpace -</b> the amount of space between each row on the graph.</li>
@@ -214,7 +211,6 @@ barMercer.BarChart("bar-chart-container", barData);
 	<li><b>rowLabelSize -</b> the font size for the row label.</li>
 	<li><b>rowLabelColor -</b> the default color for the row label.</li>
 	<li><b>columnSpace -</b> the space between each column in a row.</li>
-	<li><b>columnLabelFont -</b> the font for the bar label along the X axis. Changing this will require including a different .js file than the default 'helvetiker_regular.typeface.js'.</li>
 	<li><b>columnLabelSize -</b> the font size for the column label.</li>
 	<li><b>columnLabelColor -</b> the default color for the column label.</li>
 </ul>
@@ -327,7 +323,6 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 
 <ul>
 	<li><b>measurementLineColor -</b> the color of the measurement lines if they are visible on the graph.</li>
-	<li><b>measurementLabelFont -</b> the font for the measurement label along the Y axis. Changing this will require including a different .js file than the default 'helvetiker_regular.typeface.js'.</li>
 	<li><b>measurementLabelSize -</b> the size of the label along the measurement line if it is visible.</li>
 	<li><b>measurementLabelColor -</b> the color of the label along the measurement line if it is visible.</li>
 </ul>
