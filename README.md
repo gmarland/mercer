@@ -1,18 +1,18 @@
-#Mercer
+# Mercer
 
 Mercer is a 3D data visualization library built using three.js. 
 
 It is named after a character in the book “Do Androids Dream of Electric Sheep?” and is a work in progress. Any suggestions on functionality can sent to my twitter <a href="https://twitter.com/GarethMarland">@garethmarland</a> and would be greatly appreciated.
 
-##Installation
+## Installation
 
 Doing a view source on <a href="http://gmarland.github.io/mercer/">http://gmarland.github.io/mercer/</a> will show all you need to get going.
 
-##Graphs
+## Graphs
 
-###Line Graph
+### Line Graph
 
-####Getting Started
+#### Getting Started
 
 <b>HTML</b>
 
@@ -62,7 +62,7 @@ var lineMercer = new Mercer();
 lineMercer.LineGraph("line-graph-container", lineData);
 ```
 
-####Configuration
+#### Configuration
 
 <b>Row</b>
 
@@ -81,9 +81,9 @@ lineMercer.LineGraph("line-graph-container", lineData);
 	<li><b>pointSpace -</b> the space between point marker on the X axis.</li>
 </ul>
 
-###Area Chart
+### Area Chart
 
-####Getting Started
+#### Getting Started
 
 <b>HTML</b>
 
@@ -130,7 +130,7 @@ var areaMercer = new Mercer();
 areaMercer.AreaChart("area-chart-container", areaData);
 ```
 
-####Configuration
+#### Configuration
 
 <b>Row</b>
 
@@ -149,9 +149,9 @@ areaMercer.AreaChart("area-chart-container", areaData);
 	<li><b>pointSpace -</b> the space between point marker on the X axis.</li>
 </ul>
 
-###Bar Chart
+### Bar Chart
 
-####Getting Started
+#### Getting Started
 
 <b>HTML</b> 
 
@@ -188,7 +188,7 @@ var barMercer = new Mercer();
 barMercer.BarChart("bar-chart-container", barData);
 ```
 
-####Configuration
+#### Configuration
 
 <b>Row</b>
 
@@ -214,9 +214,9 @@ barMercer.BarChart("bar-chart-container", barData);
 	<li><b>columnLabelColor -</b> the default color for the column label.</li>
 </ul>
 
-###Scatter Graph
+### Scatter Graph
 
-####Getting Started
+#### Getting Started
 
 <b>HTML</b>
 
@@ -275,7 +275,7 @@ var scatterMercer = new Mercer();
 scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 ```
 
-###Configuration
+### Configuration
 
 <b>Row</b>
 
@@ -290,9 +290,9 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 	<li><b>pointSpace -</b> the space between each measurement point section along the x, y and z axis.</li>
 </ul>
 
-##Global Configuration
+## Global Configuration
 
-###General Display Settings
+### General Display Settings
 
 <ul>
 	<li><b>showMeasurementLines -</b> a boolean setting that determines if the measurement lines on the Y axis should be shown.</li>
@@ -307,7 +307,7 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 	<li><b>backgroundTransparent -</b> this is how transparent the background of the graph should be.</li>
 </ul>
 
-###Graph Layout Settings
+### Graph Layout Settings
 
 <ul>
 	<li><b>baseColor -</b> the default base color for the graph.</li>
@@ -318,7 +318,7 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 	<li><b>graphHeight -</b> the height of the graph as it appears. This automatically figures itself out so usually shouldn't be set.</li>
 </ul>
 
-###Measurement Line Settings
+### Measurement Line Settings
 
 <ul>
 	<li><b>measurementLineColor -</b> the color of the measurement lines if they are visible on the graph.</li>
@@ -326,7 +326,7 @@ scatterMercer.ScatterGraph("scatter-graph-container", scatterData);
 	<li><b>measurementLabelColor -</b> the color of the label along the measurement line if it is visible.</li>
 </ul>
 
-###Directional Light Settings
+### Directional Light Settings
 
 These are the settings for the directional light and probably don't need to be touched unless you have a specific need.
 
@@ -338,7 +338,7 @@ These are the settings for the directional light and probably don't need to be t
 	<li><b>directionalLight.position.z -</b> the Z position of the directional light.</li>
 </ul>
 
-###Camera Settings
+### Camera Settings
 
 These settings are a little low level and control the positioning of the camera. The camera usually figures itself out but you might want to set this to get the position you need.
 
@@ -348,7 +348,7 @@ These settings are a little low level and control the positioning of the camera.
 	<li><b>cameraZ -</b> the Z position of the camera.</li>
 </ul>
 
-###Look At Settings
+### Look At Settings
 
 These, like camera settings, are a little low level and control the position the camera looks at. This is usually automatically determined but just in case you have a specific need.
 
@@ -358,6 +358,6 @@ These, like camera settings, are a little low level and control the position the
 	<li><b>lookAtZ -</b> the Z position that the camera should be looking at.</li>
 </ul>
 
-##Author
+## Author
 
 My name is Gareth Marland. I’m a British programmer who currently lives in Toronto, Canada with my lovely Canadian wife.
